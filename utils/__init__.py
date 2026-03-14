@@ -3,11 +3,9 @@ __all__ = (
     'BadRequest',
     'now',
     'utcnow',
-    'send_email',
     'Payload',
 )
 
-from .email import send_email
 from .exceptions import BadRequest
 from .jwt import Payload
 from .operators import OPERATORS

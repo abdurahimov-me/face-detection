@@ -1,6 +1,5 @@
 __all__ = (
     'PasswordField',
-    'FileField',
     'EnumField',
     'StrEnumField',
     'IntEnumField',
@@ -9,5 +8,4 @@ __all__ = (
 
 from .datetime import DateTimeField
 from .enum import EnumField, StrEnumField, IntEnumField
-from .file import FileField
 from .password import PasswordField
