@@ -3,7 +3,6 @@ __all__ = (
     'EnvReader',
     'DB_SETTINGS',
     'REDIS_SETTINGS',
-    'EMAIL_SETTINGS',
     'AWS_SETTINGS',
     'APP_SETTINGS',
     'JWT_SETTINGS',
@@ -102,7 +101,6 @@ class JWTSettings(BaseSettings):
 
 DB_SETTINGS = DBSettings()
 REDIS_SETTINGS = RedisSettings()
-EMAIL_SETTINGS = EmailSettings()
 AWS_SETTINGS = AWSSettings()
 APP_SETTINGS = APPSettings()
 JWT_SETTINGS = JWTSettings()
