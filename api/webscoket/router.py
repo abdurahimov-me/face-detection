@@ -37,7 +37,9 @@ async def user_websocket(
 
             await handler(
                 websocket=ws,
-                data=message,
+                conn_id=conn_id,
+                data=message["data"],
+
             )
     except WebSocketDisconnect:
         await chat_ws_manager.disconnect(conn_id)
