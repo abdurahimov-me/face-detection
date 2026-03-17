@@ -1,0 +1,12 @@
+django
+psycopg2-binary
+python-environ
+django-unfold
+requests
+python-dotenv
+pillow
+django-storages
+boto3
+gunicorn
+argon2-cffi
+gunicorn
