@@ -32,6 +32,9 @@ class ChatWebSocketManager:
         for task in self.tasks:
             task.cancel()
 
+    async def send_error(self, websocket: WebSocket, message: str):
+        await websocket.send_json({'type': 'error', 'message': message})
+
     async def connect(self, conn_id: str, websocket: WebSocket):
         await websocket.accept()
         await cache.client.hset('user_connections', conn_id, self.worker_id)
