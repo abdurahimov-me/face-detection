@@ -1,5 +1,4 @@
 import asyncio
-import json
 import logging
 from typing import Iterable
 from uuid import uuid4
@@ -26,16 +25,6 @@ class ChatWebSocketManager:
             return func
 
         return decorator
-
-    async def start(self):
-        await self.pubsub.connect()
-
-        if workers := await cache.get('workers'):
-            workers.append(self.worker_id)
-        else:
-            workers = [self.worker_id]
-        await cache.set('workers', workers)
-        self.tasks.append(asyncio.create_task(self._pubsub_data_reader()))
 
     async def stop(self):
         if self.pubsub:
@@ -80,28 +69,6 @@ class ChatWebSocketManager:
             data = dict(data=data, conn_id=conn_id, key='conn_id')
             if worker_id:
                 await self.publish_to_worker(data=data, worker_id=worker_id.decode('utf-8'))
-
-    async def _pubsub_data_reader(self):
-
-        pubsub = await self.pubsub.subscribe(f"worker:{self.worker_id}")
-        try:
-            async for message in pubsub.listen():
-                if message and message['type'] == 'message':
-                    data = message["data"].decode("utf-8")
-                    try:
-                        parsed_data = json.loads(data)
-                        key = parsed_data.get('key')
-                        await reader.readers[key](parsed_data)
-
-                    except json.JSONDecodeError:
-                        logger.error(f"Noto‘g‘ri xabar formati: {data}")
-        except Exception as exc:
-            logger.exception(f"_pubsub_data_reader funksiyasida xato: {exc}")
-        finally:
-            await pubsub.unsubscribe(f"worker:{self.worker_id}")
-
-    async def send_error(self, message: str, websocket: WebSocket):
-        await websocket.send_json({"status": "error", "message": message})
 
 
 chat_ws_manager = ChatWebSocketManager()
