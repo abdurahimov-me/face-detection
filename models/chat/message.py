@@ -1,5 +1,6 @@
 __all__ = (
-    'Member',
+    'Message',
+    'MessageFile'
 )
 
 from typing import TypeVar
