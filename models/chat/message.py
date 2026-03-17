@@ -4,9 +4,10 @@ __all__ = (
 )
 
 from typing import TypeVar
-
+from utils.customs import IntEnumField
 import sqlalchemy as sa
 from sqlalchemy.orm import Mapped, mapped_column
+from resources.enums import MessageFileType
 
 T = TypeVar("T", bound="Base")
 
@@ -49,5 +50,6 @@ class MessageFile(BaseModel, DeletedMixin):
         sa.String(255),
     )
     type: Mapped[int] = mapped_column(
-        sa.SmallInteger(),
+        IntEnumField(MessageFileType),
+        default=MessageFileType.PHOTO
     )

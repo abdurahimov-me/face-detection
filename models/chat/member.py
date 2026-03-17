@@ -8,7 +8,9 @@ from typing import TypeVar
 import sqlalchemy as sa
 from sqlalchemy.orm import Mapped, mapped_column
 
+from resources.enums import MemberType
 from utils import utcnow
+from utils.customs import IntEnumField
 
 T = TypeVar("T", bound="Base")
 
@@ -30,7 +32,8 @@ class Member(BaseModel, DeletedMixin):
         index=True,
     )
     role: Mapped[int] = mapped_column(
-        sa.SmallInteger(),
+        IntEnumField(MemberType),
+        default=MemberType.MEMBER,
     )
     joined_at: Mapped[datetime] = mapped_column(
         sa.DateTime(timezone=True),
