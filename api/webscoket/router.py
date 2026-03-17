@@ -35,7 +35,7 @@ async def user_websocket(
         while True:
             message = await ws.receive_json()
 
-            if not (_type := message.get('type')):
+            if not (command := message.get('command')):
                 await chat_ws_manager.send_error(websocket=ws, message='You should provide message type')
                 continue
 
@@ -43,9 +43,9 @@ async def user_websocket(
                 await chat_ws_manager.send_error(websocket=ws, message='You should provide data')
                 continue
 
-            if not (handler := chat_ws_manager.handlers.get(_type)):
-                logger.error(f"No handler [{_type}] exists")
-                await chat_ws_manager.send_error(f"Type: {_type} was not found", ws)
+            if not (handler := chat_ws_manager.handlers.get(command)):
+                logger.error(f"No handler [{command}] exists")
+                await chat_ws_manager.send_error(f"Type: {command} was not found", ws)
                 continue
 
             await handler(

@@ -19,9 +19,9 @@ class ChatWebSocketManager:
         self.tasks = []
         self.pubsub = pubsub
 
-    def handler(self, message_type):
+    def handler(self, command: str):
         def decorator(func):
-            self.handlers[message_type] = func
+            self.handlers[command] = func
             return func
 
         return decorator
