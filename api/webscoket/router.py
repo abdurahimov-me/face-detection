@@ -2,7 +2,7 @@ import logging
 
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 
-from resources.managers.ws.manager import chat_ws_manager as manager
+from resources.managers.ws.manager import chat_ws_manager
 from . import handlers  # noqa
 
 logger = logging.getLogger(__name__)
@@ -19,19 +19,20 @@ async def user_websocket(
         user_id: int,
         tenant: str,
 ):
-    await manager.connect(str(user_id), ws)
+    conn_id = f"{user_id}-{tenant}"
+    await chat_ws_manager.connect(conn_id, ws)
 
     try:
         while True:
             message = await ws.receive_json()
 
             if not (_type := message.get('type')):
-                await manager.send_error(websocket=ws, message='You should provide message type')
+                await chat_ws_manager.send_error(websocket=ws, message='You should provide message type')
                 continue
 
-            if not (handler := manager.handlers.get(_type)):
+            if not (handler := chat_ws_manager.handlers.get(_type)):
                 logger.error(f"No handler [{_type}] exists")
-                await manager.send_error(f"Type: {_type} was not found", ws)
+                await chat_ws_manager.send_error(f"Type: {_type} was not found", ws)
                 continue
             message['sender_id'] = user_id
 
@@ -39,6 +40,5 @@ async def user_websocket(
                 websocket=ws,
                 data=message,
             )
-
     except WebSocketDisconnect:
-        await manager.disconnect(str(user_id))
+        await chat_ws_manager.disconnect(conn_id)
