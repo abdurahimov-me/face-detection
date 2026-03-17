@@ -34,7 +34,6 @@ async def user_websocket(
                 logger.error(f"No handler [{_type}] exists")
                 await chat_ws_manager.send_error(f"Type: {_type} was not found", ws)
                 continue
-            message['sender_id'] = user_id
 
             await handler(
                 websocket=ws,
