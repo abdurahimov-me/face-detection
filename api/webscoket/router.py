@@ -2,8 +2,9 @@ import logging
 
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 from sqlalchemy.ext.asyncio import AsyncSession
-from models import User
+
 from config.db import db_helper
+from models import User
 from resources.managers.ws.manager import chat_ws_manager
 from . import handlers  # noqa
 
@@ -31,10 +32,13 @@ async def user_websocket(
         tenant: str,
 ):
     conn_id = f"{user_id}-{tenant}"
-    await chat_ws_manager.connect(conn_id, ws)
 
     async with db_helper.session() as session:
         session: AsyncSession
+
+        user = await User.repo.db_get_or_create(session, tenant=tenant, user_id=user_id)
+
+    await chat_ws_manager.connect(conn_id, ws)
 
     try:
         while True:
@@ -57,7 +61,7 @@ async def user_websocket(
                 websocket=ws,
                 conn_id=conn_id,
                 data=data,
-
+                user=user,
             )
     except WebSocketDisconnect:
         await chat_ws_manager.disconnect(conn_id)
