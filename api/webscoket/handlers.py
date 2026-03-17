@@ -26,3 +26,8 @@ async def typing(websocket: WebSocket, conn_id: str, data: dict):
 @manager.handler("send_document")
 async def typing(websocket: WebSocket, conn_id: str, data: dict):
     pass
+
+
+@manager.handler("send_document")
+async def typing(websocket: WebSocket, conn_id: str, data: dict):
+    pass
