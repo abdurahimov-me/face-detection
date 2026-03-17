@@ -48,8 +48,8 @@ async def user_websocket(
                 await chat_ws_manager.send_error(websocket=ws, message='You should provide message type')
                 continue
 
-            if not (data := message.get('data')):
-                await chat_ws_manager.send_error(websocket=ws, message='You should provide data')
+            if not (payload := message.get('payload')):
+                await chat_ws_manager.send_error(websocket=ws, message='You should provide payload')
                 continue
 
             if not (handler := chat_ws_manager.handlers.get(command)):
@@ -60,7 +60,7 @@ async def user_websocket(
             await handler(
                 websocket=ws,
                 conn_id=conn_id,
-                data=data,
+                payload=payload,
                 user=user,
             )
     except WebSocketDisconnect:

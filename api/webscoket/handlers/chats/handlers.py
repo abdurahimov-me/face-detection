@@ -6,7 +6,7 @@ from fastapi import WebSocket
 async def handle_chats(
         websocket: WebSocket,
         conn_id: str,
-        data: dict,
+        payload: dict,
         user: User
 ):
     await websocket.send_json({"salom": "asdasdas"})
