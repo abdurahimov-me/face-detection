@@ -8,7 +8,21 @@ async def typing(websocket: WebSocket, conn_id: str, data: dict):
     pass
 
 
-
 @manager.handler("send_message")
+async def typing(websocket: WebSocket, conn_id: str, data: dict):
+    pass
+
+
+@manager.handler("send_photo")
+async def typing(websocket: WebSocket, conn_id: str, data: dict):
+    pass
+
+
+@manager.handler("send_audio")
+async def typing(websocket: WebSocket, conn_id: str, data: dict):
+    pass
+
+
+@manager.handler("send_document")
 async def typing(websocket: WebSocket, conn_id: str, data: dict):
     pass
