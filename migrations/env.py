@@ -7,13 +7,31 @@ from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import async_engine_from_config
 
 from config.settings import DB_SETTINGS
-from models import * # noqa
+from models import *  # noqa
+
+
+def include_object(object, name, type_, reflected, compare_to):
+    if name in [
+        "auth_group",
+        "auth_group_permissions",
+        'auth_permission',
+        'auth_user',
+        'auth_user_groups',
+        'auth_user_user_permissions',
+        'django_admin_log',
+        'django_content_type',
+        'django_migrations',
+        'django_session',
+
+    ]:
+        return False
+    return True
+
 
 config = context.config
 
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
-
 
 target_metadata = Base.metadata
 config.set_main_option("sqlalchemy.url", DB_SETTINGS.URL)
@@ -37,6 +55,7 @@ def run_migrations_offline() -> None:
         target_metadata=target_metadata,
         literal_binds=True,
         dialect_opts={"paramstyle": "named"},
+        include_object=include_object,
     )
 
     with context.begin_transaction():
@@ -44,7 +63,7 @@ def run_migrations_offline() -> None:
 
 
 def do_run_migrations(connection: Connection) -> None:
-    context.configure(connection=connection, target_metadata=target_metadata)
+    context.configure(connection=connection, target_metadata=target_metadata, include_object=include_object)
 
     with context.begin_transaction():
         context.run_migrations()
