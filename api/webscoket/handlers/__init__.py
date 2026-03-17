@@ -1,1 +1,1 @@
-from . import profile
+from . import *  # noqa
