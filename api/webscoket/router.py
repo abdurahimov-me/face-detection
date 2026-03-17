@@ -30,6 +30,10 @@ async def user_websocket(
                 await chat_ws_manager.send_error(websocket=ws, message='You should provide message type')
                 continue
 
+            if not (data := message.get('data')):
+                await chat_ws_manager.send_error(websocket=ws, message='You should provide data')
+                continue
+
             if not (handler := chat_ws_manager.handlers.get(_type)):
                 logger.error(f"No handler [{_type}] exists")
                 await chat_ws_manager.send_error(f"Type: {_type} was not found", ws)
@@ -38,7 +42,7 @@ async def user_websocket(
             await handler(
                 websocket=ws,
                 conn_id=conn_id,
-                data=message["data"],
+                data=data,
 
             )
     except WebSocketDisconnect:
