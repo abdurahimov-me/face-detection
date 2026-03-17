@@ -26,27 +26,13 @@ class AsyncRedisCache:
     }
 
     def __init__(self, pool):
-        self.client: redis.Redis = None
+        self.client: redis.Redis = redis.Redis(connection_pool=pool, decode_responses=True)
         self.pool = pool
-
-    async def connect(self):
-        """
-        Establish a connection to Redis.
-        """
-        self.client = redis.Redis(connection_pool=self.pool, decode_responses=True)
-
-    async def disconnect(self):
-        """
-        Close the Redis connection.
-        """
-
-        if self.client:
-            await self.client.close()
 
     async def clear(self):
         """
         Dangerous method to clear all cached data.
-        :return:
+        :return:ø
         """
 
         await self.client.flushall()
