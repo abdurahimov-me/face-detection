@@ -7,8 +7,10 @@ from typing import TypeVar
 import sqlalchemy as sa
 from sqlalchemy.orm import Mapped, mapped_column
 
-T = TypeVar("T", bound="Base")
+from resources.enums import ConversationType
+from utils.customs import IntEnumField
 
+T = TypeVar("T", bound="Base")
 
 from ..base import BaseModel
 from ..mixinis import UUIDMixin, DeletedMixin
@@ -22,7 +24,8 @@ class Conversation(BaseModel, UUIDMixin, DeletedMixin):
         nullable=True,
     )
     type: Mapped[int] = mapped_column(
-        sa.SmallInteger(),
+        IntEnumField(ConversationType),
+        default=ConversationType.DIRECT,
         index=True,
     )
     owner_id: Mapped[int] = mapped_column(
@@ -30,5 +33,3 @@ class Conversation(BaseModel, UUIDMixin, DeletedMixin):
         sa.ForeignKey("users.id", ondelete="CASCADE"),
         index=True,
     )
-
-
