@@ -1,6 +1,6 @@
 import asyncio
 import logging
-from typing import Iterable
+import typing as t
 from uuid import uuid4
 
 from fastapi import WebSocket
@@ -9,22 +9,24 @@ from config.redis import cache
 from config.redis.pubsub import pubsub as pubsub_redis
 from resources.managers.ws.connections import connections
 
+if t.TYPE_CHECKING:
+    from .dispatcher import WSDispatcher
 logger = logging.getLogger(__name__)
 
 
 class ChatWebSocketManager:
     def __init__(self, pubsub=pubsub_redis):
         self.worker_id: str = str(uuid4())[-4:]
-        self.handlers: dict = {}
+        self._handlers: dict = {}
         self.tasks = []
         self.pubsub = pubsub
 
-    def handler(self, command: str):
-        def decorator(func):
-            self.handlers[command] = func
-            return func
+    def get_handler(self, command: str) -> t.Optional[t.Callable]:
+        return self._handlers.get(command)
 
-        return decorator
+    def include_handler(self, handler: "WSDispatcher"):
+        functions = handler.get_handlers()
+        self._handlers.update(functions)
 
     async def stop(self):
         if self.pubsub:
@@ -53,7 +55,7 @@ class ChatWebSocketManager:
             else:
                 await connections.send_all(data=data)
 
-    async def send_broadcast(self, conn_ids: Iterable, data: dict, ):
+    async def send_broadcast(self, conn_ids: t.Iterable, data: dict, ):
         await asyncio.gather(
             *[self.send_msg(conn_id, data) for conn_id in conn_ids]
         )
