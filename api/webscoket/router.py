@@ -6,13 +6,20 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from config.db import db_helper
 from models import User
 from resources.managers.ws.manager import chat_ws_manager
-from . import handlers  # noqa
+from utils.routes import WSDispatchers
+from .handlers import chats
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(
     prefix="/chat",
     tags=["chat"],
+)
+
+__ws_dispatchers__ = WSDispatchers(
+    dispatchers=(
+        chats.dispatcher,
+    )
 )
 
 

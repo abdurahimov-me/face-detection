@@ -1,2 +1,2 @@
-from .handlers import * # noqa
+from .handlers import dispatcher
 

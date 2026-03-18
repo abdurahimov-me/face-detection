@@ -1,4 +1,4 @@
-from utils.routes import Routes
+from utils.routes import Routes, WSDispatchers
 from . import webscoket
 
 __routes__ = Routes(
@@ -10,3 +10,4 @@ __ws_routes__ = Routes(
         webscoket.router,
     )
 )
+

@@ -22,9 +22,9 @@ class Routes:
 
 
 @dataclass
-class WSRoutes:
-    handlers: Iterable[WSDispatcher]
+class WSDispatchers:
+    dispatchers: Iterable["WSDispatcher"]
 
-    def register_routes(self, manager: "ChatWebSocketManager"):
-        for handler in self.handlers:
+    def register_dispatchers(self, manager: "ChatWebSocketManager"):
+        for handler in self.dispatchers:
             manager.include_handler(handler)

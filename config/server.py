@@ -11,7 +11,9 @@ from fastapi_pagination.utils import disable_installed_extensions_check
 from starlette.staticfiles import StaticFiles
 
 from api.routers import __routes__ as api_routes, __ws_routes__ as ws_routes
+from api.webscoket.router import __ws_dispatchers__ as ws_dispatchers
 from config import APP_SETTINGS
+from resources.managers.ws.manager import chat_ws_manager
 from .events import on_startup, on_shutdown
 
 
@@ -44,6 +46,10 @@ class Server:
     @staticmethod
     def __register_ws_routes(app):
         ws_routes.register_routes(app, prefix=APP_SETTINGS.WS_PREFIX)
+
+    @staticmethod
+    def __register_ws_dispatchers(app):
+        ws_dispatchers.register_dispatchers(manager=chat_ws_manager)
 
     @staticmethod
     def __register_middlewares(app: FastAPI):
