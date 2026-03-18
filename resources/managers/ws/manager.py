@@ -17,16 +17,16 @@ logger = logging.getLogger(__name__)
 class ChatWebSocketManager:
     def __init__(self, pubsub=pubsub_redis):
         self.worker_id: str = str(uuid4())[-4:]
-        self._handlers: dict = {}
+        self._commands: dict = {}
         self.tasks = []
         self.pubsub = pubsub
 
-    def get_handler(self, command: str) -> t.Optional[t.Callable]:
-        return self._handlers.get(command)
+    def get_command_func(self, command: str) -> t.Optional[t.Callable]:
+        return self._commands.get(command)
 
     def include_handler(self, handler: "WSDispatcher"):
         functions = handler.get_handlers()
-        self._handlers.update(functions)
+        self._commands.update(functions)
 
     async def stop(self):
         if self.pubsub:

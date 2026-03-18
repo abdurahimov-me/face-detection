@@ -59,12 +59,12 @@ async def user_websocket(
                 await chat_ws_manager.send_error(websocket=ws, message='You should provide payload')
                 continue
 
-            if not (handler := chat_ws_manager.handlers.get(command)):
+            if not (func := chat_ws_manager.get_command_func(command)):
                 logger.error(f"No handler [{command}] exists")
                 await chat_ws_manager.send_error(websocket=ws, message=f"Type: {command} was not found")
                 continue
 
-            await handler(
+            await func(
                 websocket=ws,
                 conn_id=conn_id,
                 payload=payload,

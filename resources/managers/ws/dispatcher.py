@@ -6,14 +6,14 @@ from dataclasses import dataclass
 class WSDispatcher:
 
     def __post_init__(self):
-        self._handlers: t.Dict[str, t.Callable] = {}
+        self._commands: t.Dict[str, t.Callable] = {}
 
-    def handler(self, command: str):
+    def command(self, command: str):
         def decorator(func):
-            self._handlers[command] = func
+            self._commands[command] = func
             return func
 
         return decorator
 
     def get_handlers(self) -> t.Dict[str, t.Callable]:
-        return self._handlers
+        return self._commands

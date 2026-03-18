@@ -6,7 +6,7 @@ from resources.managers.ws.dispatcher import WSDispatcher
 dispatcher = WSDispatcher()
 
 
-@dispatcher.handler("get_chats")
+@dispatcher.command("get_chats")
 async def handle_chats(
         websocket: WebSocket,
         conn_id: str,
