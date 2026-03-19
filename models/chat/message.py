@@ -4,10 +4,12 @@ __all__ = (
 )
 
 from typing import TypeVar
-from utils.customs import IntEnumField
+
 import sqlalchemy as sa
 from sqlalchemy.orm import Mapped, mapped_column
+
 from resources.enums import MessageFileType
+from utils.customs import IntEnumField
 
 T = TypeVar("T", bound="Base")
 
@@ -46,8 +48,9 @@ class MessageFile(BaseModel, DeletedMixin):
         sa.ForeignKey("messages.id", ondelete="CASCADE"),
         index=True,
     )
-    file: Mapped[str] = mapped_column(
-        sa.String(255),
+    file: Mapped[int] = mapped_column(
+        sa.BigInteger(),
+        sa.ForeignKey("files.id", ondelete="CASCADE"),
     )
     type: Mapped[int] = mapped_column(
         IntEnumField(MessageFileType),
