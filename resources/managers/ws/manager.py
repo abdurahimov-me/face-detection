@@ -1,8 +1,9 @@
 import asyncio
+import inspect
 import logging
 import typing as t
 from uuid import uuid4
-
+from fastapi import params as fastapi_params
 from fastapi import WebSocket
 
 from config.redis import cache
@@ -21,12 +22,48 @@ class ChatWebSocketManager:
         self.tasks = []
         self.pubsub = pubsub
 
+    async def _resolve_depends(self, depends: fastapi_params.Depends):
+        dep_func = depends.dependency
+        dep_sig = inspect.signature(dep_func)
+        dep_kwargs = {}
+
+        # Recursive — dependency ichida ham Depends bo'lishi mumkin
+        for name, param in dep_sig.parameters.items():
+            if isinstance(param.default, fastapi_params.Depends):
+                dep_kwargs[name] = await self._resolve_depends(param.default)
+
+        if inspect.isasyncgenfunction(dep_func):
+            gen = dep_func(**dep_kwargs)
+            return await gen.__anext__()
+
+        if inspect.iscoroutinefunction(dep_func):
+            return await dep_func(**dep_kwargs)
+
+        return dep_func(**dep_kwargs)
+
+    async def call_command(self, command: str, **context):
+        func = self._commands.get(command)
+        if not func:
+            return None
+
+        sig = inspect.signature(func)
+        kwargs = {}
+
+        for name, param in sig.parameters.items():
+            if name in context:
+                kwargs[name] = context[name]
+            elif isinstance(param.default, fastapi_params.Depends):
+                kwargs[name] = await self._resolve_depends(param.default)
+
+        return await func(**kwargs)
+
     def get_command_func(self, command: str) -> t.Optional[t.Callable]:
         return self._commands.get(command)
 
     def include_handler(self, handler: "WSDispatcher"):
         functions = handler.get_handlers()
         self._commands.update(functions)
+
 
     async def stop(self):
         if self.pubsub:
