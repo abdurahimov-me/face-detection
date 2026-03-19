@@ -1,3 +1,5 @@
+import typing as t
+
 from fastapi import WebSocket
 
 from models import User
@@ -9,7 +11,7 @@ dp = WSDispatcher()
 @dp.command("get_chats")
 async def handle_chats(
         websocket: WebSocket,
-        payload: dict,
+        payload: t.Any,
         user: User
 ):
     await websocket.send_json({"salom": "asdasdas"})
@@ -18,16 +20,16 @@ async def handle_chats(
 @dp.command("start")
 async def handle_chats(
         websocket: WebSocket,
-        payload: dict,
+        payload: t.Any,
         user: User
 ):
     await websocket.send_json({"msg": "Assalomu alaykum"})
 
 
-@dp.command("start")
+@dp.command("accept_payload")
 async def handle_chats(
         websocket: WebSocket,
-        payload: dict,
+        payload: t.Any,
         user: User
 ):
-    await websocket.send_json({"msg": "Assalomu alaykum"})
+    await websocket.send_json({"payload": payload})

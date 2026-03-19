@@ -61,8 +61,8 @@ async def user_websocket(
                 continue
 
             if not (func := chat_ws_manager.get_command_func(command)):
-                logger.error(f"No handler [{command}] exists")
-                await chat_ws_manager.send_error(websocket=ws, message=f"Type: {command} was not found")
+                logger.error(f"No Command [{command}] exists")
+                await chat_ws_manager.send_error(websocket=ws, message=f"Command: {command} was not found")
                 continue
 
             await func(
