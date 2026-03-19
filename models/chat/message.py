@@ -51,6 +51,7 @@ class MessageFile(BaseModel, DeletedMixin):
     file: Mapped[int] = mapped_column(
         sa.BigInteger(),
         sa.ForeignKey("files.id", ondelete="CASCADE"),
+        index=True,
     )
     type: Mapped[int] = mapped_column(
         IntEnumField(MessageFileType),
