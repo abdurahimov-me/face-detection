@@ -41,7 +41,9 @@ async def user_websocket(
     async with db_helper.session() as session:
         session: AsyncSession
 
-        user: User = await User.repo.db_get_or_create(session, tenant=tenant, user_id=user_id)
+        user, _ = await User.repo.db_get_or_create(session, tenant=tenant, user_id=user_id)
+        user: User
+
     conn_id = user.conn_id
     await chat_ws_manager.connect(conn_id, ws)
 
@@ -53,7 +55,7 @@ async def user_websocket(
                 await chat_ws_manager.send_error(websocket=ws, message='You should provide message type')
                 continue
 
-            if not (payload := message.get('payload')):
+            if ("payload" in message) and not (payload := message.get('payload')):
                 await chat_ws_manager.send_error(websocket=ws, message='You should provide payload')
                 continue
 

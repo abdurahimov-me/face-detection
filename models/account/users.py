@@ -49,4 +49,4 @@ class User(BaseModel, DeletedMixin):
 
     @property
     def conn_id(self):
-        return f"{self.user_id}:{self.tenant}ø"
+        return f"{self.user_id}:{self.tenant}"
