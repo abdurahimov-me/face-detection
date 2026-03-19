@@ -30,7 +30,6 @@ class ChatWebSocketManager:
         dep_sig = inspect.signature(dep_func)
         dep_kwargs = {}
 
-        # Recursive — dependency ichida ham Depends bo'lishi mumkin
         for name, param in dep_sig.parameters.items():
             if isinstance(param.default, fastapi_params.Depends):
                 dep_kwargs[name] = await self._resolve_depends(param.default)
