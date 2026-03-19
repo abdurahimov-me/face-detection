@@ -20,13 +20,13 @@ if t.TYPE_CHECKING:
 class SecondaryFile(Base):
     __tablename__ = "message_files"
     id = None
-    product_id: Mapped[int] = mapped_column(
+    message_id: Mapped[int] = mapped_column(
         sa.BigInteger(),
         sa.ForeignKey('messages.id', ondelete='CASCADE'),
         primary_key=True,
         index=True,
     )
-    tag_id: Mapped[int] = mapped_column(
+    file_id: Mapped[int] = mapped_column(
         sa.BigInteger(),
         sa.ForeignKey('files.id', ondelete='CASCADE'),
         primary_key=True,
