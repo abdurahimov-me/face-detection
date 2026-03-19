@@ -1,2 +1,2 @@
-from .handlers import dispatcher
+from .handlers import dp
 

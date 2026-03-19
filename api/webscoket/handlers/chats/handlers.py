@@ -3,10 +3,10 @@ from fastapi import WebSocket
 from models import User
 from resources.managers.ws.dispatcher import WSDispatcher
 
-dispatcher = WSDispatcher()
+dp = WSDispatcher()
 
 
-@dispatcher.command("get_chats")
+@dp.command("get_chats")
 async def handle_chats(
         websocket: WebSocket,
         payload: dict,

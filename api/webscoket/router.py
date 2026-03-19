@@ -18,7 +18,7 @@ router = APIRouter(
 
 __ws_dispatchers__ = WSDispatchers(
     dispatchers=(
-        chats.dispatcher,
+        chats.dp,
     )
 )
 
