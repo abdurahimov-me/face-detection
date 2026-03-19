@@ -17,7 +17,6 @@ class Salom(BaseModel):
 async def handle_chats(
         websocket: WebSocket,
         payload: Salom,
-        session: AsyncSession = Depends(get_db),
 ):
     await websocket.send_json({"salom": "asdasdas"})
 

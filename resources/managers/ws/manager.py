@@ -122,10 +122,8 @@ class ChatWebSocketManager:
         await self.pubsub.publish(f"worker:{worker_id}", data)
 
     async def send_msg(self, conn_id, data: dict):
-        """Send a message to a user's WebSocket connection."""
         conn_id = str(conn_id)
         if websocket := connections.get(conn_id):
-            # If the WebSocket is in this worker
             await websocket.send_json(data)
         else:
             worker_id = await cache.client.hget("user_connections", conn_id)
