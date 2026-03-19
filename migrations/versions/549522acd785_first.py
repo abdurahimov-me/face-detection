@@ -1,8 +1,8 @@
 """first
 
-Revision ID: 54516338d04f
+Revision ID: 549522acd785
 Revises:
-Create Date: 2026-03-19 10:58:15.574972
+Create Date: 2026-03-19 11:00:18.174233
 
 """
 
@@ -13,7 +13,7 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision: str = "54516338d04f"
+revision: str = "549522acd785"
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -285,6 +285,9 @@ def upgrade() -> None:
         unique=False,
     )
     op.create_index(
+        op.f("ix_message_files_file"), "message_files", ["file"], unique=False
+    )
+    op.create_index(
         op.f("ix_message_files_id"), "message_files", ["id"], unique=False
     )
     op.create_index(
@@ -303,6 +306,7 @@ def downgrade() -> None:
         op.f("ix_message_files_message_id"), table_name="message_files"
     )
     op.drop_index(op.f("ix_message_files_id"), table_name="message_files")
+    op.drop_index(op.f("ix_message_files_file"), table_name="message_files")
     op.drop_index(op.f("ix_message_files_deleted"), table_name="message_files")
     op.drop_table("message_files")
     op.drop_index(op.f("ix_messages_sender_id"), table_name="messages")
