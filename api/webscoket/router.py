@@ -38,13 +38,11 @@ async def user_websocket(
         user_id: int,
         tenant: str,
 ):
-    conn_id = f"{user_id}-{tenant}"
-
     async with db_helper.session() as session:
         session: AsyncSession
 
-        user = await User.repo.db_get_or_create(session, tenant=tenant, user_id=user_id)
-
+        user: User = await User.repo.db_get_or_create(session, tenant=tenant, user_id=user_id)
+    conn_id = user.conn_id
     await chat_ws_manager.connect(conn_id, ws)
 
     try:

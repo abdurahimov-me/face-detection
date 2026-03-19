@@ -46,3 +46,7 @@ class User(BaseModel, DeletedMixin):
         nullable=True,
         default=dict(),
     )
+
+    @property
+    def conn_id(self):
+        return f"{self.user_id}:{self.tenant}ø"
