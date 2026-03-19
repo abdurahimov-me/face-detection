@@ -15,6 +15,14 @@ async def handle_chats(
     await websocket.send_json({"salom": "asdasdas"})
 
 
+@dp.command("start")
+async def handle_chats(
+        websocket: WebSocket,
+        payload: dict,
+        user: User
+):
+    await websocket.send_json({"msg": "Assalomu alaykum"})
+
 
 @dp.command("start")
 async def handle_chats(

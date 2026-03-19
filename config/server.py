@@ -24,6 +24,7 @@ class Server:
         self.__app = app
         self.__register_routes(app)
         self.__register_ws_routes(app)
+        self.__register_ws_dispatchers(app)
         self.__register_middlewares(app)
         self.__register_media_files(app)
         self.__register_static_files(app)

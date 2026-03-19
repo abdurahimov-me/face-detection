@@ -50,12 +50,13 @@ async def user_websocket(
     try:
         while True:
             message = await ws.receive_json()
-
-            if not (command := message.get('command')):
+            command = message.get("command")
+            payload = message.get("payload")
+            if not command:
                 await chat_ws_manager.send_error(websocket=ws, message='You should provide message type')
                 continue
 
-            if ("payload" in message) and not (payload := message.get('payload')):
+            if ("payload" in message) and not payload:
                 await chat_ws_manager.send_error(websocket=ws, message='You should provide payload')
                 continue
 
