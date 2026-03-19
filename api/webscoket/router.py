@@ -65,10 +65,16 @@ async def user_websocket(
                 await chat_ws_manager.send_error(websocket=ws, message=f"Command: {command} was not found")
                 continue
 
-            await func(
+            found = await chat_ws_manager.call_command(
+                command=command,
                 websocket=ws,
                 payload=payload,
                 user=user,
             )
+            # await func(
+            #     websocket=ws,
+            #     payload=payload,
+            #     user=user,
+            # )
     except WebSocketDisconnect:
         await chat_ws_manager.disconnect(conn_id)

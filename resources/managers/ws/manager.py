@@ -3,8 +3,10 @@ import inspect
 import logging
 import typing as t
 from uuid import uuid4
-from fastapi import params as fastapi_params
+
 from fastapi import WebSocket
+from fastapi import params as fastapi_params
+from pydantic import ValidationError, BaseModel
 
 from config.redis import cache
 from config.redis.pubsub import pubsub as pubsub_redis
@@ -14,6 +16,7 @@ logger = logging.getLogger(__name__)
 
 if t.TYPE_CHECKING:
     from .dispatcher import WSDispatcher
+
 
 class ChatWebSocketManager:
     def __init__(self, pubsub=pubsub_redis):
@@ -41,7 +44,7 @@ class ChatWebSocketManager:
 
         return dep_func(**dep_kwargs)
 
-    async def call_command(self, command: str, **context):
+    async def call_command(self, websocket: WebSocket, command: str, **context):
         func = self._commands.get(command)
         if not func:
             return None
@@ -51,11 +54,26 @@ class ChatWebSocketManager:
 
         for name, param in sig.parameters.items():
             if name in context:
+                if name == "payload":
+                    annotation = param.annotation
+                    if (
+                            annotation is not inspect.Parameter.empty
+                            and isinstance(annotation, type)
+                            and issubclass(annotation, BaseModel)
+                    ):
+                        raw = context[name]
+                        try:
+                            kwargs[name] = annotation.model_validate(raw)
+                        except ValidationError as e:
+                            return await self.send_error(websocket=websocket, message=str(e))
+                        continue
+
                 kwargs[name] = context[name]
+
             elif isinstance(param.default, fastapi_params.Depends):
                 kwargs[name] = await self._resolve_depends(param.default)
 
-        return await func(**kwargs)
+        return await func(websocket, **kwargs)
 
     def get_command_func(self, command: str) -> t.Optional[t.Callable]:
         return self._commands.get(command)
@@ -63,7 +81,6 @@ class ChatWebSocketManager:
     def include_handler(self, handler: "WSDispatcher"):
         functions = handler.get_handlers()
         self._commands.update(functions)
-
 
     async def stop(self):
         if self.pubsub:
