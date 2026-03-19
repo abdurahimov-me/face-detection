@@ -68,8 +68,8 @@ async def user_websocket(
             found = await chat_ws_manager.call_command(
                 command=command,
                 websocket=ws,
-                payload=payload,
                 user=user,
+                payload=payload,
             )
             # await func(
             #     websocket=ws,

@@ -44,7 +44,12 @@ class ChatWebSocketManager:
 
         return dep_func(**dep_kwargs)
 
-    async def call_command(self, websocket: WebSocket, command: str, **context):
+    async def call_command(
+            self,
+            command: str,
+            websocket: WebSocket,
+            **context
+    ):
         func = self._commands.get(command)
         if not func:
             return None
