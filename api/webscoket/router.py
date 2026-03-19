@@ -64,7 +64,6 @@ async def user_websocket(
 
             await func(
                 websocket=ws,
-                conn_id=conn_id,
                 payload=payload,
                 user=user,
             )

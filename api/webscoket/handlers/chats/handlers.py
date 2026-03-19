@@ -9,7 +9,6 @@ dispatcher = WSDispatcher()
 @dispatcher.command("get_chats")
 async def handle_chats(
         websocket: WebSocket,
-        conn_id: str,
         payload: dict,
         user: User
 ):
