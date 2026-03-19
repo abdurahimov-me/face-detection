@@ -54,7 +54,7 @@ class File(BaseModel, DeletedMixin):
         default=MessageFileType.PHOTO
     )
 
-    products: Mapped[t.List['Message']] = relationship(
+    messages: Mapped[t.List['Message']] = relationship(
         "Message",
         secondary="message_files",
         back_populates="files",

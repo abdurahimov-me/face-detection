@@ -7,11 +7,11 @@ import typing as t
 import sqlalchemy as sa
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from ..base import BaseModel, Base
+from ..base import BaseModel
 from ..mixinis import DeletedMixin
 
 if t.TYPE_CHECKING:
-    from .files import File, SecondaryFile
+    from .files import File
 
 
 class Message(BaseModel, DeletedMixin):
