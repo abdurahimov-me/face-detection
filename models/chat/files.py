@@ -1,5 +1,6 @@
 __all__ = (
     'File',
+    'SecondaryFile',
 )
 
 import typing as t

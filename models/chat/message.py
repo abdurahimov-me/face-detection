@@ -1,6 +1,5 @@
 __all__ = (
     'Message',
-    'SecondaryFile'
 )
 
 import typing as t
@@ -12,7 +11,7 @@ from ..base import BaseModel, Base
 from ..mixinis import DeletedMixin
 
 if t.TYPE_CHECKING:
-    from .files import File
+    from .files import File, SecondaryFile
 
 
 class Message(BaseModel, DeletedMixin):
