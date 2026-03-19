@@ -1,20 +1,18 @@
 __all__ = (
     'Message',
-    'MessageFile'
+    'SecondaryFile'
 )
 
-from typing import TypeVar
+import typing as t
 
 import sqlalchemy as sa
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from resources.enums import MessageFileType
-from utils.customs import IntEnumField
-
-T = TypeVar("T", bound="Base")
-
-from ..base import BaseModel
+from ..base import BaseModel, Base
 from ..mixinis import DeletedMixin
+
+if t.TYPE_CHECKING:
+    from .files import File
 
 
 class Message(BaseModel, DeletedMixin):
@@ -39,21 +37,9 @@ class Message(BaseModel, DeletedMixin):
         index=True,
     )
 
-
-class MessageFile(BaseModel, DeletedMixin):
-    __tablename__ = "message_files"
-
-    message_id: Mapped[int] = mapped_column(
-        sa.BigInteger(),
-        sa.ForeignKey("messages.id", ondelete="CASCADE"),
-        index=True,
-    )
-    file: Mapped[int] = mapped_column(
-        sa.BigInteger(),
-        sa.ForeignKey("files.id", ondelete="CASCADE"),
-        index=True,
-    )
-    type: Mapped[int] = mapped_column(
-        IntEnumField(MessageFileType),
-        default=MessageFileType.PHOTO
+    files: Mapped[t.List['File']] = relationship(
+        "File",
+        secondary="message_files",
+        back_populates="messages",
+        passive_deletes=True,
     )
