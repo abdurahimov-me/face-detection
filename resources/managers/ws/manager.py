@@ -9,10 +9,10 @@ from config.redis import cache
 from config.redis.pubsub import pubsub as pubsub_redis
 from resources.managers.ws.connections import connections
 
-if t.TYPE_CHECKING:
-    from .dispatcher import WSDispatcher
 logger = logging.getLogger(__name__)
 
+if t.TYPE_CHECKING:
+    from .dispatcher import WSDispatcher
 
 class ChatWebSocketManager:
     def __init__(self, pubsub=pubsub_redis):
