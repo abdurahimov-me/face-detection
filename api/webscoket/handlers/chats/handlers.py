@@ -1,10 +1,8 @@
 import typing as t
 
-from fastapi import WebSocket, Depends
+from fastapi import WebSocket
 from pydantic import BaseModel
-from sqlalchemy.ext.asyncio import AsyncSession
 
-from config.db import get_db
 from models import User
 from resources.managers.ws.dispatcher import WSDispatcher
 
