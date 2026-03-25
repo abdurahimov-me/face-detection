@@ -1,5 +1,6 @@
 __all__ = (
     'Message',
+    'MessageRead'
 )
 
 import typing as t
@@ -7,7 +8,7 @@ import typing as t
 import sqlalchemy as sa
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from ..base import BaseModel
+from ..base import BaseModel, Base
 from ..mixinis import DeletedMixin
 
 if t.TYPE_CHECKING:
@@ -41,4 +42,25 @@ class Message(BaseModel, DeletedMixin):
         secondary="message_files",
         back_populates="messages",
         passive_deletes=True,
+    )
+
+
+class MessageRead(Base):
+    __tablename__ = "message_reads"
+    id = None
+
+    message_id: Mapped[int] = mapped_column(
+        sa.ForeignKey("messages.id", ondelete="CASCADE"),
+        primary_key=True,
+    )
+
+    user_id: Mapped[int] = mapped_column(
+        sa.ForeignKey("users.id", ondelete="CASCADE"),
+        primary_key=True,
+        index=True,
+    )
+
+    read_at: Mapped[sa.DateTime] = mapped_column(
+        sa.DateTime(timezone=True),
+        server_default=sa.func.now(),
     )
