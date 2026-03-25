@@ -50,11 +50,13 @@ class MessageRead(Base):
     id = None
 
     message_id: Mapped[int] = mapped_column(
+        sa.BigInteger(),
         sa.ForeignKey("messages.id", ondelete="CASCADE"),
         primary_key=True,
     )
 
     user_id: Mapped[int] = mapped_column(
+        sa.BigInteger(),
         sa.ForeignKey("users.id", ondelete="CASCADE"),
         primary_key=True,
         index=True,
