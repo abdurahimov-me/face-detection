@@ -28,6 +28,12 @@ class Message(BaseModel, DeletedMixin):
         sa.ForeignKey("conversations.id", ondelete="CASCADE"),
         index=True,
     )
+    topic_id: Mapped[int] = mapped_column(
+        sa.BigInteger(),
+        sa.ForeignKey("topics.id", ondelete="CASCADE"),
+        index=True,
+        nullable=True,
+    )
     text: Mapped[str] = mapped_column(
         sa.Text(),
     )
