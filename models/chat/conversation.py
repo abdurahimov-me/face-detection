@@ -28,6 +28,12 @@ class Conversation(BaseModel, UUIDMixin, DeletedMixin):
         default=ConversationType.DIRECT,
         index=True,
     )
+    poster_id: Mapped[int] = mapped_column(
+        sa.BigInteger(),
+        sa.ForeignKey("files.id"),
+        nullable=True,
+        index=True,
+    )
     owner_id: Mapped[int] = mapped_column(
         sa.BigInteger(),
         sa.ForeignKey("users.id", ondelete="CASCADE"),
