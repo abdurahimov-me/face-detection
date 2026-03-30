@@ -1,8 +1,10 @@
 from utils.routes import Routes
-from . import webscoket
+from . import webscoket, common
 
 __routes__ = Routes(
-    routers=()
+    routers=(
+        common.router,
+    )
 )
 
 __ws_routes__ = Routes(
@@ -10,4 +12,3 @@ __ws_routes__ = Routes(
         webscoket.router,
     )
 )
-
