@@ -1,8 +1,8 @@
 import inspect
-from typing import get_origin, Union, get_args, Optional
+from typing import get_origin, Union, get_args, Optional, Annotated
 
-from fastapi import Form, File, UploadFile
-from pydantic_core import PydanticUndefined
+from fastapi import Form, File, UploadFile, Depends, HTTPException
+from pydantic_core import PydanticUndefined, ValidationError
 
 pydantic_attributes = [
     "default",
@@ -65,10 +65,29 @@ def as_form(cls):
         )
 
     async def as_form_func(**kwargs):
-        return cls(**kwargs)
+        try:
+            return cls(**kwargs)
+        except ValidationError as e:
+            errors = [
+                {
+                    "field": err.get("loc")[-1] if "loc" in err else "unknown",
+                    "message": err.get("msg", "Invalid input"),
+                    "type": err.get("type", "error")
+                }
+                for err in e.errors()
+            ]
+            raise HTTPException(
+                status_code=422,
+                detail={
+                    "error": "Validation failed",
+                    "details": errors
+                }
+            )
+        except Exception as e:
+            raise HTTPException(status_code=400, detail=str(e))
 
     sig = inspect.signature(as_form_func)
     sig = sig.replace(parameters=new_parameters)
     as_form_func.__signature__ = sig
-    setattr(cls, 'as_form', as_form_func)
+    setattr(cls, 'as_form', Annotated[cls, Depends(as_form_func)])
     return cls

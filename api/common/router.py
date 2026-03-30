@@ -1,6 +1,6 @@
 from fastapi import APIRouter, UploadFile, File
-from . import services, schemas
 
+from . import services, schemas
 
 router = APIRouter(
     prefix='/common'
@@ -12,8 +12,17 @@ async def health():
     return {'status': 'ok'}
 
 
-@router.get('/upload-file')
+@router.post('/upload-file')
 async def upload_file(
-        file: UploadFile = File(...)
+        service: services.CommonService.annotated("db"),
+        file: UploadFile = File(...),
+):
+    pass
+
+
+@router.put('/update-file')
+async def update_file(
+        service: services.CommonService.annotated("db"),
+        schema: schemas.UpdateFileSchema.as_form,
 ):
     pass

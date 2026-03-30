@@ -1,7 +1,7 @@
 from models import File
 from resources.enums import FileType
 from resources.services import BaseService
-
+from .schemas import UpdateFileSchema
 
 class CommonService(BaseService):
 
@@ -18,4 +18,12 @@ class CommonService(BaseService):
         )
         self.add(file)
         await self.commit()
+        return file
+
+    async def update_file(
+            self,
+            schema: UpdateFileSchema
+    ):
+        file = await File.repo.db_get(id=schema.file_id)
+
         return file
