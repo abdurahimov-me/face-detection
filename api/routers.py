@@ -1,4 +1,4 @@
-from utils.routes import Routes, WSDispatchers
+from utils.routes import Routes
 from . import webscoket
 
 __routes__ = Routes(
