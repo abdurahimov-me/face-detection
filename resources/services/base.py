@@ -23,7 +23,6 @@ class BaseService:
     default_permission: Callable = None
     router_functions: Iterable[str] = None
 
-    db_factory: Callable[[], AsyncSession] = db_helper.async_session_factory
     session: Callable[..., AsyncIterator[AsyncSession]] = db_helper.session
 
     def __init__(
