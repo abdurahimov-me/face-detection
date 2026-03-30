@@ -1,13 +1,14 @@
 from models import File
+from fastapi import UploadFile
 from resources.enums import FileType
 from resources.services import BaseService
 from .schemas import UpdateFileSchema
 
 class CommonService(BaseService):
 
-    async def upload_file(
+    async def create_file(
             self,
-            file: File,
+            file: UploadFile,
     ):
         file = File(
             file="",
