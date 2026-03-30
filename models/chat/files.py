@@ -54,6 +54,10 @@ class File(BaseModel, DeletedMixin):
         default=FileType.PHOTO,
         index=True,
     )
+    user_id: Mapped[int] = mapped_column(
+        sa.BigInteger(),
+        sa.ForeignKey("users.id"),
+    )
 
     messages: Mapped[t.List['Message']] = relationship(
         "Message",
