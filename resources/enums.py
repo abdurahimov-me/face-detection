@@ -11,7 +11,7 @@ class MemberType(IntEnum):
     MEMBER = 2
 
 
-class MessageFileType(IntEnum):
+class FileType(IntEnum):
     PHOTO = 1
     AUDIO = 2
     DOCUMENT = 3

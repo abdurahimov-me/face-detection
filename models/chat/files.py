@@ -8,7 +8,7 @@ import typing as t
 import sqlalchemy as sa
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from resources.enums import MessageFileType
+from resources.enums import FileType
 from utils.customs import IntEnumField
 from ..base import BaseModel, Base
 from ..mixinis import DeletedMixin
@@ -50,8 +50,8 @@ class File(BaseModel, DeletedMixin):
         sa.BigInteger(),
     )
     type: Mapped[int] = mapped_column(
-        IntEnumField(MessageFileType),
-        default=MessageFileType.PHOTO,
+        IntEnumField(FileType),
+        default=FileType.PHOTO,
         index=True,
     )
 
