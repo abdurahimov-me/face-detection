@@ -51,7 +51,8 @@ class File(BaseModel, DeletedMixin):
     )
     type: Mapped[int] = mapped_column(
         IntEnumField(MessageFileType),
-        default=MessageFileType.PHOTO
+        default=MessageFileType.PHOTO,
+        index=True,
     )
 
     messages: Mapped[t.List['Message']] = relationship(
