@@ -23,7 +23,7 @@ class Member(BaseModel, DeletedMixin):
     __table_args__ = (
         sa.UniqueConstraint(
             "user_id", 'conversation_id', name='user_conversation_id'
-        )
+        ),
     )
 
     user_id: Mapped[int] = mapped_column(
