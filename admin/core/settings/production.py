@@ -19,4 +19,5 @@ CSRF_COOKIE_SECURE = True
 
 CSRF_TRUSTED_ORIGINS = [
     "https://hr.sahif.uz",
+    "https://api.hr-chat.sahif.uz",
 ]
