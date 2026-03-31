@@ -54,7 +54,7 @@ services:
     container_name: hr_chat_app
     entrypoint: ./entrypoint.sh
     ports:
-      - "0.0.0.0:8065:8000"
+      - "127.0.0.1:8065:8000"
     env_file:
       - .env
     environment:
