@@ -1,4 +1,28 @@
-FROM ubuntu:latest
-LABEL authors="user"
+FROM python:3.12-slim
 
-ENTRYPOINT ["top", "-b"]
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+
+WORKDIR /app
+
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+        libpq-dev \
+        postgresql-client \
+        curl && \
+    rm -rf /var/lib/apt/lists/*
+
+COPY requirements requirements/
+RUN pip install --upgrade pip && pip install --no-cache-dir -r requirements/prod.txt
+
+COPY . .
+
+RUN useradd -m appuser
+USER appuser
+
+EXPOSE 8000
+
+COPY ./entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+ENTRYPOINT ["/entrypoint.sh"]
