@@ -66,6 +66,25 @@ services:
       - redis
       - db
 
+
+  admin:
+    build:
+      context: ./admin
+      dockerfile: Dockerfile
+    container_name: hr_chat_admin
+    entrypoint: ./admin/entrypoint.sh
+    ports:
+      - "127.0.0.1:8066:8001"
+    volumes:
+      - .:/app
+    env_file:
+      - .env
+    environment:
+      - DB_HOST=pgbouncer
+      - REDIS_PORT=6379
+      - REDIS_HOST=redis
+      - DB_PORT=6432
+
 volumes:
   postgres_data: { }
   redis_data: { }
