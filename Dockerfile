@@ -17,9 +17,6 @@ RUN pip install --upgrade pip && pip install --no-cache-dir -r requirements/prod
 
 COPY . .
 
-RUN useradd -m appuser
-USER appuser
-
 EXPOSE 8000
 
 COPY ./entrypoint.sh /entrypoint.sh
