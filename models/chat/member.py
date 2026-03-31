@@ -20,6 +20,11 @@ from ..mixinis import DeletedMixin
 
 class Member(BaseModel, DeletedMixin):
     __tablename__ = "members"
+    __table_args__ = (
+        sa.UniqueConstraint(
+            "user_id", 'conversation_id', name='user_conversation_id'
+        )
+    )
 
     user_id: Mapped[int] = mapped_column(
         sa.BigInteger(),
