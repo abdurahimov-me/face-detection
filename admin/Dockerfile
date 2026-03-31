@@ -8,10 +8,6 @@ SHELL ["/bin/bash", "-c"]
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 
-# dependicies
-RUN apt-get update && \
-    apt-get -qy install gcc libjpeg-dev libpq-dev gettext
-
 # Katalogni o'rnatish
 WORKDIR /app
 
