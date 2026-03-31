@@ -19,7 +19,7 @@ ARGS_TYPE = {
 }
 
 
-class BaseService:
+class BaseHTTPService:
     default_permission: Callable = None
     router_functions: Iterable[str] = None
 

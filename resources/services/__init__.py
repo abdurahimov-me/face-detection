@@ -1,7 +1,9 @@
 __all__ = (
-    'BaseService',
+    'BaseWSService',
+    'BaseHTTPService',
     'permission',
 )
 
-from .base import BaseService
+from .http import BaseHTTPService
+from .ws import BaseWSService
 from .decorators import permission
