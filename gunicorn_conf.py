@@ -1,0 +1,9 @@
+workers = 1
+worker_class = "uvicorn.workers.UvicornWorker"
+bind = "0.0.0.0:8000"
+timeout = 60
+loglevel = "error"
+errorlog = "-"
+keepalive = 5
+max_requests = 1000
+max_requests_jitter = 100
