@@ -1,3 +1,16 @@
 from django.contrib import admin
+from unfold import admin as unfold
 
-# Register your models here.
+
+from . import models
+
+
+@admin.register(models.Conversation)
+class ConversationAdmin(unfold.ModelAdmin):
+    list_display = ('uuid', 'name', 'owner')
+
+
+
+@admin.register(models.Member)
+class MemberAdmin(unfold.ModelAdmin):
+    list_display = ('user', 'conversation', 'joined_at', 'role')
