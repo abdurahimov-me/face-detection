@@ -75,5 +75,5 @@ async def handle_chats(
             stmt = stmt.where(Message.id <= cursor)
 
         result = (await session.execute(stmt)).mappings().all()
-        data = schemas.ResponseMessageModel.model_validate(result)
-        await websocket.send_text(data.model_dump_json())
+        data = schemas.ResponseMessageModel(messages=result, next_cursor=cursor).model_dump_json()
+        await websocket.send_text(data)
