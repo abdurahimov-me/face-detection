@@ -13,6 +13,7 @@ class ChatsService(BaseWSService):
             ws: WebSocket,
             user: User,
     ):
+        print(self.db, '----------------')
         stmt = (
             sa.select(
                 Conversation,
