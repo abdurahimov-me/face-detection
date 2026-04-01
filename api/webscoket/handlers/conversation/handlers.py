@@ -21,7 +21,7 @@ async def handle_chats(
             Member.conversation_id == payload.conversation_id,
             Member.deleted.is_(False),
         ))
-        checking = await session.execute(query)
+        checking = (await session.execute(query)).scalar()
         print(checking)
         if checking is False:
             pass
