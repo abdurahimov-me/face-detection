@@ -13,7 +13,7 @@ class SendMessageModel(BaseModel):
 
 class GetMessagesModel(BaseModel):
     conversation_id: int
-    cursor: int = None
+    cursor: t.Optional[int] = None
     direction: t.Optional[str] = None
 
 
