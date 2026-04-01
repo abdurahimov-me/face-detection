@@ -71,8 +71,8 @@ async def handle_chats(
             .limit(20)
         )
 
-        # if cursor is not None:
-        #     stmt = stmt.where(Message.id <= cursor)
+        if cursor is not None:
+            stmt = stmt.where(Message.id <= cursor)
 
         result = await session.execute(stmt)
         messages = result.mappings().all()
