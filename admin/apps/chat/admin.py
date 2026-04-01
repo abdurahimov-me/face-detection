@@ -6,7 +6,7 @@ from . import models
 
 @admin.register(models.Conversation)
 class ConversationAdmin(unfold.ModelAdmin):
-    list_display = ('uuid', 'name', 'owner')
+    list_display = ('id', 'uuid', 'name', 'owner')
 
 
 @admin.register(models.Member)
