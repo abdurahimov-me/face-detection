@@ -7,11 +7,11 @@ from . import services, schemas
 dp = WSDispatcher()
 
 
-@dp.command("get_chats")
+@dp.command("send_message")
 async def handle_chats(
         websocket: WebSocket,
+        payload: schemas.SendMessageModel,
         user: User,
         service: services.ChatsService = Depends(services.ChatsService.create_service("db")),
 ):
-    return await service.get_chats(ws=websocket, user=user)
-
+    return await service.send_message(ws=websocket, user=user, payload=payload)
