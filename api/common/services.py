@@ -1,10 +1,14 @@
+import io
 import os
-import aiofiles
-from models import File
-from fastapi import UploadFile
 from uuid import uuid4
+
+import aiofiles
+from fastapi import UploadFile
+
+from models import File
 from resources.enums import FileType
 from resources.services import BaseHTTPService
+from utils.storages import storage
 from .schemas import UpdateFileSchema
 
 UPLOAD_DIR = "media"
@@ -27,28 +31,23 @@ class CommonService(BaseHTTPService):
     async def create_file(
             self,
             file: UploadFile,
-            user_id: int,
     ) -> File:
         _, ext = os.path.splitext(file.filename)
         ext = ext.lower()
         unique_filename = f"{uuid4()}{ext}"
         file_type = get_file_type(ext)
+        file_path = f"media/{unique_filename}"
 
-        save_dir = os.path.join(UPLOAD_DIR, file_type.name.lower())
-        os.makedirs(save_dir, exist_ok=True)
-        save_path = os.path.join(save_dir, unique_filename)
-
-        content = await file.read()
-        async with aiofiles.open(save_path, "wb") as f:
-            await f.write(content)
+        content = io.BytesIO(await file.read())
+        await storage.async_upload_fileobj(content, file_path)
 
         db_file = File(
-            file=save_path,
+            file=file_path,
             ext=ext.lstrip("."),
             filename=file.filename,
-            size=len(content),
+            size=file.size,
             type=file_type,
-            user_id=user_id,
+            user_id=1,
         )
         self.add(db_file)
         await self.commit()
@@ -64,11 +63,9 @@ class CommonService(BaseHTTPService):
         if db_file is None:
             raise ValueError("File not found")
 
-        # Eski faylni o'chiramiz
         if os.path.exists(db_file.file):
             os.remove(db_file.file)
 
-        # Yangi faylni saqlaymiz
         _, ext = os.path.splitext(schema.file.filename)
         ext = ext.lower()
         unique_filename = f"{uuid4()}{ext}"
