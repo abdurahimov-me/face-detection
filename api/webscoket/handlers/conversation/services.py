@@ -13,6 +13,7 @@ class ConversationService(BaseWSService):
             user: User,
             payload: schemas.SendMessageModel
     ):
+        print(self.db, '----------------')
         query = sa.select(sa.exists().where(
             Member.user_id == user.id,
             Member.conversation_id == payload.conversation_id,
