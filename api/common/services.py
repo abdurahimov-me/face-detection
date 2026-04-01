@@ -36,7 +36,7 @@ class CommonService(BaseHTTPService):
         ext = ext.lower()
         unique_filename = f"{uuid4()}{ext}"
         file_type = get_file_type(ext)
-        file_path = f"media/{unique_filename}"
+        file_path = f"files/{unique_filename}"
 
         content = io.BytesIO(await file.read())
         await storage.async_upload_fileobj(content, file_path)
