@@ -7,6 +7,7 @@ class Conversation(BaseModel):
     deleted = models.BooleanField(default=False)
     uuid = models.UUIDField()
     name = models.CharField(max_length=255)
+    type = models.SmallIntegerField()
     owner = models.ForeignKey(
         "users.User",
         related_name="conversations",
