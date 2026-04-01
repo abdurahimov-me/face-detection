@@ -43,6 +43,7 @@ async def handle_chats(
 ):
     async with db_helper.session() as session:
         cursor = payload.cursor
+        direction = payload.direction
 
         if cursor is None:
             first_unread = await session.scalar(
@@ -59,6 +60,7 @@ async def handle_chats(
                     )
                 )
             )
+
             cursor = first_unread
 
         unread_count = await session.scalar(
@@ -76,7 +78,7 @@ async def handle_chats(
             )
         )
 
-        stmt = (
+        base_stmt = (
             sa.select(
                 Message.id,
                 Message.text,
@@ -92,28 +94,52 @@ async def handle_chats(
             .limit(20)
         )
 
-        if payload.direction == "up":
-            stmt = stmt.where(Message.id < cursor).order_by(Message.id.desc())
+        if direction == "up":
+            stmt = (
+                base_stmt
+                .where(Message.id < cursor)
+                .order_by(Message.id.desc())
+            )
             result = (await session.execute(stmt)).mappings().all()
             prev_cursor = result[-1]["id"] if len(result) == 20 else None
             next_cursor = cursor
 
-        elif payload.direction == "down":
-            stmt = stmt.where(Message.id >= cursor).order_by(Message.id.asc())
+        elif direction == "down":
+            stmt = (
+                base_stmt
+                .where(Message.id >= cursor)
+                .order_by(Message.id.asc())
+            )
             result = (await session.execute(stmt)).mappings().all()
             next_cursor = result[-1]["id"] + 1 if len(result) == 20 else None
             prev_cursor = cursor
 
         else:
-            up_stmt = stmt.where(Message.id < cursor).order_by(Message.id.desc()).limit(10)
-            down_stmt = stmt.where(Message.id >= cursor).order_by(Message.id.asc()).limit(10)
+            if cursor is not None:
+                up_stmt = (
+                    base_stmt
+                    .where(Message.id < cursor)
+                    .order_by(Message.id.desc())
+                    .limit(10)
+                )
+                down_stmt = (
+                    base_stmt
+                    .where(Message.id >= cursor)
+                    .order_by(Message.id.asc())
+                    .limit(10)
+                )
+                up_result = (await session.execute(up_stmt)).mappings().all()
+                down_result = (await session.execute(down_stmt)).mappings().all()
 
-            up_result = (await session.execute(up_stmt)).mappings().all()
-            down_result = (await session.execute(down_stmt)).mappings().all()
-
-            result = list(reversed(up_result)) + list(down_result)
-            prev_cursor = up_result[-1]["id"] if len(up_result) == 10 else None
-            next_cursor = down_result[-1]["id"] + 1 if len(down_result) == 10 else None
+                result = list(reversed(up_result)) + list(down_result)
+                prev_cursor = up_result[-1]["id"] if len(up_result) == 10 else None
+                next_cursor = down_result[-1]["id"] + 1 if len(down_result) == 10 else None
+            else:
+                stmt = base_stmt.order_by(Message.id.desc())
+                result = (await session.execute(stmt)).mappings().all()
+                result = list(reversed(result))
+                prev_cursor = result[0]["id"] - 1 if len(result) == 20 else None
+                next_cursor = None
 
         data = schemas.ResponseMessageModel(
             messages=result,

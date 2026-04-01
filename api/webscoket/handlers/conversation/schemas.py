@@ -10,10 +10,12 @@ class SendMessageModel(BaseModel):
     conversation_id: int
     reply_id: int = None
 
+
 class GetMessagesModel(BaseModel):
     conversation_id: int
     cursor: int = None
-    direction: str = "up"
+    direction: t.Optional[str] = None
+
 
 class ResponseMessageModel(BaseModel):
     prev_cursor: t.Optional[int] = None
