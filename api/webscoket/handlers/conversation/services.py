@@ -3,7 +3,7 @@ from fastapi import WebSocket
 from models import User, Member, Message
 from resources.services import BaseWSService
 from . import schemas
-
+import sqlalchemy as sa
 
 class ChatsService(BaseWSService):
 
@@ -13,12 +13,12 @@ class ChatsService(BaseWSService):
             user: User,
             payload: schemas.SendMessageModel
     ):
-        checking = await Member.repo.db_exists(
-            self.db,
-            user_id=user.id,
-            conversation_id=payload.conversation_id,
-            deleted=False
-        )
+        query = sa.select(sa.exists().where(
+            Member.user_id == user.id,
+            Member.conversation_id == payload.conversation_id,
+            Member.deleted.is_(False),
+        ))
+        checking = await self.execute(query)
         if checking is False:
             pass
 

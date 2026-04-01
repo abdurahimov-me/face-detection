@@ -2,12 +2,11 @@ import inspect
 from typing import Annotated, Sequence, Optional, Any, Callable, AsyncIterator, Iterable, Type, TypeVar
 
 from fastapi import Depends
-from fastapi import Request
+from fastapi import WebSocket
 from sqlalchemy import Result
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from config.db import get_db, db_helper
-from utils import Payload
 
 T = TypeVar('T', bound='BaseService')
 
@@ -24,6 +23,10 @@ class BaseWSService:
             db: AsyncSession = None,
     ):
         self.db: 'AsyncSession' = db
+
+    @classmethod
+    async def error(cls, text, ws: WebSocket):
+        await ws.send_json({'type': 'error', 'message': text})
 
     async def commit(self):
         return await self.db.commit()
