@@ -39,3 +39,8 @@ class Conversation(BaseModel, UUIDMixin, DeletedMixin):
         sa.ForeignKey("users.id", ondelete="CASCADE"),
         index=True,
     )
+
+    @property
+    def last_message(self):
+        from api.webscoket.handlers.chats.schemas import MessageModel
+        return MessageModel()
