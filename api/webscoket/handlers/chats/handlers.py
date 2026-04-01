@@ -19,7 +19,7 @@ async def handle_chats(
 
         conv_stmt = (
             sa.select(Conversation.id)
-            .join(Member, Member.conversation_id == Conversation.id)
+            .join(Member, Member.conversation_id == Conversation.id, isouter=True)
             .where(
                 Member.user_id == user.id,
                 Member.deleted.is_(False),
