@@ -1,8 +1,14 @@
 import typing as t
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from api.shared.schemas import ConversationModel, MessageModel
+
+
+class SendMessageModel(BaseModel):
+    text: str = Field(min_length=1, max_length=10000)
+    conversation_id: int
+    reply_id: int = None
 
 
 class ChatListModel(ConversationModel):
