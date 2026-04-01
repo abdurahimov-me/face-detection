@@ -13,6 +13,7 @@ class ConversationModel(BaseModel):
     name: str
     type: int
     online: bool = False
+    time: str = "12:00"
 
     class Config:
         from_attributes = True
