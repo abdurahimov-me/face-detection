@@ -91,6 +91,7 @@ class AWSSettings(EnvReader):
     AWS_BUCKET_NAME: str = None
     AWS_REGION_NAME: str = None
     AWS_ENDPOINT_URL: str = None
+    CDN_URL: str = None
 
 
 class JWTSettings(BaseSettings):
