@@ -64,6 +64,7 @@ class Message(BaseModel, DeletedMixin):
         sa.BigInteger(),
         sa.ForeignKey("messages.id", ondelete="CASCADE"),
         index=True,
+        nullable=True,
     )
 
     files: Mapped[t.List['File']] = relationship(
