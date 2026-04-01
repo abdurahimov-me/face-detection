@@ -1,5 +1,3 @@
-import typing as t
-
 from fastapi import WebSocket, Depends
 
 from models import User
@@ -25,13 +23,4 @@ async def handle_chats(
         user: User,
         service: services.ChatsService = Depends(services.ChatsService.create_service("db")),
 ):
-    return await service.get_chats(ws=websocket, user=user)
-
-
-@dp.command("accept_payload")
-async def handle_chats(
-        websocket: WebSocket,
-        payload: t.Any,
-        user: User
-):
-    await websocket.send_json({"payload": payload})
+    return await service.send_message(ws=websocket, user=user, payload=payload)
