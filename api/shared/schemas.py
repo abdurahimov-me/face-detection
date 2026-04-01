@@ -14,6 +14,7 @@ class MessageModel(BaseModel):
     sender_id: int = 1
     read: bool = False
     conversation_id: int = 1
+    type: int = 1
 
 
 class ConversationModel(BaseModel):
