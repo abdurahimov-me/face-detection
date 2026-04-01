@@ -2,7 +2,7 @@ import sqlalchemy as sa
 from fastapi import WebSocket
 
 from config.db import db_helper
-from models import User, Member, Message, MessageRead
+from models import User, Member, Message, MessageRead, Conversation
 from resources.managers.ws.dispatcher import WSDispatcher
 from . import schemas
 
