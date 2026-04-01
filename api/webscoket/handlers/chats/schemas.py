@@ -9,6 +9,7 @@ class ChatListModel(ConversationModel):
     unread: int = 5
     members: int = 2
     online: bool = False
+    unread_message_id: t.Optional[int] = None
     last_message: MessageModel
 
 

@@ -109,6 +109,27 @@ async def handle_chats(
         )
         conversations = (await session.execute(conv_full_stmt)).mappings().all()
 
+        first_unread_stmt = (
+            sa.select(
+                Message.conversation_id,
+                sa.func.min(Message.id).label("unread_message_id")
+            )
+            .where(
+                Message.conversation_id.in_(conv_ids),
+                Message.deleted.is_(False),
+                Message.sender_id != user.id,
+                ~sa.exists().where(
+                    sa.and_(
+                        MessageRead.message_id == Message.id,
+                        MessageRead.user_id == user.id,
+                    )
+                )
+            )
+            .group_by(Message.conversation_id)
+        )
+        first_unread_res = (await session.execute(first_unread_stmt)).mappings().all()
+        first_unread_map = {r["conversation_id"]: r["unread_message_id"] for r in first_unread_res}
+
         result = []
         for conv in conversations:
             conv_id = conv["id"]
@@ -117,7 +138,9 @@ async def handle_chats(
                 "unread": unread_map.get(conv_id, 0),
                 "members": members_map.get(conv_id, 0),
                 "online": False,
+                "unread_message_id": first_unread_map.get(conv_id),
                 "last_message": last_messages.get(conv_id),
+
             })
 
     data = schemas.ConversationModelResponse(data=result).model_dump_json()
