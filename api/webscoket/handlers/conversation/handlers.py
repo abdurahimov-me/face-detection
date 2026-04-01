@@ -36,6 +36,7 @@ async def handle_chats(
     await websocket.send_json({"success": True, "message": "Message sent"})
 
 
+
 @dp.command("get_messages")
 async def handle_chats(
         websocket: WebSocket,

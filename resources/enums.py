@@ -16,3 +16,10 @@ class FileType(IntEnum):
     AUDIO = 2
     DOCUMENT = 3
     VIDEO = 4
+
+
+class MessageType(IntEnum):
+    TEXT = 1
+    IMAGE = 2
+    AUDIO = 3
+    PHOTO = 4

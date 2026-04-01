@@ -8,6 +8,8 @@ import typing as t
 import sqlalchemy as sa
 from sqlalchemy.orm import Mapped, mapped_column, relationship, column_property
 
+from resources.enums import MessageType
+from utils.customs import IntEnumField
 from ..base import BaseModel, Base
 from ..mixinis import DeletedMixin
 
@@ -58,8 +60,9 @@ class Message(BaseModel, DeletedMixin):
         nullable=True,
     )
     type = mapped_column(
-        sa.SmallInteger(),
+        IntEnumField(MessageType),
         server_default=sa.text("1"),
+        default=MessageType.TEXT,
     )
     text: Mapped[str] = mapped_column(
         sa.Text(),
