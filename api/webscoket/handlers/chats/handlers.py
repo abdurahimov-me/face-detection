@@ -1,6 +1,6 @@
 import typing as t
 
-from fastapi import WebSocket
+from fastapi import WebSocket, Depends
 from pydantic import BaseModel
 
 from models import User
@@ -18,7 +18,7 @@ class Salom(BaseModel):
 async def handle_chats(
         websocket: WebSocket,
         user: User,
-        service: services.ChatsService.annotated("db"),
+        service: services.ChatsService = Depends(services.ChatsService.create_service("db")),
 ):
     return await service.get_chats(ws=websocket, user=user)
 
