@@ -22,6 +22,7 @@ async def handle_chats(
             Member.deleted.is_(False),
         ))
         checking = await session.execute(query)
+        print(checking)
         if checking is False:
             pass
 
