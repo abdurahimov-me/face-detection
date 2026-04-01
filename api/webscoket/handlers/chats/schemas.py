@@ -12,6 +12,7 @@ class ConversationModel(BaseModel):
     members: int = 2
     name: str
     type: int
+    online: bool = False
 
     class Config:
         from_attributes = True
