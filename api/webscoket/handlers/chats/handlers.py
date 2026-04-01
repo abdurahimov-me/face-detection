@@ -19,12 +19,12 @@ async def handle_chats(
 
         conv_stmt = (
             sa.select(Conversation.id)
-            .join(Member, Member.conversation_id == Conversation.id, isouter=True)
-            .where(
-                Member.user_id == user.id,
-                Member.deleted.is_(False),
-                Conversation.deleted.is_(False),
-            )
+            # .join(Member, Member.conversation_id == Conversation.id, isouter=True)
+            # .where(
+            #     Member.user_id == user.id,
+            #     Member.deleted.is_(False),
+            #     Conversation.deleted.is_(False),
+            # )
         )
         conv_ids = (await session.execute(conv_stmt)).scalars().all()
 
