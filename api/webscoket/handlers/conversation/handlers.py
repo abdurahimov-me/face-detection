@@ -86,7 +86,9 @@ async def handle_chats(
                 Message.created_at,
                 Message.reply_id,
                 Message.conversation_id,
+                User.user_id,
             )
+            .join(User, User.id == Message.sender_id)
             .where(
                 Message.conversation_id == payload.conversation_id,
                 Message.deleted.is_(False),
@@ -140,9 +142,6 @@ async def handle_chats(
                 result = list(reversed(result))
                 prev_cursor = result[0]["id"] - 1 if len(result) == 20 else None
                 next_cursor = None
-
-
-
 
         data = schemas.ResponseMessageModel(
             messages=result,

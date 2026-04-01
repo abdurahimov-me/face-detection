@@ -18,7 +18,7 @@ class GetMessagesModel(BaseModel):
 
 
 class ChatMessageModel(MessageModel):
-    mine: bool = True
+    user_id: int
 
 
 class ResponseMessageModel(BaseModel):
