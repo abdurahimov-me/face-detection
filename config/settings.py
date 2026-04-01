@@ -90,6 +90,7 @@ class AWSSettings(EnvReader):
     AWS_SECRET_ACCESS_KEY: str = None
     AWS_BUCKET_NAME: str = None
     AWS_REGION_NAME: str = None
+    AWS_ENDPOINT_URL: str = None
 
 
 class JWTSettings(BaseSettings):

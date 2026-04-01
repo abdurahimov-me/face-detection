@@ -193,5 +193,5 @@ storage = Storage(
     region_name=AWS_SETTINGS.AWS_REGION_NAME,
     bucket=AWS_SETTINGS.AWS_BUCKET_NAME,
     media_folder="media/",
-    base_url="https://1817ef2afc90a7110c73226f41f21958.r2.cloudflarestorage.com"
+    base_url=AWS_SETTINGS.AWS_ENDPOINT_URL,
 )
