@@ -5,18 +5,22 @@ from pydantic import BaseModel
 
 from models import User
 from resources.managers.ws.dispatcher import WSDispatcher
+from . import services
 
 dp = WSDispatcher()
+
 
 class Salom(BaseModel):
     text: str
 
+
 @dp.command("get_chats")
 async def handle_chats(
         websocket: WebSocket,
-        payload: Salom,
+        user: User,
+        service: services.ChatsService.annotated("db"),
 ):
-    await websocket.send_json({"salom": "asdasdas"})
+    return await service.get_chats(ws=websocket, user=user)
 
 
 @dp.command("start")
