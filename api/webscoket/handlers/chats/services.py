@@ -23,4 +23,4 @@ class ChatsService(BaseWSService):
         )
         res = (await self.execute(stmt)).scalars().all()
         data = schemas.ConversationModelResponse(data=res).model_dump_json()
-        await ws.send(data)
+        await ws.send_text(data)
