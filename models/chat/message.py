@@ -65,18 +65,6 @@ class Message(BaseModel, DeletedMixin):
         sa.ForeignKey("messages.id", ondelete="CASCADE"),
         index=True,
     )
-    read = column_property(
-        sa.select(sa.literal(True))
-        .where(
-            sa.exists().where(
-                sa.and_(
-                    MessageRead.message_id == id,
-                )
-            )
-        )
-        .correlate_except(MessageRead)
-        .scalar_subquery()
-    )
 
     files: Mapped[t.List['File']] = relationship(
         "File",
@@ -84,3 +72,12 @@ class Message(BaseModel, DeletedMixin):
         back_populates="messages",
         passive_deletes=True,
     )
+
+
+Message.read = column_property(
+    sa.exists().where(
+        sa.and_(
+            MessageRead.message_id == Message.id,
+        )
+    )
+)
