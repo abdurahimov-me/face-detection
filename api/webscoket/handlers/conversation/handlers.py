@@ -12,6 +12,6 @@ async def handle_chats(
         websocket: WebSocket,
         payload: schemas.SendMessageModel,
         user: User,
-        service: services.ChatsService = Depends(services.ChatsService.create_service("db")),
+        service: services.ConversationService = Depends(services.ConversationService.create_service("db")),
 ):
     return await service.send_message(ws=websocket, user=user, payload=payload)

@@ -5,7 +5,7 @@ from resources.services import BaseWSService
 from . import schemas
 import sqlalchemy as sa
 
-class ChatsService(BaseWSService):
+class ConversationService(BaseWSService):
 
     async def send_message(
             self,
