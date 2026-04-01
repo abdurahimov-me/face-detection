@@ -10,3 +10,4 @@ class SendMessageModel(BaseModel):
 
 class GetMessagesModel(BaseModel):
     conversation_id: int
+    cursor: int = None

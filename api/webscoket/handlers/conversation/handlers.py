@@ -2,7 +2,7 @@ import sqlalchemy as sa
 from fastapi import WebSocket
 
 from config.db import db_helper
-from models import User, Member, Message
+from models import User, Member, Message, MessageRead
 from resources.managers.ws.dispatcher import WSDispatcher
 from . import schemas
 
@@ -42,4 +42,42 @@ async def handle_chats(
         user: User,
 ):
     async with db_helper.session() as session:
-        await websocket.send_json({"success": True, "message": "Message sent"})
+        cursor = payload.cursor
+
+        if cursor is None:
+            last_read = await session.execute(
+                sa.select(MessageRead.message_id)
+                .where(MessageRead.user_id == user.id)
+                .order_by(MessageRead.message_id.desc())
+                .limit(1)
+            )
+            last_read_id = last_read.scalar_one_or_none()
+            cursor = last_read_id
+
+        stmt = (
+            sa.select(
+                Message.id,
+                Message.text,
+                Message.sender_id,
+                Message.created_at,
+                Message.reply_id,
+                Message.conversation_id,
+            )
+            .where(
+                Message.conversation_id == payload.conversation_id,
+                Message.deleted == False,
+            )
+            .order_by(Message.id.desc())
+            .limit(20)
+        )
+
+        if cursor is not None:
+            stmt = stmt.where(Message.id <= cursor)
+
+        result = await session.execute(stmt)
+        messages = result.mappings().all()
+
+        await websocket.send_json({
+            "messages": [dict(m) for m in messages],
+            "next_cursor": messages[-1]["id"] - 1 if len(messages) == 20 else None,
+        })
