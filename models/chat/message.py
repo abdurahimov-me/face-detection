@@ -57,6 +57,10 @@ class Message(BaseModel, DeletedMixin):
         index=True,
         nullable=True,
     )
+    type = mapped_column(
+        sa.SmallInteger(),
+        server_default=sa.text("1"),
+    )
     text: Mapped[str] = mapped_column(
         sa.Text(),
     )
