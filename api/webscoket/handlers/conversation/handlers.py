@@ -141,6 +141,9 @@ async def handle_chats(
                 prev_cursor = result[0]["id"] - 1 if len(result) == 20 else None
                 next_cursor = None
 
+
+
+
         data = schemas.ResponseMessageModel(
             messages=result,
             next_cursor=next_cursor,

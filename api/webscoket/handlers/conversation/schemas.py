@@ -17,8 +17,12 @@ class GetMessagesModel(BaseModel):
     direction: t.Optional[str] = None
 
 
+class ChatMessageModel(MessageModel):
+    mine: bool = True
+
+
 class ResponseMessageModel(BaseModel):
     prev_cursor: t.Optional[int] = None
     next_cursor: t.Optional[int] = None
     unread_count: int = 0
-    messages: t.List[MessageModel]
+    messages: t.List[ChatMessageModel]
