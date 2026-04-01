@@ -1,6 +1,8 @@
-from pydantic import BaseModel, Field
-from api.shared.schemas import MessageModel
 import typing as t
+
+from pydantic import BaseModel, Field
+
+from api.shared.schemas import MessageModel
 
 
 class SendMessageModel(BaseModel):
@@ -9,14 +11,12 @@ class SendMessageModel(BaseModel):
     reply_id: int = None
 
 
-
 class GetMessagesModel(BaseModel):
     conversation_id: int
     cursor: int = None
 
 
-
 class ResponseMessageModel(BaseModel):
     next_cursor: t.Optional[int] = None
+    unread_count: int = 0
     messages: t.List[MessageModel]
-

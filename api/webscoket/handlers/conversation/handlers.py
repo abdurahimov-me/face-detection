@@ -47,12 +47,30 @@ async def handle_chats(
         if cursor is None:
             last_read = await session.execute(
                 sa.select(MessageRead.message_id)
-                .where(MessageRead.user_id == user.id)
+                .join(Message, Message.id == MessageRead.message_id)
+                .where(
+                    MessageRead.user_id == user.id,
+                    Message.conversation_id == payload.conversation_id,
+                )
                 .order_by(MessageRead.message_id.desc())
                 .limit(1)
             )
-            last_read_id = last_read.scalar_one_or_none()
-            cursor = last_read_id
+            cursor = last_read.scalar_one_or_none()
+
+        unread_count = await session.scalar(
+            sa.select(sa.func.count(Message.id))
+            .where(
+                Message.conversation_id == payload.conversation_id,
+                Message.deleted.is_(False),
+                Message.sender_id != user.id,
+                ~sa.exists().where(
+                    sa.and_(
+                        MessageRead.message_id == Message.id,
+                        MessageRead.user_id == user.id,
+                    )
+                )
+            )
+        )
 
         stmt = (
             sa.select(
@@ -75,5 +93,13 @@ async def handle_chats(
             stmt = stmt.where(Message.id <= cursor)
 
         result = (await session.execute(stmt)).mappings().all()
-        data = schemas.ResponseMessageModel(messages=result, next_cursor=cursor).model_dump_json()
+
+        next_cursor = result[-1]["id"] - 1 if len(result) == 20 else None
+
+        data = schemas.ResponseMessageModel(
+            messages=result,
+            next_cursor=next_cursor,
+            unread_count=unread_count,
+        ).model_dump_json()
+
         await websocket.send_text(data)
