@@ -2,7 +2,7 @@ import sqlalchemy as sa
 from fastapi import WebSocket
 
 from config.db import db_helper
-from models import User, Member, Message, MessageRead, Conversation
+from models import User, Member, Message, MessageRead
 from resources.managers.ws.dispatcher import WSDispatcher
 from . import schemas
 
@@ -74,10 +74,6 @@ async def handle_chats(
         if cursor is not None:
             stmt = stmt.where(Message.id <= cursor)
 
-        result = await session.execute(stmt)
-        messages = result.mappings().all()
-
-        await websocket.send_json({
-            "messages": [dict(m) for m in messages],
-            "next_cursor": messages[-1]["id"] - 1 if len(messages) == 20 else None,
-        })
+        result = (await session.execute(stmt)).mappings().all()
+        data = schemas.ResponseMessageModel.model_validate(result)
+        await websocket.send_text(data.model_dump_json())

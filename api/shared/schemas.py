@@ -1,12 +1,13 @@
 import typing as t
 from uuid import UUID
+from datetime import datetime
 
 from pydantic import BaseModel
 
 
 class MessageModel(BaseModel):
     id: int = 1
-    time: str = "12:00"
+    created_at: datetime = datetime.now()
     text: str = "Brodarim nima gap"
     topic_id: int = None
     reply_id: int = None
