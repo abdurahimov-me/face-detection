@@ -1,6 +1,6 @@
 import typing as t
 
-from fastapi import WebSocket, Depends
+from fastapi import WebSocket
 from pydantic import BaseModel
 
 from models import User
