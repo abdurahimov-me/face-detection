@@ -1,5 +1,5 @@
 import typing as t
-
+from uuid import UUID
 from pydantic import BaseModel, Field
 
 from api.shared.schemas import MessageModel
@@ -15,6 +15,12 @@ class GetMessagesModel(BaseModel):
     conversation_id: int
     cursor: int = None
     direction: t.Optional[str] = None
+
+
+
+class MarkAsReadModel(BaseModel):
+    message_id: int
+    conversation_uuid: UUID
 
 
 class ChatMessageModel(MessageModel):

@@ -2,7 +2,7 @@ import sqlalchemy as sa
 from fastapi import WebSocket
 
 from config.db import db_helper
-from models import User, Member, Message, MessageRead
+from models import User, Member, Message, MessageRead, Conversation
 from resources.managers.ws.dispatcher import WSDispatcher
 from . import schemas
 
@@ -152,3 +152,48 @@ async def handle_chats(
         ).model_dump_json()
 
         await websocket.send_text(data)
+
+
+@dp.command("mark_as_read")
+async def handle_chats(
+        websocket: WebSocket,
+        payload: schemas.MarkAsReadModel,
+        user: User,
+):
+    async with db_helper.session() as session:
+        conversation_id = await session.scalar(
+            sa.select(Conversation.id)
+            .where(Conversation.uuid == payload.conversation_uuid)
+        )
+
+        if not conversation_id:
+            return
+
+        unread_ids = (await session.execute(
+            sa.select(Message.id)
+            .where(
+                Message.conversation_id == conversation_id,
+                Message.id <= payload.message_id,
+                Message.sender_id != user.id,
+                Message.deleted.is_(False),
+                ~sa.exists().where(
+                    sa.and_(
+                        MessageRead.message_id == Message.id,
+                        MessageRead.user_id == user.id,
+                    )
+                )
+            )
+        )).scalars().all()
+
+        if not unread_ids:
+            return
+
+        await session.execute(
+            sa.insert(MessageRead).values([
+                {"message_id": msg_id, "user_id": user.id}
+                for msg_id in unread_ids
+            ])
+        )
+        await session.commit()
+
+        await websocket.send_json({"success": True, "marked": len(unread_ids)})
