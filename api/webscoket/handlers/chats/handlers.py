@@ -23,7 +23,7 @@ async def handle_chats(
     return await service.get_chats(ws=websocket, user=user)
 
 
-@dp.command("start")
+@dp.command("send_message")
 async def handle_chats(
         websocket: WebSocket,
         payload: t.Any,
