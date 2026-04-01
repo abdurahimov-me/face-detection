@@ -14,7 +14,9 @@ class ChatsService(BaseWSService):
             user: User,
     ):
         stmt = (
-            sa.select(Conversation)
+            sa.select(
+                Conversation,
+            )
             # .join(Member, Member.conversation_id == Conversation.id, isouter=True)
             # .where(
             #     Member.user_id == user.id,
