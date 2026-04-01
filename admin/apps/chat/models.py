@@ -39,6 +39,6 @@ class Message(BaseModel):
     conversation = models.ForeignKey("Conversation", on_delete=models.PROTECT)
     text = models.TextField()
     reply = models.ForeignKey("self", on_delete=models.PROTECT, null=True, blank=True)
-
+    type = models.SmallIntegerField()
     class Meta:
         db_table = 'messages'
