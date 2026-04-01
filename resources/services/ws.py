@@ -21,13 +21,9 @@ class BaseWSService:
 
     def __init__(
             self,
-            request: Request,
             db: AsyncSession = None,
-            payload: Payload = None,
     ):
-        self.request: Request = request
         self.db: 'AsyncSession' = db
-        self.payload: 'Payload' = payload
 
     async def commit(self):
         return await self.db.commit()
