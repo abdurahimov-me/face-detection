@@ -5,3 +5,8 @@ class SendMessageModel(BaseModel):
     text: str = Field(min_length=1, max_length=10000)
     conversation_id: int
     reply_id: int = None
+
+
+
+class GetMessagesModel(BaseModel):
+    conversation_id: int

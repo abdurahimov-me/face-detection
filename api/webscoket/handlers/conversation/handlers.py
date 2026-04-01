@@ -33,3 +33,13 @@ async def handle_chats(
         ))
         await session.commit()
     await websocket.send_json({"success": True, "message": "Message sent"})
+
+
+@dp.command("get_messages")
+async def handle_chats(
+        websocket: WebSocket,
+        payload: schemas.GetMessagesModel,
+        user: User,
+):
+    async with db_helper.session() as session:
+        await websocket.send_json({"success": True, "message": "Message sent"})
