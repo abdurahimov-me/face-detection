@@ -65,7 +65,7 @@ async def handle_chats(
             )
             .where(
                 Message.conversation_id == payload.conversation_id,
-                Message.deleted == False,
+                Message.deleted.is_(False),
             )
             .order_by(Message.id.desc())
             .limit(20)
