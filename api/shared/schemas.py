@@ -9,8 +9,8 @@ class MessageModel(BaseModel):
     id: int = 1
     created_at: datetime = datetime.now()
     text: str = "Brodarim nima gap"
-    topic_id: int = None
-    reply_id: int = None
+    topic_id: t.Optional[int] = None
+    reply_id: t.Optional[int] = None
     sender_id: int = 1
     read: bool = False
     conversation_id: int = 1
