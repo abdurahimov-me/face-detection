@@ -1,3 +1,5 @@
+import typing as t
+
 import sqlalchemy as sa
 from fastapi import WebSocket
 
@@ -14,6 +16,7 @@ async def handle_chats(
         websocket: WebSocket,
         payload: schemas.SendMessageModel,
         user: User,
+        request_id: t.Any = None,
 ):
     async with db_helper.session() as session:
         query = sa.select(sa.exists().where(
@@ -33,8 +36,9 @@ async def handle_chats(
             reply_id=payload.reply_id,
         ))
         await session.commit()
-    await websocket.send_json({"success": True, "message": "Message sent"})
-
+    await websocket.send_json(
+        {"success": True, "message": "Message sent", "request_id": request_id, "command": "send_message"},
+    )
 
 
 @dp.command("get_messages")
@@ -42,6 +46,7 @@ async def handle_chats(
         websocket: WebSocket,
         payload: schemas.GetMessagesModel,
         user: User,
+        request_id: t.Any = None,
 ):
     async with db_helper.session() as session:
         cursor = payload.cursor
@@ -146,6 +151,8 @@ async def handle_chats(
                 next_cursor = None
 
         data = schemas.ResponseMessageModel(
+            request_id=request_id,
+            command="get_messages",
             messages=result,
             next_cursor=next_cursor,
             prev_cursor=prev_cursor,
@@ -160,6 +167,7 @@ async def handle_chats(
         websocket: WebSocket,
         payload: schemas.MarkAsReadModel,
         user: User,
+        request_id: t.Any = None,
 ):
     async with db_helper.session() as session:
         conversation_id = await session.scalar(
@@ -197,4 +205,11 @@ async def handle_chats(
         )
         await session.commit()
 
-        await websocket.send_json({"success": True, "marked": len(unread_ids)})
+        await websocket.send_json(
+            {
+                "request_id": request_id,
+                "command": "mark_as_read",
+                "success": True,
+                "marked": len(unread_ids)
+            }
+        )

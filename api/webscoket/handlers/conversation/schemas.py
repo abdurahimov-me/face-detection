@@ -28,6 +28,8 @@ class ChatMessageModel(MessageModel):
 
 
 class ResponseMessageModel(BaseModel):
+    command: str
+    request_id: t.Any = None,
     prev_cursor: t.Optional[int] = None
     next_cursor: t.Optional[int] = None
     unread_count: int = 0

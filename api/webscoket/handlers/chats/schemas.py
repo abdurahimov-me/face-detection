@@ -14,6 +14,8 @@ class ChatListModel(ConversationModel):
 
 
 class ConversationModelResponse(BaseModel):
+    command: str
+    request_id: t.Any = None,
     data: t.List[ChatListModel]
 
     class Config:

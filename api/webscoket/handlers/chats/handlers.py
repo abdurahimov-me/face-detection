@@ -1,3 +1,5 @@
+import typing as t
+
 import sqlalchemy as sa
 from fastapi import WebSocket
 
@@ -14,6 +16,7 @@ dp = WSDispatcher()
 async def handle_chats(
         websocket: WebSocket,
         user: User,
+        request_id: t.Any = None,
 ):
     async with db_helper.session() as session:
 
@@ -30,7 +33,11 @@ async def handle_chats(
 
         if not conv_ids:
             await websocket.send_text(
-                schemas.ConversationModelResponse(data=[]).model_dump_json()
+                schemas.ConversationModelResponse(
+                    data=[],
+                    command="get_chats",
+                    request_id=request_id,
+                ).model_dump_json()
             )
             return
 
@@ -143,5 +150,9 @@ async def handle_chats(
 
             })
 
-    data = schemas.ConversationModelResponse(data=result).model_dump_json()
+    data = schemas.ConversationModelResponse(
+        data=result,
+        command="get_chats",
+        request_id=request_id,
+    ).model_dump_json()
     await websocket.send_text(data)
