@@ -53,6 +53,7 @@ async def user_websocket(
             message = await ws.receive_json()
             command = message.get("command")
             payload = message.get("payload")
+            request_id = message.get("request_id")
             if not command:
                 await chat_ws_manager.send_error(websocket=ws, message='You should provide message type')
                 continue
@@ -67,6 +68,7 @@ async def user_websocket(
                 continue
 
             await chat_ws_manager.call_command(
+                request_id=request_id,
                 command=command,
                 websocket=ws,
                 user=user,
