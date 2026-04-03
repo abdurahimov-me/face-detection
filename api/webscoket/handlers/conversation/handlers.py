@@ -118,11 +118,11 @@ async def handle_chats(
                 result = list(reversed(result))
                 prev_cursor = result[0]["id"] - 1 if len(result) == 20 else None
                 next_cursor = None
-    return dict(
-        messages=result,
-        next_cursor=next_cursor,
+    return schemas.ResponseMessageModel(
         prev_cursor=prev_cursor,
+        next_cursor=next_cursor,
         unread_count=unread_count,
+        messages=result,
     )
 
 
