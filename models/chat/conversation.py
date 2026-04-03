@@ -53,6 +53,6 @@ class Conversation(BaseModel, UUIDMixin, DeletedMixin):
         key = f"conversation_id:{chat_uuid}"
         if value := await cache.get(key):
             return value
-        chat = await Conversation.repo.db_first(session=session, chat_uuid=chat_uuid)
+        chat = await Conversation.repo.db_first(session=session, uuid=chat_uuid)
         await cache.set(key, chat.id, CHAT_ID_TTL)
         return chat.id
