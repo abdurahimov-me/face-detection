@@ -104,7 +104,7 @@ async def handle_chats(
                 file_id=file_id,
             ))
 
-        await session.add_all(files)
+        session.add_all(files)
 
         await session.commit()
 
