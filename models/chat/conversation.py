@@ -55,4 +55,4 @@ class Conversation(BaseModel, UUIDMixin, DeletedMixin):
             return value
         chat = await Conversation.repo.db_first(session=session, uuid=chat_uuid)
         await cache.set(key, chat.id, CHAT_ID_TTL)
-        return chat.id
+        return chat.id if chat else None
