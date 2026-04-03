@@ -1,7 +1,7 @@
 from sqlalchemy import String
 from sqlalchemy.types import TypeDecorator
 
-from utils.hash import make_pass
+from utils.security.hash import make_pass
 
 
 class PasswordField(TypeDecorator):
