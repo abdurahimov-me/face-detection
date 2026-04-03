@@ -77,7 +77,7 @@ class ChatWebSocketManager:
             elif isinstance(param.default, fastapi_params.Depends):
                 kwargs[name] = await self._resolve_depends(param.default)
 
-        return await func(websocket, **kwargs)
+        data = await func(websocket, **kwargs)
 
     def get_command_func(self, command: str) -> t.Optional[t.Callable]:
         return self._commands.get(command)
