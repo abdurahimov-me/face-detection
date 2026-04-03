@@ -12,5 +12,5 @@ class AWSFormat(str, BaseFormat):
     @classmethod
     def validate(cls, v=None, *args, **kwargs):
         if v and isinstance(v, str):
-            return f'{cls.base_url}/{v}'
+            return f'{cls.base_url}{v}'
         return None
