@@ -1,11 +1,15 @@
 import logging
+import typing as t
 
+import jwt
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from config.db import db_helper
 from models import User
 from resources.managers.ws.manager import chat_ws_manager
+from utils import Payload
+from utils.jwt import decode_jwt
 from utils.routes import WSDispatchers
 from .handlers import chats, conversation
 
@@ -24,13 +28,39 @@ __ws_dispatchers__ = WSDispatchers(
 )
 
 
+def _parse_token(
+        token: str
+) -> t.Tuple[t.Optional[str], t.Optional["Payload"]]:
+    try:
 
-@router.websocket("/{user_id}/{tenant}")
+        payload = decode_jwt(token)
+        return None, Payload.from_dict(payload)
+
+    except jwt.ExpiredSignatureError:
+
+        return "Token expired", None
+
+    except (jwt.InvalidTokenError, jwt.DecodeError):
+        return "Could not validate credentials", None
+
+
+@router.websocket("/connect")
 async def user_websocket(
         ws: WebSocket,
-        user_id: int,
-        tenant: str,
 ):
+    if token := ws.query_params.get("token"):
+        text, payload = _parse_token(token)
+        if text:
+            return await chat_ws_manager.send_error(websocket=ws, message=text)
+
+    else:
+        return await chat_ws_manager.send_error(websocket=ws, message='Token is missing')
+
+    print(payload)
+
+    tenant = payload.tenant
+    user_id = payload.user_id
+
     async with db_helper.session() as session:
         session: AsyncSession
 
