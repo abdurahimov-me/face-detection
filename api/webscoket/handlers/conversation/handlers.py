@@ -168,12 +168,6 @@ async def handle_chats(
             ])
         )
         await session.commit()
-
-        await websocket.send_json(
-            {
-                "request_id": request_id,
-                "command": "mark_as_read",
-                "success": True,
-                "marked": len(unread_ids)
-            }
-        )
+        return {
+            "marked": len(unread_ids)
+        }
