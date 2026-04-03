@@ -1,20 +1,71 @@
 import typing as t
+from uuid import UUID
 
 import sqlalchemy as sa
 from fastapi import WebSocket
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from config.db import db_helper
-from models import User, Member, Message
+from models import User, Member, Message, Conversation
 from resources.managers.ws.dispatcher import WSDispatcher
 from . import schemas
 
 dp = WSDispatcher()
 
+async def _check_user_is_member(
+        session: AsyncSession,
+        user_id: int,
+        conversation_uuid: UUID,
+):
+    query = (
+        sa.select(
+            sa.exists()
+            .where(
+                Member.user_id == user_id,
+                Member.deleted.is_(False),
+            )
+            .join(Conversation, Conversation.id == Member.conversation_id)
+            .where(
+                Conversation.uuid == conversation_uuid,
+            )
+        )
+    )
+    return (await session.execute(query)).scalar()
 
 @dp.command("send_message")
 async def handle_chats(
         websocket: WebSocket,
         payload: schemas.SendMessageModel,
+        user: User,
+        request_id: t.Any = None,
+):
+    async with db_helper.session() as session:
+        checking = _check_user_is_member(session, user.id, payload.conversation_uuid)
+        if checking is False:
+            pass
+        message = Message(
+            text=payload.text,
+            sender_id=user.id,
+            conversation_id=payload.conversation_id,
+            reply_id=payload.reply_id,
+        )
+        session.add(message)
+        await session.commit()
+    await websocket.send_json(
+        {
+            "success": True,
+            "message": "Message sent",
+            "request_id": request_id,
+            "command": "send_message",
+            "data": message.as_dict()
+        },
+    )
+
+
+@dp.command("send_photo")
+async def handle_chats(
+        websocket: WebSocket,
+        payload: schemas.SendPhotosModel,
         user: User,
         request_id: t.Any = None,
 ):

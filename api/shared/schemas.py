@@ -5,6 +5,13 @@ from uuid import UUID
 from pydantic import BaseModel
 
 
+class BaseWSResponse(BaseModel):
+    success: bool = False
+    request_id: t.Any = None
+    command: str
+    data: t.Any = None
+
+
 class MessageModel(BaseModel):
     id: int = 1
     created_at: datetime = datetime.now()

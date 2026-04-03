@@ -81,6 +81,16 @@ class Message(BaseModel, DeletedMixin):
         passive_deletes=True,
     )
 
+    def as_dict(self):
+        return {
+            "message_id": self.id,
+            "text": self.text,
+            "type": self.type,
+            "reply_id": self.reply_id,
+            "topic_id": self.topic_id,
+            "sender_id": self.sender_id
+        }
+
 
 Message.read = column_property(
     sa.exists().where(

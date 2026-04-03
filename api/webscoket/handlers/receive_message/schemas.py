@@ -7,6 +7,13 @@ from api.shared.schemas import MessageModel
 
 class SendMessageModel(BaseModel):
     text: str = Field(min_length=1, max_length=10000)
-    conversation_id: int
+    conversation_uuid: UUID
     reply_id: int = None
 
+
+
+class SendPhotosModel(BaseModel):
+    conversation_id: UUID
+    reply_id: int = None
+    files: t.List[int]
+    text: str = Field(min_length=1, max_length=10000)
