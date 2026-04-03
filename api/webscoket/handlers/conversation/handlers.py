@@ -150,16 +150,16 @@ async def handle_chats(
                 prev_cursor = result[0]["id"] - 1 if len(result) == 20 else None
                 next_cursor = None
 
-        data = schemas.ResponseMessageModel(
-            request_id=request_id,
-            command="get_messages",
-            messages=result,
-            next_cursor=next_cursor,
-            prev_cursor=prev_cursor,
-            unread_count=unread_count,
-        ).model_dump_json()
+    data = schemas.ResponseMessageModel(
+        request_id=request_id,
+        command="get_messages",
+        messages=result,
+        next_cursor=next_cursor,
+        prev_cursor=prev_cursor,
+        unread_count=unread_count,
+    ).model_dump_json()
 
-        await websocket.send_text(data)
+    await websocket.send_text(data)
 
 
 @dp.command("mark_as_read")
