@@ -32,6 +32,7 @@ class CommonService(BaseHTTPService):
             self,
             file: UploadFile,
     ) -> File:
+        user = await self.get_user(rais_exception=True)
         _, ext = os.path.splitext(file.filename)
         ext = ext.lower()
         unique_filename = f"{uuid4()}{ext}"
@@ -47,7 +48,7 @@ class CommonService(BaseHTTPService):
             filename=file.filename,
             size=file.size,
             type=file_type,
-            user_id=1,
+            user_id=user.id,
         )
         self.add(db_file)
         await self.commit()

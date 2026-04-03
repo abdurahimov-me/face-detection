@@ -7,6 +7,7 @@ from sqlalchemy import Result
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from config.db import get_db, db_helper
+from models import User
 from utils import Payload
 from .decorators import permission
 from ..depends.current_payload import get_token_payload_or_none
@@ -88,7 +89,13 @@ class BaseHTTPService:
         if obj := result.scalar_one_or_none():
             return obj
 
-        self.error(f"{stmt.__name__} object does not exist")
+        raise self.error(f"{stmt.__name__} object does not exist")
+
+    async def get_user(self, rais_exception=False, **kwargs) -> Optional[User]:
+        u = await User.repo.db_first(self.db, user_id=self.payload.user_id, tenant=self.payload.tenant, **kwargs)
+        if u is None and rais_exception:
+            raise self.error("User does not exist")
+        return u
 
     @classmethod
     def __get_parameters(cls, fields):
