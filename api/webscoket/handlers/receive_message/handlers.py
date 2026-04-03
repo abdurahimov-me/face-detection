@@ -1,5 +1,3 @@
-from uuid import UUID
-
 import sqlalchemy as sa
 from fastapi import WebSocket
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -12,23 +10,22 @@ from . import schemas
 
 dp = WSDispatcher()
 
+CHAT_ID_TTL = 20 * 60
+
 
 async def _check_user_is_member(
         session: AsyncSession,
         user_id: int,
-        conversation_uuid: UUID,
+        conversation_id: int,
 ):
     return True
     query = (
         sa.select(
             sa.exists()
             .where(
+                Member.conversation_id == conversation_id,
                 Member.user_id == user_id,
                 Member.deleted.is_(False),
-            )
-            .join(Conversation, Conversation.id == Member.conversation_id)
-            .where(
-                Conversation.uuid == conversation_uuid,
             )
         )
     )
@@ -42,7 +39,8 @@ async def handle_chats(
         user: User,
 ):
     async with db_helper.session() as session:
-        checking = _check_user_is_member(session, user.id, payload.conversation_uuid)
+        conversation_id = await Conversation.get_conversation_id(session, payload.conversation_uuid)
+        checking = await _check_user_is_member(session, user.id, conversation_id)
         if checking is False:
             return await websocket.send_json(
                 {'type': 'error', 'message': "You are not a member of this conversation"}
@@ -50,7 +48,7 @@ async def handle_chats(
         message = Message(
             text=payload.text,
             sender_id=user.id,
-            conversation_id=payload.conversation_id,
+            conversation_id=conversation_id,
             reply_id=payload.reply_id,
         )
         session.add(message)
@@ -66,7 +64,8 @@ async def handle_chats(
         user: User,
 ):
     async with db_helper.session() as session:
-        checking = _check_user_is_member(session, user.id, payload.conversation_uuid)
+        conversation_id = await Conversation.get_conversation_id(session, payload.conversation_uuid)
+        checking = await _check_user_is_member(session, user.id, conversation_id)
         if checking is False:
             return await websocket.send_json(
                 {'type': 'error', 'message': "You are not a member of this conversation"}
@@ -74,7 +73,7 @@ async def handle_chats(
         msg = Message(
             text=payload.text,
             sender_id=user.id,
-            conversation_id=payload.conversation_id,
+            conversation_id=conversation_id,
             reply_id=payload.reply_id,
             type=FileType.PHOTO
         )
