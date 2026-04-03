@@ -13,7 +13,7 @@ class SendMessageModel(BaseModel):
 
 
 class SendPhotosModel(BaseModel):
-    conversation_id: UUID
+    conversation_uuid: UUID
     reply_id: int = None
     files: t.List[int]
     text: str = Field(min_length=1, max_length=10000)

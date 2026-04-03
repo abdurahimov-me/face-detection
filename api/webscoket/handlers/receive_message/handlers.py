@@ -12,6 +12,7 @@ from . import schemas
 
 dp = WSDispatcher()
 
+
 async def _check_user_is_member(
         session: AsyncSession,
         user_id: int,
@@ -32,6 +33,7 @@ async def _check_user_is_member(
     )
     return (await session.execute(query)).scalar()
 
+
 @dp.command("send_message")
 async def handle_chats(
         websocket: WebSocket,
@@ -51,15 +53,8 @@ async def handle_chats(
         )
         session.add(message)
         await session.commit()
-    await websocket.send_json(
-        {
-            "success": True,
-            "message": "Message sent",
-            "request_id": request_id,
-            "command": "send_message",
-            "data": message.as_dict()
-        },
-    )
+
+    return message.as_dict()
 
 
 @dp.command("send_photo")
@@ -70,12 +65,7 @@ async def handle_chats(
         request_id: t.Any = None,
 ):
     async with db_helper.session() as session:
-        query = sa.select(sa.exists().where(
-            Member.user_id == user.id,
-            Member.conversation_id == payload.conversation_id,
-            Member.deleted.is_(False),
-        ))
-        checking = (await session.execute(query)).scalar()
+        checking = _check_user_is_member(session, user.id, payload.conversation_uuid)
         if checking is False:
             pass
 
