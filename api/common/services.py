@@ -4,13 +4,12 @@ import typing as t
 from uuid import uuid4
 
 import aiofiles
-from fastapi import UploadFile
 
 from models import File
 from resources.enums import FileType
 from resources.services import BaseHTTPService
 from utils.storages import storage
-from .schemas import UpdateFileSchema
+from .schemas import UpdateFileSchema, CreateFileSchema
 
 UPLOAD_DIR = "media"
 ALLOWED_PHOTO_EXTS = {".jpg", ".jpeg", ".png", ".gif", ".webp"}
@@ -31,11 +30,11 @@ class CommonService(BaseHTTPService):
 
     async def create_file(
             self,
-            files: t.List[UploadFile],
+            schema: CreateFileSchema,
     ) -> t.List[File]:
         user = await self.get_user(rais_exception=True)
         objects = []
-        for file in files:
+        for file in schema.files:
             _, ext = os.path.splitext(file.filename)
             ext = ext.lower()
             unique_filename = f"{uuid4()}{ext}"
