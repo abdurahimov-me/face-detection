@@ -24,7 +24,7 @@ def get_token_payload_or_none(
 
         if credentials:
             payload = decode_jwt(credentials.credentials)
-            return Payload.from_dict(**payload)
+            return Payload.from_dict(payload)
         return None
 
     except jwt.ExpiredSignatureError:

@@ -19,7 +19,7 @@ async def health():
     dependencies=[Depends(get_token_payload)]
 )
 async def create_file(
-        service: services.CommonService.annotated("db"),
+        service: services.CommonService.annotated("db", "payload"),
         file: UploadFile = File(...),
 ):
     return await service.create_file(file)
