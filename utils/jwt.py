@@ -1,20 +1,22 @@
-from dataclasses import dataclass
 from datetime import timedelta, datetime
 from functools import cached_property
 from typing import Optional, Any, Union
 
 import jwt
+from pydantic import BaseModel, Field, ConfigDict
 
 from config import JWT_SETTINGS
 from .utility import now
 
 
-@dataclass(frozen=True, slots=True)
-class Payload:
+class Payload(BaseModel):
     iat: datetime
     exp: datetime
-    sub: str
-    id: int
+    sub: str = ""
+    user_id: int
+    tenant: str = Field(alias="schema_name")
+
+    model_config = ConfigDict(populate_by_name=True)
 
 
 def encode_jwt(
