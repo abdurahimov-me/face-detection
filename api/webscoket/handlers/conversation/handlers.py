@@ -103,7 +103,7 @@ async def handle_chats(
             .limit(20)
         )
 
-        if direction == "up":
+        if direction == "up" and cursor:
             stmt = (
                 base_stmt
                 .where(Message.id < cursor)
@@ -113,7 +113,7 @@ async def handle_chats(
             prev_cursor = result[-1]["id"] if len(result) == 20 else None
             next_cursor = cursor
 
-        elif direction == "down":
+        elif direction == "down" and cursor:
             stmt = (
                 base_stmt
                 .where(Message.id >= cursor)
