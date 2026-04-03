@@ -4,11 +4,12 @@ import sqlalchemy as sa
 from fastapi import WebSocket
 
 from config.db import db_helper
-from models import User, Member, Message, MessageRead, Conversation
+from models import User, Message, MessageRead, Conversation
 from resources.managers.ws.dispatcher import WSDispatcher
 from . import schemas
 
 dp = WSDispatcher()
+
 
 @dp.command("get_messages")
 async def handle_chats(
@@ -118,17 +119,12 @@ async def handle_chats(
                 result = list(reversed(result))
                 prev_cursor = result[0]["id"] - 1 if len(result) == 20 else None
                 next_cursor = None
-
-    data = schemas.ResponseMessageModel(
-        request_id=request_id,
-        command="get_messages",
+    return dict(
         messages=result,
         next_cursor=next_cursor,
         prev_cursor=prev_cursor,
         unread_count=unread_count,
-    ).model_dump_json()
-
-    await websocket.send_text(data)
+    )
 
 
 @dp.command("mark_as_read")
