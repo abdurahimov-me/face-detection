@@ -22,7 +22,7 @@ async def create_file(
         service: services.CommonService.annotated("db", "payload"),
         schema: schemas.CreateFileSchema.as_form,
 ):
-    return await service.create_file(files)
+    return await service.create_file(schema)
 
 
 @router.put(
