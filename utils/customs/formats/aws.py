@@ -2,7 +2,7 @@ from config.settings import AWS_SETTINGS, APP_SETTINGS
 from .base import BaseFormat
 
 
-class AWSFormat(BaseFormat):
+class AWSFormat(str, BaseFormat):
     base_url = f'{AWS_SETTINGS.CDN_DOMAIN}/{APP_SETTINGS.MEDIA_URL}'
     json_schema = {
         "type": "string", "format": "string",
