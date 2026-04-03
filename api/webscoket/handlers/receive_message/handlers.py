@@ -95,6 +95,7 @@ async def handle_chats(
             reply_id=payload.reply_id,
             type=payload.type
         )
+        session.add(msg)
         await session.flush()
 
         files = []
