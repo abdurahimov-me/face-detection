@@ -16,7 +16,6 @@ async def handle_chats(
         websocket: WebSocket,
         payload: schemas.GetMessagesModel,
         user: User,
-        request_id: t.Any = None,
 ):
     async with db_helper.session() as session:
         cursor = payload.cursor
