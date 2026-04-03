@@ -42,8 +42,9 @@ async def handle_chats(
 
         unread_count = await session.scalar(
             sa.select(sa.func.count(Message.id))
+            .join(Conversation, Conversation.id == Message.conversation_id)
             .where(
-                Message.conversation_id == payload.conversation_id,
+                Conversation.uuid == payload.conversation_uuid,
                 Message.deleted.is_(False),
                 Message.sender_id != user.id,
                 ~sa.exists().where(
@@ -66,8 +67,9 @@ async def handle_chats(
                 User.user_id,
             )
             .join(User, User.id == Message.sender_id)
+            .join(Conversation, Conversation.id == Message.conversation_id)
             .where(
-                Message.conversation_id == payload.conversation_id,
+                Conversation.uuid == payload.conversation_uuid,
                 Message.deleted.is_(False),
             )
             .limit(20)
