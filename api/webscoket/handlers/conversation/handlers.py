@@ -24,10 +24,11 @@ async def handle_chats(
         if cursor is None:
             first_unread = await session.scalar(
                 sa.select(sa.func.min(Message.id))
+                .join(Conversation, Conversation.id == Message.conversation_id)
                 .where(
-                    Message.conversation_id == payload.conversation_id,
                     Message.deleted.is_(False),
                     Message.sender_id != user.id,
+                    Conversation.uuid == payload.conversation_uuid,
                     ~sa.exists().where(
                         sa.and_(
                             MessageRead.message_id == Message.id,
