@@ -8,5 +8,8 @@ class FernetEncrypt(BaseFormat):
     @classmethod
     def validate(cls, v=None, *args, **kwargs):
         if v:
-            return fernet.decrypt(v)
+            try:
+                return fernet.decrypt(v)
+            except Exception:
+                return None
         return None
