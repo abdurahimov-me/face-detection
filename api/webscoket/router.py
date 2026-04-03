@@ -24,14 +24,6 @@ __ws_dispatchers__ = WSDispatchers(
 )
 
 
-@router.get("/{user_id}/{tenant}")
-async def user_websocket(
-        ws: WebSocket,
-        user_id: int,
-        tenant: str,
-):
-    return "salom"
-
 
 @router.websocket("/{user_id}/{tenant}")
 async def user_websocket(
