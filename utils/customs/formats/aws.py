@@ -3,7 +3,7 @@ from .base import BaseFormat
 
 
 class AWSFormat(str, BaseFormat):
-    base_url = f'{AWS_SETTINGS.CDN_DOMAIN}/{APP_SETTINGS.MEDIA_URL}'
+    base_url = f'{AWS_SETTINGS.CDN_URL}/{APP_SETTINGS.MEDIA_URL}'
     json_schema = {
         "type": "string", "format": "string",
         "description": "URL to the file.", 'example': f'{base_url}/profiles/image.png'
