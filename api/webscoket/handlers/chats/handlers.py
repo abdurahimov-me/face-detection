@@ -16,7 +16,6 @@ dp = WSDispatcher()
 async def handle_chats(
         websocket: WebSocket,
         user: User,
-        request_id: t.Any = None,
 ):
     async with db_helper.session() as session:
 
