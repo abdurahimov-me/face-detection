@@ -11,6 +11,7 @@ from pydantic import ValidationError, BaseModel
 from config.redis import cache
 from config.redis.pubsub import pubsub as pubsub_redis
 from resources.managers.ws.connections import connections
+from .schemas import BaseWSResponse
 
 logger = logging.getLogger(__name__)
 
@@ -78,6 +79,13 @@ class ChatWebSocketManager:
                 kwargs[name] = await self._resolve_depends(param.default)
 
         data = await func(websocket, **kwargs)
+        res = BaseWSResponse(
+            success=True,
+            request_id=context.get("request_id"),
+            command=command,
+            data=data,
+        )
+        return await websocket.send_json(res.model_dump())
 
     def get_command_func(self, command: str) -> t.Optional[t.Callable]:
         return self._commands.get(command)
