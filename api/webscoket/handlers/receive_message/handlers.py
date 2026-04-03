@@ -1,4 +1,3 @@
-import typing as t
 from uuid import UUID
 
 import sqlalchemy as sa
