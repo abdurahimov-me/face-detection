@@ -45,7 +45,7 @@ async def handle_chats(
     async with db_helper.session() as session:
         checking = _check_user_is_member(session, user.id, payload.conversation_uuid)
         if checking is False:
-            return websocket.send_json(
+            return await websocket.send_json(
                 {'type': 'error', 'message': "You are not a member of this conversation"}
             )
         message = Message(
