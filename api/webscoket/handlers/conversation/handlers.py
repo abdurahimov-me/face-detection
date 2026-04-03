@@ -25,7 +25,6 @@ async def handle_chats(
             Member.deleted.is_(False),
         ))
         checking = (await session.execute(query)).scalar()
-        print(checking)
         if checking is False:
             pass
 
