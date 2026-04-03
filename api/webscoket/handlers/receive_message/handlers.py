@@ -63,7 +63,6 @@ async def handle_chats(
         websocket: WebSocket,
         payload: schemas.SendPhotosModel,
         user: User,
-        request_id: t.Any = None,
 ):
     async with db_helper.session() as session:
         checking = _check_user_is_member(session, user.id, payload.conversation_uuid)
