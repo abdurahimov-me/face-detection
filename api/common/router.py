@@ -1,5 +1,6 @@
-from fastapi import APIRouter, UploadFile, File
+from fastapi import APIRouter, UploadFile, File, Depends
 
+from resources.depends import get_token_payload
 from . import services, schemas
 
 router = APIRouter(
@@ -13,7 +14,10 @@ async def health():
     return {'status': 'ok'}
 
 
-@router.post('/upload-file')
+@router.post(
+    '/upload-file',
+    dependencies=[Depends(get_token_payload)]
+)
 async def create_file(
         service: services.CommonService.annotated("db"),
         file: UploadFile = File(...),
@@ -21,7 +25,10 @@ async def create_file(
     return await service.create_file(file)
 
 
-@router.put('/update-file')
+@router.put(
+    '/update-file',
+    dependencies=[Depends(get_token_payload)]
+)
 async def update_file(
         service: services.CommonService.annotated("db"),
         schema: schemas.UpdateFileSchema.as_form,
