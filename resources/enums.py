@@ -20,6 +20,7 @@ class FileType(IntEnum):
 
 class MessageType(IntEnum):
     TEXT = 1
-    IMAGE = 2
+    PHOTO = 2
     AUDIO = 3
-    PHOTO = 4
+    DOCUMENT = 4
+    VIDEO = 5
