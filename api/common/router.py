@@ -2,6 +2,7 @@ from fastapi import APIRouter, UploadFile, File, Depends
 
 from resources.depends import get_token_payload
 from . import services, schemas
+import typing as t
 
 router = APIRouter(
     prefix='/common',
@@ -20,9 +21,9 @@ async def health():
 )
 async def create_file(
         service: services.CommonService.annotated("db", "payload"),
-        file: UploadFile = File(...),
+        files: t.Annotated[t.List[UploadFile], File(...)],
 ):
-    return await service.create_file(file)
+    return await service.create_file(files)
 
 
 @router.put(

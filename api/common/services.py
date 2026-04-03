@@ -1,5 +1,6 @@
 import io
 import os
+import typing as t
 from uuid import uuid4
 
 import aiofiles
@@ -30,29 +31,33 @@ class CommonService(BaseHTTPService):
 
     async def create_file(
             self,
-            file: UploadFile,
-    ) -> File:
+            files: t.List[UploadFile],
+    ) -> t.List[File]:
         user = await self.get_user(rais_exception=True)
-        _, ext = os.path.splitext(file.filename)
-        ext = ext.lower()
-        unique_filename = f"{uuid4()}{ext}"
-        file_type = get_file_type(ext)
-        file_path = f"files/{unique_filename}"
+        objects = []
+        for file in files:
+            _, ext = os.path.splitext(file.filename)
+            ext = ext.lower()
+            unique_filename = f"{uuid4()}{ext}"
+            file_type = get_file_type(ext)
+            file_path = f"files/{unique_filename}"
 
-        content = io.BytesIO(await file.read())
-        await storage.async_upload_fileobj(content, file_path)
+            content = io.BytesIO(await file.read())
+            await storage.async_upload_fileobj(content, file_path)
 
-        db_file = File(
-            file=file_path,
-            ext=ext.lstrip("."),
-            filename=file.filename,
-            size=file.size,
-            type=file_type,
-            user_id=user.id,
-        )
-        self.add(db_file)
+            db_file = File(
+                file=file_path,
+                ext=ext.lstrip("."),
+                filename=file.filename,
+                size=file.size,
+                type=file_type,
+                user_id=user.id,
+            )
+            objects.append(db_file)
+
+        self.add_all(objects)
         await self.commit()
-        return db_file
+        return objects
 
     async def update_file(
             self,
