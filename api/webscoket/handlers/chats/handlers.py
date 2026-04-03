@@ -39,7 +39,7 @@ async def handle_chats(
                     request_id=request_id,
                 ).model_dump_json()
             )
-            return
+            return []
 
         last_msg_subq = (
             sa.select(
@@ -135,24 +135,19 @@ async def handle_chats(
             .group_by(Message.conversation_id)
         )
         first_unread_res = (await session.execute(first_unread_stmt)).mappings().all()
-        first_unread_map = {r["conversation_id"]: r["unread_message_id"] for r in first_unread_res}
+    first_unread_map = {r["conversation_id"]: r["unread_message_id"] for r in first_unread_res}
 
-        result = []
-        for conv in conversations:
-            conv_id = conv["id"]
-            result.append({
-                **dict(conv),
-                "unread": unread_map.get(conv_id, 0),
-                "members": members_map.get(conv_id, 0),
-                "online": False,
-                "unread_message_id": first_unread_map.get(conv_id),
-                "last_message": last_messages.get(conv_id),
+    result = []
+    for conv in conversations:
+        conv_id = conv["id"]
+        result.append({
+            **dict(conv),
+            "unread": unread_map.get(conv_id, 0),
+            "members": members_map.get(conv_id, 0),
+            "online": False,
+            "unread_message_id": first_unread_map.get(conv_id),
+            "last_message": last_messages.get(conv_id),
 
-            })
+        })
 
-    data = schemas.ConversationModelResponse(
-        data=result,
-        command="get_chats",
-        request_id=request_id,
-    ).model_dump_json()
-    await websocket.send_text(data)
+    return result
