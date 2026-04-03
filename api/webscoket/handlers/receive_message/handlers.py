@@ -7,7 +7,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from config.db import db_helper
 from models import User, Member, Message, Conversation, SecondaryFile
-from resources.enums import FileType, MessageType
 from resources.managers.ws.dispatcher import WSDispatcher
 from . import schemas
 
