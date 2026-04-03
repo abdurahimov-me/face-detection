@@ -6,7 +6,8 @@ from fastapi import WebSocket
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from config.db import db_helper
-from models import User, Member, Message, Conversation
+from models import User, Member, Message, Conversation, SecondaryFile
+from resources.enums import FileType
 from resources.managers.ws.dispatcher import WSDispatcher
 from . import schemas
 
@@ -68,14 +69,24 @@ async def handle_chats(
         checking = _check_user_is_member(session, user.id, payload.conversation_uuid)
         if checking is False:
             pass
-
-        session.add(Message(
+        msg = Message(
             text=payload.text,
             sender_id=user.id,
             conversation_id=payload.conversation_id,
             reply_id=payload.reply_id,
-        ))
+            type=FileType.PHOTO
+        )
+        await session.flush()
+
+        files = []
+        for file_id in payload.files:
+            files.append(SecondaryFile(
+                message_id=msg.id,
+                file_id=file_id,
+            ))
+
+        await session.add_all(files)
+
         await session.commit()
-    await websocket.send_json(
-        {"success": True, "message": "Message sent", "request_id": request_id, "command": "send_message"},
-    )
+
+    return msg.as_dict()
