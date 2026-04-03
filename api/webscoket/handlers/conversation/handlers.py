@@ -140,7 +140,9 @@ async def handle_chats(
         )
 
         if not conversation_id:
-            return
+            return {
+                "marked": 0
+            }
 
         unread_ids = (await session.execute(
             sa.select(Message.id)
