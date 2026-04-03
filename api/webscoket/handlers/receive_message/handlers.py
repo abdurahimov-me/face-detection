@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from config.db import db_helper
 from models import User, Member, Message, Conversation, SecondaryFile
-from resources.enums import FileType
+from resources.enums import FileType, MessageType
 from resources.managers.ws.dispatcher import WSDispatcher
 from . import schemas
 
@@ -72,10 +72,10 @@ async def handle_chats(
     return message.as_dict()
 
 
-@dp.command("send_photo")
+@dp.command("send_file")
 async def handle_chats(
         websocket: WebSocket,
-        payload: schemas.SendPhotosModel,
+        payload: schemas.SendFilesModel,
         user: User,
 ):
     async with db_helper.session() as session:
@@ -94,7 +94,7 @@ async def handle_chats(
             sender_id=user.id,
             conversation_id=conversation_id,
             reply_id=payload.reply_id,
-            type=FileType.PHOTO
+            type=payload.type
         )
         await session.flush()
 
