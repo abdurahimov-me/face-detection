@@ -1,3 +1,6 @@
+import typing as t
+from uuid import UUID
+
 import sqlalchemy as sa
 from fastapi import WebSocket
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -10,7 +13,15 @@ from . import schemas
 
 dp = WSDispatcher()
 
-CHAT_ID_TTL = 20 * 60
+
+async def _get_chat_id(
+        session: AsyncSession,
+        chat_uuid: UUID
+) -> t.Tuple[t.Optional[str], t.Optional[int]]:
+    conversation_id = await Conversation.get_conversation_id(session, chat_uuid)
+    if not conversation_id:
+        return 'Chat not found', conversation_id
+    return None, conversation_id
 
 
 async def _check_user_is_member(
@@ -39,7 +50,11 @@ async def handle_chats(
         user: User,
 ):
     async with db_helper.session() as session:
-        conversation_id = await Conversation.get_conversation_id(session, payload.conversation_uuid)
+        error, conversation_id = await _get_chat_id(session, payload.conversation_uuid)
+        if error:
+            return await websocket.send_json(
+                {'type': 'error', 'message': error}
+            )
         checking = await _check_user_is_member(session, user.id, conversation_id)
         if checking is False:
             return await websocket.send_json(
@@ -64,7 +79,11 @@ async def handle_chats(
         user: User,
 ):
     async with db_helper.session() as session:
-        conversation_id = await Conversation.get_conversation_id(session, payload.conversation_uuid)
+        error, conversation_id = await _get_chat_id(session, payload.conversation_uuid)
+        if error:
+            return await websocket.send_json(
+                {'type': 'error', 'message': error}
+            )
         checking = await _check_user_is_member(session, user.id, conversation_id)
         if checking is False:
             return await websocket.send_json(
