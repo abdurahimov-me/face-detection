@@ -31,13 +31,6 @@ async def handle_chats(
         conv_ids = (await session.execute(conv_stmt)).scalars().all()
 
         if not conv_ids:
-            await websocket.send_text(
-                schemas.ConversationModelResponse(
-                    data=[],
-                    command="get_chats",
-                    request_id=request_id,
-                ).model_dump_json()
-            )
             return []
 
         last_msg_subq = (
