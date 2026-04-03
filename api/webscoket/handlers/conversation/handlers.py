@@ -4,7 +4,7 @@ import sqlalchemy as sa
 from fastapi import WebSocket
 
 from config.db import db_helper
-from models import User, Message, MessageRead, Conversation
+from models import User, Message, MessageRead, Conversation, SecondaryFile, File
 from resources.managers.ws.dispatcher import WSDispatcher
 from . import schemas
 
@@ -37,7 +37,6 @@ async def handle_chats(
                     )
                 )
             )
-
             cursor = first_unread
 
         unread_count = await session.scalar(
@@ -56,6 +55,25 @@ async def handle_chats(
             )
         )
 
+        files_subquery = (
+            sa.select(
+                SecondaryFile.message_id,
+                sa.func.json_agg(
+                    sa.func.json_build_object(
+                        "id", File.id,
+                        "file", File.file,
+                        "ext", File.ext,
+                        "filename", File.filename,
+                        "size", File.size,
+                        "user_id", File.user_id,
+                    )
+                ).label("files")
+            )
+            .join(File, File.id == SecondaryFile.file_id)
+            .group_by(SecondaryFile.message_id)
+            .subquery()
+        )
+
         base_stmt = (
             sa.select(
                 Message.id,
@@ -64,10 +82,13 @@ async def handle_chats(
                 Message.created_at,
                 Message.reply_id,
                 Message.conversation_id,
+                Message.type,
                 User.user_id,
+                sa.func.coalesce(files_subquery.c.files, sa.cast(sa.text("'[]'"), sa.JSON)).label("files"),
             )
             .join(User, User.id == Message.sender_id)
             .join(Conversation, Conversation.id == Message.conversation_id)
+            .outerjoin(files_subquery, files_subquery.c.message_id == Message.id)
             .where(
                 Conversation.uuid == payload.conversation_uuid,
                 Message.deleted.is_(False),
@@ -76,39 +97,22 @@ async def handle_chats(
         )
 
         if direction == "up" and cursor:
-            stmt = (
-                base_stmt
-                .where(Message.id < cursor)
-                .order_by(Message.id.desc())
-            )
+            stmt = base_stmt.where(Message.id < cursor).order_by(Message.id.desc())
             result = (await session.execute(stmt)).mappings().all()
             prev_cursor = result[-1]["id"] if len(result) == 20 else None
             next_cursor = cursor
 
         elif direction == "down" and cursor:
-            stmt = (
-                base_stmt
-                .where(Message.id >= cursor)
-                .order_by(Message.id.asc())
-            )
+            stmt = base_stmt.where(Message.id >= cursor).order_by(Message.id.asc())
             result = (await session.execute(stmt)).mappings().all()
             next_cursor = result[-1]["id"] + 1 if len(result) == 20 else None
             prev_cursor = cursor
 
         else:
             if cursor is not None:
-                up_stmt = (
-                    base_stmt
-                    .where(Message.id < cursor)
-                    .order_by(Message.id.desc())
-                    .limit(10)
-                )
-                down_stmt = (
-                    base_stmt
-                    .where(Message.id >= cursor)
-                    .order_by(Message.id.asc())
-                    .limit(10)
-                )
+                up_stmt = base_stmt.where(Message.id < cursor).order_by(Message.id.desc()).limit(10)
+                down_stmt = base_stmt.where(Message.id >= cursor).order_by(Message.id.asc()).limit(10)
+
                 up_result = (await session.execute(up_stmt)).mappings().all()
                 down_result = (await session.execute(down_stmt)).mappings().all()
 
@@ -121,6 +125,7 @@ async def handle_chats(
                 result = list(reversed(result))
                 prev_cursor = result[0]["id"] - 1 if len(result) == 20 else None
                 next_cursor = None
+
     return schemas.ResponseMessageModel(
         prev_cursor=prev_cursor,
         next_cursor=next_cursor,

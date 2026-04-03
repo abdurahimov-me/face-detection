@@ -7,6 +7,18 @@ from pydantic import BaseModel
 from utils.customs import DateTime
 
 
+class FileModel(BaseModel):
+    id: int
+    file: str
+    ext: str
+    filename: str
+    size: int
+    user_id: int
+
+    class Config:
+        from_attributes = True
+
+
 class MessageModel(BaseModel):
     id: int = 1
     created_at: DateTime = datetime.now()
@@ -17,6 +29,9 @@ class MessageModel(BaseModel):
     read: bool = False
     conversation_id: int = 1
     type: int = 1
+
+    class Config:
+        from_attributes = True
 
 
 class ConversationModel(BaseModel):

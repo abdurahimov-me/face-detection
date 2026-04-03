@@ -2,7 +2,7 @@ import typing as t
 from uuid import UUID
 from pydantic import BaseModel, Field
 
-from api.shared.schemas import MessageModel
+from api.shared.schemas import MessageModel, FileModel
 
 
 class SendMessageModel(BaseModel):
@@ -25,6 +25,7 @@ class MarkAsReadModel(BaseModel):
 
 class ChatMessageModel(MessageModel):
     user_id: int
+    files: t.Optional[t.List[FileModel]] = None
 
 
 class ResponseMessageModel(BaseModel):
