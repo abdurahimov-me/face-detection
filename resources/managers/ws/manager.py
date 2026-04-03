@@ -85,7 +85,7 @@ class ChatWebSocketManager:
             command=command,
             data=data,
         )
-        return await websocket.send_json(res.model_dump(mode="json"))
+        return await websocket.send_text(res.model_dump_json())
 
     def get_command_func(self, command: str) -> t.Optional[t.Callable]:
         return self._commands.get(command)
