@@ -15,7 +15,7 @@ async def health():
 
 
 @router.post(
-    '/upload-file',
+    '/upload-file/',
     dependencies=[Depends(get_token_payload)]
 )
 async def create_file(
@@ -26,7 +26,7 @@ async def create_file(
 
 
 @router.put(
-    '/update-file',
+    '/update-file/',
     dependencies=[Depends(get_token_payload)]
 )
 async def update_file(
