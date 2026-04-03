@@ -77,15 +77,23 @@ class ChatWebSocketManager:
 
             elif isinstance(param.default, fastapi_params.Depends):
                 kwargs[name] = await self._resolve_depends(param.default)
-
-        data = await func(websocket, **kwargs)
-        res = BaseWSResponse(
-            success=True,
-            request_id=context.get("request_id"),
-            command=command,
-            data=data,
-        )
-        return await websocket.send_text(res.model_dump_json())
+        try:
+            data = await func(websocket, **kwargs)
+            res = BaseWSResponse(
+                success=True,
+                request_id=context.get("request_id"),
+                command=command,
+                data=data,
+            )
+            return await websocket.send_text(res.model_dump_json())
+        except Exception as e:
+            return await websocket.send_json(
+                {
+                    "success": False,
+                    "type": "error",
+                    "message": str(e),
+                }
+            )
 
     def get_command_func(self, command: str) -> t.Optional[t.Callable]:
         return self._commands.get(command)
@@ -101,7 +109,13 @@ class ChatWebSocketManager:
             task.cancel()
 
     async def send_error(self, websocket: WebSocket, message: str):
-        await websocket.send_json({'type': 'error', 'message': message})
+        await websocket.send_json(
+            {
+                'success': False,
+                'type': 'error',
+                'message': message
+            }
+        )
 
     async def connect(self, conn_id: str, websocket: WebSocket):
         await websocket.accept()
