@@ -1,6 +1,7 @@
-from pydantic import BaseModel
-from fastapi import UploadFile
 import typing as t
+
+from fastapi import UploadFile
+from pydantic import BaseModel
 
 from resources.enums import FileType
 from utils.customs import as_form
@@ -10,7 +11,6 @@ from utils.customs import as_form
 class UpdateFileSchema(BaseModel):
     file_id: int
     file: UploadFile
-
 
 
 @as_form
