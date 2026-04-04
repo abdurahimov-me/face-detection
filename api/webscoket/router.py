@@ -25,7 +25,6 @@ __ws_dispatchers__ = WSDispatchers(
         chats.dp,
         conversation.dp,
         receive_message.dp,
-
     )
 )
 
