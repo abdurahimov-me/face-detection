@@ -134,7 +134,6 @@ async def handle_chats(
             "online": False,
             "unread_message_id": first_unread_map.get(conv_id),
             "last_message": last_messages.get(conv_id),
-
         })
 
     return result
