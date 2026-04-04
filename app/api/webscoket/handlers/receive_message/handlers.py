@@ -68,8 +68,7 @@ async def handle_chats(
         )
         session.add(message)
         await session.commit()
-    await chat_ws_manager.send_to_conv(str(conversation_id), message.as_dict(), exclude_conn=user.conn_id)
-
+    await chat_ws_manager.send_to_conv(conversation_id, message.as_dict(), exclude_conn=user.conn_id)
     return message.as_dict()
 
 
