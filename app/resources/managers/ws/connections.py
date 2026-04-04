@@ -9,6 +9,9 @@ class ConnectionManager:
     connections: t.Dict[str, WebSocket] = field(default_factory=dict)
     channels: t.DefaultDict[str, t.Set[str]] = field(default_factory=lambda: __import__('collections').defaultdict(set))
 
+    def check_connection(self, conn_id: str) -> bool:
+        return conn_id in self.connections
+
     async def connect(self, conn_id: str, ws: WebSocket):
         await ws.accept()
         self.connections[conn_id] = ws
@@ -19,7 +22,8 @@ class ConnectionManager:
             members.discard(conn_id)
 
     def join_channel(self, conn_id: str, channel_id: str):
-        self.channels[channel_id].add(conn_id)
+        if self.check_connection(conn_id):
+            self.channels[channel_id].add(conn_id)
 
     def leave_channel(self, conn_id: str, channel_id: str):
         self.channels[channel_id].discard(conn_id)
