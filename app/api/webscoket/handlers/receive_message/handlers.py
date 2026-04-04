@@ -68,7 +68,12 @@ async def handle_chats(
         )
         session.add(message)
         await session.commit()
-    await chat_ws_manager.send_to_conv(conversation_id, message.as_dict(), exclude_conn=user.conn_id)
+    await chat_ws_manager.send_to_conv(
+        conversation_id,
+        msg.as_dict(),
+        "new_message",
+        user.conn_id
+    )
     return message.as_dict()
 
 
@@ -101,5 +106,10 @@ async def handle_chats(
         session.add_all(files)
 
         await session.commit()
-    await chat_ws_manager.send_to_conv(str(conversation_id), msg.as_dict())
+    await chat_ws_manager.send_to_conv(
+        conversation_id,
+        msg.as_dict(),
+        "new_message",
+        user.conn_id
+    )
     return msg.as_dict()
