@@ -18,7 +18,7 @@ async def _get_chat_id(
         session: AsyncSession,
         chat_uuid: UUID
 ) -> int:
-    conversation_id = await Conversation.get_conversation_field(session, chat_uuid, "uuid")
+    conversation_id = await Conversation.get_conversation_field(session, chat_uuid, "id")
     if not conversation_id:
         raise WSException(f"No conversation with uuid: {chat_uuid}")
     return conversation_id
