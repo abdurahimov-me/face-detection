@@ -96,4 +96,4 @@ async def user_websocket(
             )
 
     except WebSocketDisconnect:
-        await chat_ws_manager.disconnect(conn_id)
+        return await chat_ws_manager.disconnect(conn_id)
