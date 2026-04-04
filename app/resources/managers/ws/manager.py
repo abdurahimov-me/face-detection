@@ -90,7 +90,7 @@ class ChatWebSocketManager:
         await self.pubsub.publish(
             f"conv:{conv_id}",
             {
-                "conv_id": conv_id,
+                "conv_id": str(conv_id),
                 "data": {
                     "event": event,
                     "data": data,
