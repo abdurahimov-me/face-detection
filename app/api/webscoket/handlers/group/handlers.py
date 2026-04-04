@@ -14,7 +14,7 @@ dp = WSDispatcher()
 async def handle_chats(
         websocket: WebSocket,
         user: User,
-        payload: schemas.StartConversation,
+        payload: schemas.CreateGroup,
 ):
     async with db_helper.session() as session:
         partner_user_id, partner_tenant = payload.partner.split(":")
