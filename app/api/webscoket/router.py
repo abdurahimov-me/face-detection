@@ -97,4 +97,5 @@ async def user_websocket(
             )
 
     except WebSocketDisconnect:
+        logger.info("Web socket disconnected")
         return await chat_ws_manager.disconnect(conn_id)
