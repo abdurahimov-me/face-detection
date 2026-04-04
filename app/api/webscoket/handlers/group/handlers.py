@@ -1,3 +1,4 @@
+import sqlalchemy as sa
 from fastapi import WebSocket
 
 from config.db import db_helper
@@ -17,18 +18,46 @@ async def handle_chats(
         payload: schemas.CreateGroup,
 ):
     async with db_helper.session() as session:
-        partner_user_id, partner_tenant = payload.partner.split(":")
-        partner, _ = await User.repo.db_get_or_create(session, user_id=int(partner_user_id), tenant_id=partner_tenant)
-        partner: User
+        pairs = []
+        for user_fernet in payload.users:
+            user_id, tenant = user_fernet.split(":")
+            pairs.append((int(user_id), tenant))
+        users = await session.execute(
+            sa.select(User).where(
+                sa.tuple_(User.user_id, User.tenant).in_(pairs)
+            )
+        )
+        users = users.scalars().all()
+        existing_map = {
+            (u.user_id, u.tenant): u
+            for u in users
+        }
+
+        to_create = []
+        for user_id, tenant in pairs:
+            if (user_id, tenant) not in existing_map:
+                to_create.append(
+                    User(
+                        user_id=user_id,
+                        tenant=tenant,
+                    )
+                )
+
+        session.add_all(to_create)
+        await session.flush()
+        all_users = users + to_create
+
         chat = Conversation(
             name=" ",
-            type=ConversationType.DIRECT,
+            type=ConversationType.GROUP,
+            owner_id=user.id,
         )
         session.add(chat)
         await session.flush()
-        session.add_all(
-            [Member(user_id=user.id, conversation_id=chat.id), Member(user_id=partner.id, conversation_id=chat.id)]
-        )
+        members = []
+        for u in all_users:
+            members.append(Member(user_id=u.id, conversation_id=chat.id))
+        session.add_all(members)
         await session.commit()
         return {
             "uuid": chat.uuid,

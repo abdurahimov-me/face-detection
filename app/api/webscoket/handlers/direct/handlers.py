@@ -23,6 +23,7 @@ async def handle_chats(
         chat = Conversation(
             name=" ",
             type=ConversationType.DIRECT,
+            owner_id=user.id,
         )
         session.add(chat)
         await session.flush()
