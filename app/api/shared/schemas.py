@@ -24,7 +24,7 @@ class MessageModel(BaseModel):
     created_at: DateTime
     text: t.Optional[str]
     topic_id: t.Optional[int] = None
-    reply_id: t.Optional[int]
+    reply_id: t.Optional[int] = None
     sender_id: int
     read: bool = False
     type: int
