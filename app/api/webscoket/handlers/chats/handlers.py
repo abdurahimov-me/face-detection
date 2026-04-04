@@ -129,6 +129,7 @@ async def handle_chats(
     result = []
     for conv in conversations:
         conv_id = conv["id"]
+        connections_manager.join_channel(user.conn_id, str(conv_id))
         result.append({
             **dict(conv),
             "unread": unread_map.get(conv_id, 0),
