@@ -47,7 +47,7 @@ class Conversation(BaseModel, UUIDMixin, DeletedMixin):
             session: AsyncSession,
             value: t.Union[int, UUID],
             field_name: t.Literal["id", "uuid"],
-    ) -> t.Optional[t.Union[int, UUID]]:
+    ) -> t.Optional[t.Union[int, str]]:
         key = f"conversation_{field_name}:{value}"
         if cached := await cache.get(key):
             return cached
@@ -62,6 +62,6 @@ class Conversation(BaseModel, UUIDMixin, DeletedMixin):
         field_value = row[0] if row else None
 
         if field_value is not None:
-            await cache.set(key, field_value, CHAT_ID_TTL)
+            await cache.set(key, str(field_value), CHAT_ID_TTL)
 
         return field_value
