@@ -48,6 +48,11 @@ class Conversation(BaseModel, UUIDMixin, DeletedMixin):
             value: t.Union[int, UUID],
             field_name: t.Literal["id", "uuid"],
     ) -> t.Optional[t.Union[int, str]]:
+        if isinstance(value, UUID):
+            filter_column = Conversation.uuid
+        else:
+            filter_column = Conversation.id
+
         key = f"conversation_{field_name}:{value}"
         if cached := await cache.get(key):
             return cached
@@ -55,7 +60,7 @@ class Conversation(BaseModel, UUIDMixin, DeletedMixin):
         column = getattr(Conversation, field_name)
         result = await session.execute(
             sa.select(column)
-            .where(column == value if field_name == "id" else column == value)
+            .where(filter_column == value)
             .limit(1)
         )
         row = result.first()
