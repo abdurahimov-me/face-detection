@@ -18,15 +18,11 @@ async def handle_chats(
     async with db_helper.session() as session:
 
         conv_stmt = (
-            sa.select(Conversation.id)
-            # .join(Member, Member.conversation_id == Conversation.id, isouter=True)
-            # .where(
-            #     Member.user_id == user.id,
-            #     Member.deleted.is_(False),
-            #     Conversation.deleted.is_(False),
-            # )
+            sa.select(Member.conversation_id)
+            .where(Member.deleted.is_(False), Member.user_id == user.id)
         )
         conv_ids = (await session.execute(conv_stmt)).scalars().all()
+        print(conv_ids)
 
         if not conv_ids:
             return []
