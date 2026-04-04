@@ -72,7 +72,7 @@ async def handle_chats(
     event_data["conversation_uuid"] = str(payload.conversation_uuid)
     await chat_ws_manager.send_to_conv(
         conversation_id,
-        message.as_dict(),
+        event_data,
         "new_message",
         user.conn_id
     )
