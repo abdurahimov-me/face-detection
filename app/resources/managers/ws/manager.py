@@ -10,6 +10,7 @@ from pydantic import ValidationError, BaseModel
 
 from config.redis.pubsub import pubsub as pubsub_redis
 from utils.exceptions import WSException
+from . import types
 from .connections import ConnectionManager, connections_manager
 from .schemas import BaseWSResponse
 
@@ -82,13 +83,17 @@ class ChatWebSocketManager:
             self,
             conv_id: str,
             data: dict,
+            event: types.EVENTS,
             exclude_conn: str = None,
     ):
         await self.pubsub.publish(
             f"conv:{conv_id}",
             {
                 "conv_id": conv_id,
-                "data": data,
+                "data": {
+                    "event": event,
+                    "data": data,
+                },
                 "exclude_conn": exclude_conn,
             },
         )
