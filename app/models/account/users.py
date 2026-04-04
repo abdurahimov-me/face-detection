@@ -2,12 +2,11 @@ __all__ = (
     'User',
 )
 
-import uuid
-
 import sqlalchemy as sa
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column
 
+from config.redis import cache
 from ..base import BaseModel
 from ..mixinis import DeletedMixin
 
@@ -53,3 +52,11 @@ class User(BaseModel, DeletedMixin):
     def conn_id(self):
         # return uuid.uuid4().hex
         return f"{self.user_id}:{self.tenant}"
+
+    async def mark_as_typing(self):
+        key = f"user_typing:{self.id}"
+        await cache.set(key, True, 5)
+
+    async def mark_as_online(self):
+        key = f"user_online:{self.id}"
+        await cache.set(key, True, 5)

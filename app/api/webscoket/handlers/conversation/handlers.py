@@ -4,7 +4,6 @@ import sqlalchemy as sa
 from fastapi import WebSocket
 
 from config.db import db_helper
-from config.redis import cache
 from models import User, Message, MessageRead, Conversation, SecondaryFile, File
 from resources.managers.ws.dispatcher import WSDispatcher
 from . import schemas
@@ -191,7 +190,7 @@ async def handle_chats(
         websocket: WebSocket,
         user: User,
 ):
-    await cache.set(f"typing:{user.id}", True, 5)
+    await user.mark_as_typing()
     return {
         "typing": True
     }
