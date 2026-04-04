@@ -21,15 +21,14 @@ class FileModel(BaseModel):
 
 
 class MessageModel(BaseModel):
-    id: int = 1
-    created_at: DateTime = datetime.now()
-    text: str = "Brodarim nima gap"
-    topic_id: t.Optional[int] = None
-    reply_id: t.Optional[int] = None
-    sender_id: int = 1
+    id: int
+    created_at: DateTime
+    text: t.Optional[str]
+    topic_id: t.Optional[int]
+    reply_id: t.Optional[int]
+    sender_id: int
     read: bool = False
-    conversation_id: int = 1
-    type: int = 1
+    type: int
 
     class Config:
         from_attributes = True
