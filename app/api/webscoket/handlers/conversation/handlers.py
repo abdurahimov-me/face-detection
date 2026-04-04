@@ -84,7 +84,13 @@ async def handle_chats(
                 Message.conversation_id,
                 Message.type,
                 User.user_id,
-                Message.read,
+                sa.select(
+                    sa.exists().where(
+                        sa.and_(
+                            MessageRead.message_id == Message.id,
+                        )
+                    )
+                ).scalar_subquery().label("read"),
                 sa.func.coalesce(files_subquery.c.files, sa.cast(sa.text("'[]'"), sa.JSON)).label("files"),
             )
             .join(User, User.id == Message.sender_id)
