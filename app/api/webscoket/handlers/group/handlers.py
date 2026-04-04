@@ -67,7 +67,7 @@ async def handle_chats(
             "type": chat.type,
             "owner_id": chat.owner_id,
             "unread": 0,
-            "members": len(all_users),
+            "members": len(all_users) + 1,
             "online": False,
             "unread_message_id": None,
             "last_message": None,
