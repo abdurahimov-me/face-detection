@@ -52,12 +52,9 @@ async def user_websocket(
     if token := ws.query_params.get("token"):
         text, payload = _parse_token(token)
         if text:
-            return await chat_ws_manager.send_error(websocket=ws, message=text)
-
+            return await ws.close(code=1008)
     else:
-        return await chat_ws_manager.send_error(websocket=ws, message='Token is missing')
-
-    print(payload)
+        return await ws.close(code=1008)
 
     tenant = payload.tenant
     user_id = payload.user_id

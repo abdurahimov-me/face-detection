@@ -2,6 +2,8 @@ __all__ = (
     'User',
 )
 
+import uuid
+
 import sqlalchemy as sa
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column
@@ -49,4 +51,5 @@ class User(BaseModel, DeletedMixin):
 
     @property
     def conn_id(self):
+        # return uuid.uuid4().hex
         return f"{self.user_id}:{self.tenant}"

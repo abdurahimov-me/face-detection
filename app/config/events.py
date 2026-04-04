@@ -1,8 +1,10 @@
 
 
 async def on_startup():
-    pass
+    from resources.managers.ws.manager import chat_ws_manager
+    await chat_ws_manager.start()
 
 
 async def on_shutdown():
-    pass
+    from resources.managers.ws.manager import chat_ws_manager
+    await chat_ws_manager.stop()
