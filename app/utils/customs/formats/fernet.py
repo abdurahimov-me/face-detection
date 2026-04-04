@@ -12,6 +12,6 @@ class FernetEncrypt(str, BaseFormat):
         if v:
             try:
                 return fernet.decrypt(v)
-            except Exception:
-                return None
+            except Exception as e:
+                raise ValueError(e)
         return None
