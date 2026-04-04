@@ -4,8 +4,9 @@ from fastapi import WebSocket
 from config.db import db_helper
 from models import Conversation, Message, MessageRead, Member
 from models import User
-from resources.managers.ws.dispatcher import WSDispatcher
 from resources.managers.ws.connections import connections_manager
+from resources.managers.ws.dispatcher import WSDispatcher
+
 dp = WSDispatcher()
 
 
