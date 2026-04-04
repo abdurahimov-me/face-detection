@@ -30,13 +30,13 @@ async def _check_user_is_member(
         conversation_id: int,
 ):
     member_exists = sa.exists().where(
-        Member.conversation_id == conversation_id,
+        Member.conversation_id == int(conversation_id),
         Member.user_id == user_id,
         Member.deleted.is_(False),
     )
 
     owner_exists = sa.exists().where(
-        Conversation.id == conversation_id,
+        Conversation.id == int(conversation_id),
         Conversation.owner_id == user_id,
         Conversation.deleted.is_(False),
     )
