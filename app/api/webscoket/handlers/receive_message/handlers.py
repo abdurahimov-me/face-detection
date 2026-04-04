@@ -7,6 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from config.db import db_helper
 from models import User, Member, Message, Conversation, SecondaryFile
 from resources.managers.ws.dispatcher import WSDispatcher
+from resources.managers.ws.manager import chat_ws_manager
 from utils.exceptions import WSException
 from . import schemas
 
@@ -67,6 +68,7 @@ async def handle_chats(
         )
         session.add(message)
         await session.commit()
+        await chat_ws_manager.send_to_conv(str(conversation_id), message.as_dict())
 
     return message.as_dict()
 
