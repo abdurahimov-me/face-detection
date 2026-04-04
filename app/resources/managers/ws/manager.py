@@ -10,7 +10,7 @@ from pydantic import ValidationError, BaseModel
 
 from config.redis.pubsub import pubsub as pubsub_redis
 from utils.exceptions import WSException
-from .connections import ConnectionManager, connections as connections_manager
+from .connections import ConnectionManager, connections_manager
 from .schemas import BaseWSResponse
 
 logger = logging.getLogger(__name__)

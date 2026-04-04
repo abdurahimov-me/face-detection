@@ -36,4 +36,4 @@ class ConnectionManager:
             await self.send(con_id, message)
 
 
-connections = ConnectionManager()
+connections_manager = ConnectionManager()

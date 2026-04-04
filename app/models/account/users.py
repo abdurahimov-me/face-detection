@@ -50,7 +50,6 @@ class User(BaseModel, DeletedMixin):
 
     @property
     def conn_id(self):
-        # return uuid.uuid4().hex
         return f"{self.user_id}:{self.tenant}"
 
     async def mark_as_typing(self):
