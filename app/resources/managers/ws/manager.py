@@ -147,8 +147,8 @@ class ChatWebSocketManager:
                 data=data,
             )
             return await websocket.send_text(res.model_dump_json())
-        except WSException as e:
-            return await websocket.send_json({"success": False, "type": "error", "message": e.message})
+        # except WSException as e:
+        #     return await websocket.send_json({"success": False, "type": "error", "message": e.message})
         except Exception as e:
             return await websocket.send_json({"success": False, "type": "critical_error", "message": str(e)})
 
