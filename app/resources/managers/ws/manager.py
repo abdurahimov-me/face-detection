@@ -50,6 +50,7 @@ class ChatWebSocketManager:
                 continue
             try:
                 message = json.loads(raw["data"])
+                print(message)
 
                 conv_id: str | None = message.get("conv_id")
                 data: dict | None = message.get("data")
