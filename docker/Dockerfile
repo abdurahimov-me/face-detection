@@ -17,11 +17,11 @@ COPY requirements requirements/
 RUN pip install --upgrade pip && pip install --no-cache-dir -r requirements/prod.txt
 
 COPY ./app /app
+COPY ./scripts /scripts
 
 EXPOSE 8000
 EXPOSE 50051
 
-COPY ./scripts /scripts
 RUN chmod +x /scripts/*
 
 ENTRYPOINT ["/scripts/entrypoint.sh"]
