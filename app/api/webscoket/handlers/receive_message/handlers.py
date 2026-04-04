@@ -70,7 +70,7 @@ async def handle_chats(
         await session.commit()
     await chat_ws_manager.send_to_conv(
         conversation_id,
-        msg.as_dict(),
+        message.as_dict(),
         "new_message",
         user.conn_id
     )
