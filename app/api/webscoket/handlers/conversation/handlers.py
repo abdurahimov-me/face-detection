@@ -4,6 +4,7 @@ import sqlalchemy as sa
 from fastapi import WebSocket
 
 from config.db import db_helper
+from config.redis import cache
 from models import User, Message, MessageRead, Conversation, SecondaryFile, File
 from resources.managers.ws.dispatcher import WSDispatcher
 from . import schemas
@@ -169,7 +170,9 @@ async def handle_chats(
         )).scalars().all()
 
         if not unread_ids:
-            return
+            return {
+                "marked": 0
+            }
 
         await session.execute(
             sa.insert(MessageRead).values([
@@ -181,3 +184,14 @@ async def handle_chats(
         return {
             "marked": len(unread_ids)
         }
+
+
+@dp.command("mark_as_typing")
+async def handle_chats(
+        websocket: WebSocket,
+        user: User,
+):
+    await cache.set(f"typing:{user.id}", True, 5)
+    return {
+        "typing": True
+    }
