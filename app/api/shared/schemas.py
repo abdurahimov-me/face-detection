@@ -1,5 +1,4 @@
 import typing as t
-from datetime import datetime
 from uuid import UUID
 
 from pydantic import BaseModel
