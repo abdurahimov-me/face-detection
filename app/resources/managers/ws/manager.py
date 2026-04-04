@@ -50,7 +50,6 @@ class ChatWebSocketManager:
                 continue
             try:
                 message = json.loads(raw["data"])
-                print(message)
 
                 conv_id: str | None = message.get("conv_id")
                 data: dict | None = message.get("data")
@@ -58,7 +57,6 @@ class ChatWebSocketManager:
 
                 if not conv_id or not data:
                     continue
-                print(self.connections.channels.get(conv_id, set()))
                 for conn_id in self.connections.channels.get(conv_id, set()):
                     if conn_id == exclude_conn:
                         continue
