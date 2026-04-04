@@ -4,9 +4,7 @@ from config import APP_SETTINGS
 from config.server import Server
 
 
-
 def app(_=None) -> FastAPI:
-
     main = FastAPI(
         title=APP_SETTINGS.PROJECT_NAME,
         debug=APP_SETTINGS.DEBUG,
