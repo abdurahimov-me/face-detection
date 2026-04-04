@@ -1,1 +1,1 @@
-from .handlers import * # noqa
+from .handlers import dp
