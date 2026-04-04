@@ -21,7 +21,7 @@ async def _get_chat_id(
     conversation_id = await Conversation.get_conversation_field(session, chat_uuid, "id")
     if not conversation_id:
         raise WSException(f"No conversation with uuid: {chat_uuid}")
-    return conversation_id
+    return int(conversation_id)
 
 
 async def _check_user_is_member(
@@ -30,13 +30,13 @@ async def _check_user_is_member(
         conversation_id: int,
 ):
     member_exists = sa.exists().where(
-        Member.conversation_id == int(conversation_id),
+        Member.conversation_id == conversation_id,
         Member.user_id == user_id,
         Member.deleted.is_(False),
     )
 
     owner_exists = sa.exists().where(
-        Conversation.id == int(conversation_id),
+        Conversation.id == conversation_id,
         Conversation.owner_id == user_id,
         Conversation.deleted.is_(False),
     )
