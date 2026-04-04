@@ -1,67 +1,39 @@
-import json
-import asyncio
+import typing as t
 from dataclasses import dataclass, field
+
 from fastapi import WebSocket
-from typing import Dict, Set
 
 
 @dataclass
-class Channels:
-    channels: Dict[str, Set[WebSocket]] = field(default_factory=dict)
+class ConnectionManager:
+    connections: t.Dict[str, WebSocket] = field(default_factory=dict)
+    channels: t.DefaultDict[str, t.Set[str]] = field(default_factory=lambda: __import__('collections').defaultdict(set))
 
-    def add(self, channel: str, websocket: WebSocket):
-        if channel in self.channels:
-            self.channels[channel].add(websocket)
-        else:
-            self.channels[channel] = {websocket}
+    async def connect(self, con_id: str, ws: WebSocket):
+        await ws.accept()
+        self.connections[con_id] = ws
 
-    def remove(self, channel: str, websocket: WebSocket):
-        if channel in self.channels and websocket in self.channels[channel]:
-            self.channels[channel].remove(websocket)
+    def disconnect(self, con_id: str):
+        self.connections.pop(con_id, None)
+        for members in self.channels.values():
+            members.discard(con_id)
 
-        if len(self.channels[channel]) == 0:
-            del self.channels[channel]
+    def join_channel(self, con_id: str, channel_id: str):
+        self.channels[channel_id].add(con_id)
 
-    def __getitem__(self, item):
-        if item in self.channels:
-            return self.channels[item]
+    def leave_channel(self, con_id: str, channel_id: str):
+        self.channels[channel_id].discard(con_id)
 
+    async def send(self, con_id: str, message: dict):
+        ws = self.connections.get(con_id)
+        if ws:
+            await ws.send_json(message)
 
-@dataclass
-class Connections:
-    conns: Dict[str, WebSocket] = field(default_factory=dict)
-
-    def add(self, conn_id: str, conn: WebSocket):
-        self.conns[conn_id] = conn
-
-    def remove(self, conn_id: str):
-        if conn_id in self.conns:
-            del self.conns[conn_id]
-
-    def get(self, conn_id: str):
-        return self.conns.get(conn_id)
-
-    @staticmethod
-    def get_cleared_data(data):
-        if data is not str:
-            return json.dumps(data)
-        return data
-
-    async def send_all(self, data):
-
-        data = self.get_cleared_data(data)
-        await asyncio.gather(
-            *[ws.send_text(data) for ws in self.conns.values()],
-        )
-
-    async def send_text(self, conn, data):
-        data = self.get_cleared_data(data)
-        if conn in self.conns:
-            await self.conns[conn].send_text(data)
-
-    def __iter__(self):
-        return self.conns
+    async def broadcast(self, channel_id: str, message: dict, exclude: str = None):
+        for con_id in self.channels.get(channel_id, set()):
+            if con_id == exclude:
+                continue
+            await self.send(con_id, message)
 
 
-connections = Connections()
-channels = Channels()
+connections = ConnectionManager()
