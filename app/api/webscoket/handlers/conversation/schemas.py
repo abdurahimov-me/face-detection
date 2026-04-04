@@ -1,5 +1,6 @@
 import typing as t
 from uuid import UUID
+
 from pydantic import BaseModel, Field
 
 from api.shared.schemas import MessageModel, FileModel
