@@ -4,7 +4,7 @@ from fastapi import WebSocket
 from config.db import db_helper
 from models import Conversation, Member
 from models import User
-from resources.enums import ConversationType
+from resources.enums import ConversationType, MemberType
 from resources.managers.ws.dispatcher import WSDispatcher
 from . import schemas
 
@@ -57,6 +57,7 @@ async def handle_chats(
         members = []
         for u in all_users:
             members.append(Member(user_id=u.id, conversation_id=chat.id))
+        members.append(Member(user_id=user.id, conversation_id=chat.id, role=MemberType.OWNER))
         session.add_all(members)
         await session.commit()
         return {

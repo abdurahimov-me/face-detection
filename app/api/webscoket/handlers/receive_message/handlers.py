@@ -28,19 +28,26 @@ async def _check_user_is_member(
         user_id: int,
         conversation_id: int,
 ):
-    query = (
-        sa.select(
-            sa.exists()
-            .where(
-                Member.conversation_id == conversation_id,
-                Member.user_id == user_id,
-                Member.deleted.is_(False),
-            )
-        )
+    member_exists = sa.exists().where(
+        Member.conversation_id == conversation_id,
+        Member.user_id == user_id,
+        Member.deleted.is_(False),
     )
+
+    owner_exists = sa.exists().where(
+        Conversation.id == conversation_id,
+        Conversation.owner_id == user_id,
+        Conversation.deleted.is_(False),
+    )
+
+    query = sa.select(
+        sa.or_(member_exists, owner_exists)
+    )
+
     checking = (await session.execute(query)).scalar()
-    if checking is False:
-        raise WSException("User is not member of conversation")
+
+    if not checking:
+        raise WSException("User is not member or owner of conversation")
 
 
 @dp.command("send_message")

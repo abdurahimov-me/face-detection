@@ -9,6 +9,7 @@ class ConversationType(IntEnum):
 class MemberType(IntEnum):
     ADMIN = 1
     MEMBER = 2
+    OWNER = 3
 
 
 class FileType(IntEnum):
