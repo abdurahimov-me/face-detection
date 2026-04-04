@@ -60,7 +60,15 @@ async def handle_chats(
         members.append(Member(user_id=user.id, conversation_id=chat.id, role=MemberType.OWNER))
         session.add_all(members)
         await session.commit()
+
         return {
             "uuid": chat.uuid,
             "name": chat.name,
+            "type": chat.type,
+            "owner_id": chat.owner_id,
+            "unread": 0,
+            "members": len(all_users),
+            "online": False,
+            "unread_message_id": None,
+            "last_message": None,
         }
