@@ -48,7 +48,7 @@ async def handle_chats(
         all_users = users + to_create
 
         chat = Conversation(
-            name=" ",
+            name=payload.name,
             type=ConversationType.GROUP,
             owner_id=user.id,
         )
