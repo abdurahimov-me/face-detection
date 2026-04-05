@@ -2,7 +2,7 @@ from app.integrations.grpc.client import GRPCClient
 from app.integrations.grpc.stubs.user import user_pb2
 
 
-class UserGRPCService:
+class UserGRPCClientService:
     def __init__(self, client: GRPCClient) -> None:
         self._client = client
 
