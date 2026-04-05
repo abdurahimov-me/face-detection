@@ -1,6 +1,9 @@
 from __future__ import annotations
 
-__all__ = ("grpc_client",)
+__all__ = (
+    "grpc_client",
+    "GRPCClient"
+)
 
 from typing import Optional
 
