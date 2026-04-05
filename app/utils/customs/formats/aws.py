@@ -13,4 +13,4 @@ class AWSFormat(str, BaseFormat):
     def validate(cls, v=None, *args, **kwargs):
         if v and isinstance(v, str):
             return f'{cls.base_url}{v}'
-        return None
+        return "https://www.freepik.com/vectors/male-face"
