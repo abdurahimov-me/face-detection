@@ -206,7 +206,7 @@ async def handle_chats(
     async with db_helper.session() as session:
         conv_id = await Conversation.get_conversation_field(session, payload.conversation_uuid, "id")
         users_stmt = (
-            sa.select(User.id, User.first_name, User.last_name, MessageRead.read_at)
+            sa.select(User.id, User.first_name, User.last_name, User.face, MessageRead.read_at)
             .select_from(MessageRead)
             .join(User, User.id == MessageRead.user_id)
             .join(Message, Message.id == MessageRead.message_id)

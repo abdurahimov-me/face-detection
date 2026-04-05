@@ -50,6 +50,7 @@ class ReadUserModelResponse(BaseModel):
     id: int
     first_name: t.Optional[str]
     last_name: t.Optional[str]
+    face: AWSFormat
     read_at: DateTime
 
 
