@@ -32,11 +32,13 @@ class UserServiceStub:
     @_typing.overload
     def __new__(cls, channel: _aio.Channel) -> UserServiceAsyncStub: ...
     GetUser: _grpc.UnaryUnaryMultiCallable[_user_pb2.GetUserRequest, _user_pb2.UserResponse]
+    GetUsers: _grpc.UnaryUnaryMultiCallable[_user_pb2.GetUsersRequest, _user_pb2.GetUsersResponse]
 
 @_typing.type_check_only
 class UserServiceAsyncStub(UserServiceStub):
     def __init__(self, channel: _aio.Channel) -> None: ...
     GetUser: _aio.UnaryUnaryMultiCallable[_user_pb2.GetUserRequest, _user_pb2.UserResponse]  # type: ignore[assignment]
+    GetUsers: _aio.UnaryUnaryMultiCallable[_user_pb2.GetUsersRequest, _user_pb2.GetUsersResponse]  # type: ignore[assignment]
 
 class UserServiceServicer(metaclass=_abc_1.ABCMeta):
     @_abc_1.abstractmethod
@@ -45,5 +47,12 @@ class UserServiceServicer(metaclass=_abc_1.ABCMeta):
         request: _user_pb2.GetUserRequest,
         context: _ServicerContext,
     ) -> _typing.Union[_user_pb2.UserResponse, _abc.Awaitable[_user_pb2.UserResponse]]: ...
+
+    @_abc_1.abstractmethod
+    def GetUsers(
+        self,
+        request: _user_pb2.GetUsersRequest,
+        context: _ServicerContext,
+    ) -> _typing.Union[_user_pb2.GetUsersResponse, _abc.Awaitable[_user_pb2.GetUsersResponse]]: ...
 
 def add_UserServiceServicer_to_server(servicer: UserServiceServicer, server: _typing.Union[_grpc.Server, _aio.Server]) -> None: ...
