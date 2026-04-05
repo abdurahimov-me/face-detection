@@ -26,6 +26,7 @@ class MarkAsReadModel(BaseModel):
 
 
 class ChatMessageModel(MessageModel):
+    user_id: int
     first_name: t.Optional[str]
     last_name: t.Optional[str]
     face: AWSFormat

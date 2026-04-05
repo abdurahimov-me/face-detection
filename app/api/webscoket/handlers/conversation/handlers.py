@@ -85,6 +85,7 @@ async def handle_chats(
                 Message.conversation_id,
                 Message.type,
                 sa.func.left(ReplyMessage.text, 20).label("reply_text"),
+                User.user_id,
                 User.first_name,
                 User.last_name,
                 User.face,
