@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+__all__ = ("grpc_client",)
+
 from typing import Optional
 
 import grpc.aio
