@@ -39,7 +39,7 @@ async def handle_chats(
         last_msg_subq = (
             sa.select(
                 Message.id,
-                Message.text,
+                sa.func.left(Message.text, 20).label("text"),
                 Message.sender_id,
                 Message.created_at,
                 Message.topic_id,
