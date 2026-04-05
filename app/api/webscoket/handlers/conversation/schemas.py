@@ -5,6 +5,7 @@ from pydantic import BaseModel, Field
 
 from api.shared.schemas import MessageModel, FileModel
 from utils.customs import DateTime
+from utils.customs.formats.aws import AWSFormat
 
 
 class SendMessageModel(BaseModel):
@@ -25,7 +26,9 @@ class MarkAsReadModel(BaseModel):
 
 
 class ChatMessageModel(MessageModel):
-    user_id: int
+    first_name: t.Optional[str]
+    last_name: t.Optional[str]
+    face: AWSFormat
     reply_text: t.Optional[str] = None
     files: t.Optional[t.List[FileModel]] = None
 
