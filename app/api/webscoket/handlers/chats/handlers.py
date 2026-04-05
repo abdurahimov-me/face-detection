@@ -22,7 +22,6 @@ async def handle_chats(
             .where(Member.deleted.is_(False), Member.user_id == user.id)
         )
         conv_ids = (await session.execute(conv_stmt)).scalars().all()
-        print(conv_ids)
 
         if not conv_ids:
             return []
@@ -37,7 +36,6 @@ async def handle_chats(
                 Message.reply_id,
                 Message.conversation_id,
                 Message.type,
-                sa.literal(False).label("read"),
                 sa.func.row_number().over(
                     partition_by=Message.conversation_id,
                     order_by=Message.id.desc()
