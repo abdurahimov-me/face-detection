@@ -8,6 +8,7 @@ from models import Conversation, Member
 from models import User
 from resources.enums import ConversationType, MemberType
 from resources.managers.ws.dispatcher import WSDispatcher
+from utils import utcnow
 from . import schemas
 
 dp = WSDispatcher()
@@ -98,6 +99,7 @@ async def handle_chats(
                 "user_id": u.id,
                 "conversation_id": int(conversation_id),
                 "role": MemberType.MEMBER,
+                "joined_at": utcnow()
             }
             for u in users
         ]
