@@ -4,7 +4,7 @@ from uuid import UUID
 from pydantic import BaseModel
 
 from utils.customs import DateTime
-from utils.customs.formats.aws import FileFormat
+from utils.customs.formats.file import FileFormat
 
 
 class FileModel(BaseModel):

@@ -4,13 +4,13 @@ from uuid import UUID
 from pydantic import BaseModel
 
 from utils.customs import DateTime
-from utils.customs.formats.aws import FileFormat, HrCoreFileFormat
 from utils.customs.formats.fernet import FernetEncrypt
+from utils.customs.formats.file import HrCoreFileFormat
 
 
 class CreateGroup(BaseModel):
     name: str
-    poster_id:t.Optional [int] = None
+    poster_id: t.Optional[int] = None
     users: t.List[FernetEncrypt]
 
 

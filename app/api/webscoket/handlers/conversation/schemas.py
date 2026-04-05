@@ -5,7 +5,7 @@ from pydantic import BaseModel, Field
 
 from api.shared.schemas import MessageModel, FileModel
 from utils.customs import DateTime
-from utils.customs.formats.aws import FileFormat, HrCoreFileFormat
+from utils.customs.formats.file import HrCoreFileFormat
 
 
 class SendMessageModel(BaseModel):
