@@ -84,6 +84,30 @@ async def handle_chats(
         }
 
 
+@dp.command("get_users_from_group")
+async def handle_chats(
+        websocket: WebSocket,
+        user: User,
+        payload: schemas.GetUsersFromGroup,
+):
+    async with db_helper.session() as session:
+        conversation_id = await Conversation.get_conversation_field(session, payload.conversation_uuid, "id")
+
+        members_stmt = await session.execute(
+            sa.select(User.id, User.first_name, User.last_name, Member.role, Member.joined_at)
+            .join(Member, Member.user_id == User.id)
+            .where(
+                Member.conversation_id == int(conversation_id),
+                User.deleted.is_(False),
+                Member.deleted.is_(False),
+            )
+        )
+        members = members_stmt.mappings().all()
+        return schemas.GetUsersFromGroupResponse(
+            members=members,
+        )
+
+
 @dp.command("add_users_to_group")
 async def handle_chats(
         websocket: WebSocket,

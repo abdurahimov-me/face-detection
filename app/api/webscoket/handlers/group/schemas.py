@@ -3,6 +3,7 @@ from uuid import UUID
 
 from pydantic import BaseModel
 
+from utils.customs import DateTime
 from utils.customs.formats.fernet import FernetEncrypt
 
 
@@ -14,3 +15,22 @@ class CreateGroup(BaseModel):
 class AddUsersToGroup(BaseModel):
     conversation_uuid: UUID
     users: t.List[FernetEncrypt]
+
+
+class GetUsersFromGroup(BaseModel):
+    conversation_uuid: UUID
+
+
+class MembersModel(BaseModel):
+    id: int
+    first_name: t.Optional[str]
+    last_name: t.Optional[str]
+    role: int
+    joined_at: DateTime
+
+    class Config:
+        from_attributes = True
+
+
+class GetUsersFromGroupResponse(BaseModel):
+    members: t.List[MembersModel]
