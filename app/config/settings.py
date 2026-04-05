@@ -13,7 +13,6 @@ from datetime import timedelta
 from pathlib import Path
 from typing import ClassVar
 
-from cryptography.fernet import Fernet
 from dotenv import load_dotenv
 from pydantic import PostgresDsn, RedisDsn
 from pydantic_settings import BaseSettings
@@ -41,7 +40,7 @@ class APPSettings(EnvReader):
     TIME_ZONE: str = 'Asia/Tashkent'
     SERVER_HOST: str = 'localhost'
     DEBUG: bool = True
-    FERNET_SECRET_KEY: str = Fernet.generate_key().decode()
+    FERNET_SECRET_KEY: str
 
 
 class DBSettings(EnvReader):
@@ -107,4 +106,3 @@ REDIS_SETTINGS = RedisSettings()
 AWS_SETTINGS = AWSSettings()
 APP_SETTINGS = APPSettings()
 JWT_SETTINGS = JWTSettings()
-print(JWT_SETTINGS.JWT_SECRET_KEY)

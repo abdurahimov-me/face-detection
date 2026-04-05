@@ -4,6 +4,7 @@ from uuid import UUID
 from pydantic import BaseModel, Field
 
 from api.shared.schemas import MessageModel, FileModel
+from utils.customs import DateTime
 
 
 class SendMessageModel(BaseModel):
@@ -34,3 +35,19 @@ class ResponseMessageModel(BaseModel):
     next_cursor: t.Optional[int] = None
     unread_count: int = 0
     messages: t.List[ChatMessageModel]
+
+
+class GetReadUsersModel(BaseModel):
+    conversation_uuid: UUID
+    message_id: int
+
+
+class ReadUserModelResponse(BaseModel):
+    id: int
+    first_name: t.Optional[str]
+    last_name: t.Optional[str]
+    read_at: DateTime
+
+
+class ReadUsersModelResponse(BaseModel):
+    users: t.List[ReadUserModelResponse]

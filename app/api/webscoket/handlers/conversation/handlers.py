@@ -1,5 +1,3 @@
-import typing as t
-
 import sqlalchemy as sa
 from fastapi import WebSocket
 from sqlalchemy import orm
@@ -151,7 +149,6 @@ async def handle_chats(
         websocket: WebSocket,
         payload: schemas.MarkAsReadModel,
         user: User,
-        request_id: t.Any = None,
 ):
     async with db_helper.session() as session:
         conversation_id = await session.scalar(
@@ -195,6 +192,29 @@ async def handle_chats(
         return {
             "marked": len(unread_ids)
         }
+
+
+@dp.command("get_read_users")
+async def handle_chats(
+        websocket: WebSocket,
+        payload: schemas.GetReadUsersModel,
+        user: User,
+):
+    async with db_helper.session() as session:
+        conv_id = await Conversation.get_conversation_field(session, payload.conversation_uuid, "id")
+        users_stmt = (
+            sa.select(User.id, User.first_name, User.last_name, MessageRead.read_at)
+            .select_from(MessageRead)
+            .join(User, User.id == MessageRead.user_id)
+            .join(Message, Message.id == MessageRead.message_id)
+            .where(
+                MessageRead.message_id == payload.message_id,
+                MessageRead.user_id != user.id,
+                Message.sender_id == user.id,
+            )
+        )
+        users = (await session.execute(users_stmt)).mappings().all()
+        return schemas.ReadUsersModelResponse(users=users)
 
 
 @dp.command("mark_as_typing")
