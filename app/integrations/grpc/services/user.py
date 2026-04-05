@@ -10,6 +10,10 @@ class UserGRPCService:
     def client(self) -> GRPCClient:
         return self._client
 
+    @client.setter
+    def client(self, client: GRPCClient) -> None:
+        self._client = client
+
     async def get_user(self, user_id: int, tenant: str) -> user_pb2.UserResponse:
         return await self._client.user.GetUser(
             user_pb2.GetUserRequest(user_id=user_id, tenant=tenant)
