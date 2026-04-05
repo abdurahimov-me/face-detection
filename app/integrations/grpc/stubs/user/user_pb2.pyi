@@ -3,8 +3,10 @@
 isort:skip_file
 """
 
+from collections import abc as _abc
 from google.protobuf import descriptor as _descriptor
 from google.protobuf import message as _message
+from google.protobuf.internal import containers as _containers
 import builtins as _builtins
 import sys
 import typing as _typing
@@ -36,23 +38,69 @@ class GetUserRequest(_message.Message):
 Global___GetUserRequest: _TypeAlias = GetUserRequest  # noqa: Y015
 
 @_typing.final
+class GetUsersRequest(_message.Message):
+    DESCRIPTOR: _descriptor.Descriptor
+
+    USER_IDS_FIELD_NUMBER: _builtins.int
+    TENANT_FIELD_NUMBER: _builtins.int
+    tenant: _builtins.str
+    @_builtins.property
+    def user_ids(self) -> _containers.RepeatedScalarFieldContainer[_builtins.int]: ...
+    def __init__(
+        self,
+        *,
+        user_ids: _abc.Iterable[_builtins.int] | None = ...,
+        tenant: _builtins.str = ...,
+    ) -> None: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["tenant", b"tenant", "user_ids", b"user_ids"]  # noqa: Y015
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+
+Global___GetUsersRequest: _TypeAlias = GetUsersRequest  # noqa: Y015
+
+@_typing.final
 class UserResponse(_message.Message):
     DESCRIPTOR: _descriptor.Descriptor
 
     ID_FIELD_NUMBER: _builtins.int
     FIRST_NAME_FIELD_NUMBER: _builtins.int
     LAST_NAME_FIELD_NUMBER: _builtins.int
-    id: _builtins.str
+    MIDDLE_NAME_FIELD_NUMBER: _builtins.int
+    FACE_FIELD_NUMBER: _builtins.int
+    USERNAME_FIELD_NUMBER: _builtins.int
+    id: _builtins.int
     first_name: _builtins.str
     last_name: _builtins.str
+    middle_name: _builtins.str
+    face: _builtins.str
+    username: _builtins.str
     def __init__(
         self,
         *,
-        id: _builtins.str = ...,
+        id: _builtins.int = ...,
         first_name: _builtins.str = ...,
         last_name: _builtins.str = ...,
+        middle_name: _builtins.str = ...,
+        face: _builtins.str = ...,
+        username: _builtins.str = ...,
     ) -> None: ...
-    _ClearFieldArgType: _TypeAlias = _typing.Literal["first_name", b"first_name", "id", b"id", "last_name", b"last_name"]  # noqa: Y015
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["face", b"face", "first_name", b"first_name", "id", b"id", "last_name", b"last_name", "middle_name", b"middle_name", "username", b"username"]  # noqa: Y015
     def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
 
 Global___UserResponse: _TypeAlias = UserResponse  # noqa: Y015
+
+@_typing.final
+class GetUsersResponse(_message.Message):
+    DESCRIPTOR: _descriptor.Descriptor
+
+    USERS_FIELD_NUMBER: _builtins.int
+    @_builtins.property
+    def users(self) -> _containers.RepeatedCompositeFieldContainer[Global___UserResponse]: ...
+    def __init__(
+        self,
+        *,
+        users: _abc.Iterable[Global___UserResponse] | None = ...,
+    ) -> None: ...
+    _ClearFieldArgType: _TypeAlias = _typing.Literal["users", b"users"]  # noqa: Y015
+    def ClearField(self, field_name: _ClearFieldArgType) -> None: ...
+
+Global___GetUsersResponse: _TypeAlias = GetUsersResponse  # noqa: Y015
