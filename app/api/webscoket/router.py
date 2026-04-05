@@ -11,7 +11,13 @@ from resources.managers.ws.manager import chat_ws_manager
 from utils import Payload
 from utils.jwt import decode_jwt
 from utils.routes import WSDispatchers
-from .handlers import chats, conversation, receive_message, group
+from .handlers import (
+    chats,
+    conversation,
+    receive_message,
+    group,
+    profile
+)
 
 logger = logging.getLogger(__name__)
 
@@ -26,6 +32,7 @@ __ws_dispatchers__ = WSDispatchers(
         group.dp,
         conversation.dp,
         receive_message.dp,
+        profile.dp,
     )
 )
 
