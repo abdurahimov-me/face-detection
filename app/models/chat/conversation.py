@@ -6,6 +6,7 @@ import typing as t
 from uuid import UUID
 
 import sqlalchemy as sa
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -40,6 +41,11 @@ class Conversation(BaseModel, UUIDMixin, DeletedMixin):
         sa.BigInteger(),
         sa.ForeignKey("users.id", ondelete="CASCADE"),
         index=True,
+    )
+    extra_data: Mapped[dict] = mapped_column(
+        JSONB,
+        nullable=True,
+        default=dict(),
     )
 
     @staticmethod

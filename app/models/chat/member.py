@@ -4,7 +4,7 @@ __all__ = (
 
 from datetime import datetime
 from typing import TypeVar
-
+from sqlalchemy.dialects.postgresql import JSONB
 import sqlalchemy as sa
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -47,4 +47,9 @@ class Member(BaseModel, DeletedMixin):
     left_at: Mapped[datetime] = mapped_column(
         sa.DateTime(timezone=True),
         nullable=True,
+    )
+    extra_data: Mapped[dict] = mapped_column(
+        JSONB,
+        nullable=True,
+        default=dict(),
     )

@@ -4,7 +4,7 @@ __all__ = (
 
 import sqlalchemy as sa
 from sqlalchemy.orm import Mapped, mapped_column
-
+from sqlalchemy.dialects.postgresql import JSONB
 from ..base import BaseModel
 from ..mixinis import DeletedMixin
 
@@ -25,3 +25,9 @@ class Topic(BaseModel, DeletedMixin):
     title: Mapped[str] = mapped_column(
         sa.String(255),
     )
+    extra_data: Mapped[dict] = mapped_column(
+        JSONB,
+        nullable=True,
+        default=dict(),
+    )
+
