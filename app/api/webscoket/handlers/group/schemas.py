@@ -4,6 +4,7 @@ from uuid import UUID
 from pydantic import BaseModel
 
 from utils.customs import DateTime
+from utils.customs.formats.aws import AWSFormat
 from utils.customs.formats.fernet import FernetEncrypt
 
 
@@ -27,6 +28,7 @@ class MembersModel(BaseModel):
     first_name: t.Optional[str]
     last_name: t.Optional[str]
     role: int
+    face: AWSFormat
     joined_at: DateTime
 
     class Config:
