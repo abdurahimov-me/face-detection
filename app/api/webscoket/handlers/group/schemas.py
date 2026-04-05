@@ -9,6 +9,7 @@ from utils.customs.formats.fernet import FernetEncrypt
 
 class CreateGroup(BaseModel):
     name: str
+    poster_id:t.Optional [int] = None
     users: t.List[FernetEncrypt]
 
 

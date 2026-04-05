@@ -61,6 +61,7 @@ async def handle_chats(
             name=payload.name,
             type=ConversationType.GROUP,
             owner_id=user.id,
+            poster_id=payload.poster_id,
         )
         session.add(chat)
         await session.flush()
