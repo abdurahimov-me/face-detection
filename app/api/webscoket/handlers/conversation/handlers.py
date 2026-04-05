@@ -84,7 +84,7 @@ async def handle_chats(
                 Message.reply_id,
                 Message.conversation_id,
                 Message.type,
-                ReplyMessage.text.label("reply_text"),
+                sa.func.left(ReplyMessage.text, 20).label("reply_text"),
                 User.user_id,
                 sa.select(
                     sa.exists().where(
