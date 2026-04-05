@@ -9,7 +9,7 @@ from typing import Optional
 
 import grpc.aio
 
-from app.integrations.grpc.stubs.user import user_pb2_grpc as user_grpc
+from integrations.grpc.stubs.user import user_pb2_grpc as user_grpc
 from config.settings import APP_SETTINGS
 
 
