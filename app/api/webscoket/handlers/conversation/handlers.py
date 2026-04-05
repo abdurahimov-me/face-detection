@@ -2,6 +2,7 @@ import typing as t
 
 import sqlalchemy as sa
 from fastapi import WebSocket
+from sqlalchemy import orm
 
 from config.db import db_helper
 from models import User, Message, MessageRead, Conversation, SecondaryFile, File
@@ -9,6 +10,8 @@ from resources.managers.ws.dispatcher import WSDispatcher
 from . import schemas
 
 dp = WSDispatcher()
+
+ReplyMessage = orm.aliased(Message)
 
 
 @dp.command("get_messages")
@@ -83,6 +86,7 @@ async def handle_chats(
                 Message.reply_id,
                 Message.conversation_id,
                 Message.type,
+                ReplyMessage.text.label("reply_text"),
                 User.user_id,
                 sa.select(
                     sa.exists().where(
@@ -95,6 +99,7 @@ async def handle_chats(
             )
             .join(User, User.id == Message.sender_id)
             .join(Conversation, Conversation.id == Message.conversation_id)
+            .join(ReplyMessage, ReplyMessage.id == Message.reply_id, isouter=True)
             .outerjoin(files_subquery, files_subquery.c.message_id == Message.id)
             .where(
                 Conversation.uuid == payload.conversation_uuid,

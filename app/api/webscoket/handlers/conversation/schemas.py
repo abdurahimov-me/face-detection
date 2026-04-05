@@ -18,7 +18,6 @@ class GetMessagesModel(BaseModel):
     direction: t.Optional[str] = None
 
 
-
 class MarkAsReadModel(BaseModel):
     message_id: int
     conversation_uuid: UUID
@@ -26,6 +25,7 @@ class MarkAsReadModel(BaseModel):
 
 class ChatMessageModel(MessageModel):
     user_id: int
+    reply_text: t.Optional[str] = None
     files: t.Optional[t.List[FileModel]] = None
 
 
