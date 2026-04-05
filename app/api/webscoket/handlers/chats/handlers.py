@@ -17,11 +17,20 @@ async def handle_chats(
 ):
     async with db_helper.session() as session:
 
-        conv_stmt = (
-            sa.select(Member.conversation_id)
+        conv_full_stmt = (
+            sa.select(
+                Conversation.id,
+                Conversation.uuid,
+                Conversation.name,
+                Conversation.type,
+            )
+            .select_from(Conversation)
+            .join(Member, Member.conversation_id == Conversation.id)
             .where(Member.deleted.is_(False), Member.user_id == user.id)
+            .order_by(Conversation.id.desc())
         )
-        conv_ids = (await session.execute(conv_stmt)).scalars().all()
+        conversations = list((await session.execute(conv_full_stmt)).mappings().all())
+        conv_ids = [c.id for c in conversations]
 
         if not conv_ids:
             return []
@@ -87,18 +96,6 @@ async def handle_chats(
         )
         members_res = (await session.execute(members_stmt)).mappings().all()
         members_map = {r["conversation_id"]: r["members"] for r in members_res}
-
-        conv_full_stmt = (
-            sa.select(
-                Conversation.id,
-                Conversation.uuid,
-                Conversation.name,
-                Conversation.type,
-            )
-            .where(Conversation.id.in_(conv_ids))
-            .order_by(Conversation.id.desc())
-        )
-        conversations = (await session.execute(conv_full_stmt)).mappings().all()
 
         first_unread_stmt = (
             sa.select(
