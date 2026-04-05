@@ -4,12 +4,12 @@ from uuid import UUID
 from pydantic import BaseModel
 
 from utils.customs import DateTime
-from utils.customs.formats.aws import AWSFormat
+from utils.customs.formats.aws import FileFormat
 
 
 class FileModel(BaseModel):
     id: int
-    file: AWSFormat
+    file: FileFormat
     ext: str
     filename: str
     size: int
