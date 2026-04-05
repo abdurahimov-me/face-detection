@@ -17,3 +17,6 @@ alembic
 aioboto3>=12.0.0
 orjson
 cryptography
+grpcio
+grpcio-tools
+mypy-protobuf
