@@ -23,6 +23,7 @@ async def handle_chats(
                 Conversation.uuid,
                 Conversation.name,
                 Conversation.type,
+                Conversation.created_at,
             )
             .select_from(Conversation)
             .join(Member, Member.conversation_id == Conversation.id)
@@ -130,5 +131,14 @@ async def handle_chats(
             "unread_message_id": first_unread_map.get(conv_id),
             "last_message": last_messages.get(conv_id),
         })
+
+    result.sort(
+        key=lambda x: (
+            x["last_message"]["created_at"]
+            if x["last_message"]
+            else x["created_at"]
+        ),
+        reverse=True
+    )
 
     return result
