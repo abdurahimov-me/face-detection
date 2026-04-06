@@ -6,6 +6,7 @@ __all__ = (
 import typing as t
 
 import sqlalchemy as sa
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from resources.enums import FileType
@@ -57,6 +58,11 @@ class File(BaseModel, DeletedMixin):
     user_id: Mapped[int] = mapped_column(
         sa.BigInteger(),
         sa.ForeignKey("users.id"),
+    )
+    meta_data: Mapped[dict] = mapped_column(
+        JSONB,
+        nullable=True,
+        default=dict(),
     )
 
     messages: Mapped[t.List['Message']] = relationship(
