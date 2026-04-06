@@ -20,3 +20,4 @@ cryptography
 grpcio
 grpcio-tools
 mypy-protobuf
+pillow
