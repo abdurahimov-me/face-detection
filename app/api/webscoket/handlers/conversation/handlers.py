@@ -10,6 +10,7 @@ from . import schemas
 dp = WSDispatcher()
 
 ReplyMessage = orm.aliased(Message)
+ReplyUser = orm.aliased(User)
 
 
 @dp.command("get_messages")
@@ -86,6 +87,8 @@ async def handle_chats(
                 Message.reply_id,
                 Message.conversation_id,
                 Message.type,
+                ReplyUser.first_name.label("reply_first_name"),
+                ReplyUser.last_name.label("reply_last_name"),
                 sa.func.left(ReplyMessage.text, 20).label("reply_text"),
                 User.user_id,
                 User.first_name,
@@ -103,6 +106,7 @@ async def handle_chats(
             .join(User, User.id == Message.sender_id)
             .join(Conversation, Conversation.id == Message.conversation_id)
             .join(ReplyMessage, ReplyMessage.id == Message.reply_id, isouter=True)
+            .join(ReplyUser, ReplyUser.id == ReplyMessage.sender_id, isouter=True)
             .outerjoin(files_subquery, files_subquery.c.message_id == Message.id)
             .where(
                 Conversation.uuid == payload.conversation_uuid,

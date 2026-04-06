@@ -30,6 +30,8 @@ class ChatMessageModel(MessageModel):
     first_name: t.Optional[str]
     last_name: t.Optional[str]
     face: HrCoreFileFormat
+    reply_first_name: t.Optional[str] = None
+    reply_last_name: t.Optional[str] = None
     reply_text: t.Optional[str] = None
     files: t.Optional[t.List[FileModel]] = None
 

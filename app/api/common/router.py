@@ -1,5 +1,7 @@
-from fastapi import APIRouter, Depends
 import typing as t
+
+from fastapi import APIRouter, Depends
+
 from resources.depends import get_token_payload
 from . import services, schemas
 from ..shared.schemas import FileModel
