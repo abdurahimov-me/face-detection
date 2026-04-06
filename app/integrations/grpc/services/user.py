@@ -1,5 +1,5 @@
-from app.integrations.grpc.client import GRPCClient
-from app.integrations.grpc.stubs.user import user_pb2
+from integrations.grpc.client import GRPCClient
+from integrations.grpc.stubs.user import user_pb2
 
 
 class UserGRPCClientService:

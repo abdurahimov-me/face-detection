@@ -46,6 +46,6 @@ async def update_file(
 )
 async def testtt():
     return {
-        "user": user_service.get_user(122131, "salom"),
+        "user": user_service.get_user("", "salom"),
         "users": user_service.get_users([12312, 12312], "salom"),
     }
