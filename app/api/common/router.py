@@ -1,7 +1,8 @@
 from fastapi import APIRouter, Depends
-
+import typing as t
 from resources.depends import get_token_payload
 from . import services, schemas
+from ..shared.schemas import FileModel
 
 router = APIRouter(
     prefix='/common',
@@ -16,7 +17,8 @@ async def health():
 
 @router.post(
     '/upload-file/',
-    dependencies=[Depends(get_token_payload)]
+    dependencies=[Depends(get_token_payload)],
+    response_model=t.List[FileModel]
 )
 async def create_file(
         service: services.CommonService.annotated("db", "payload"),

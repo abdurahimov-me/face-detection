@@ -13,6 +13,7 @@ class FileModel(BaseModel):
     ext: str
     filename: str
     size: int
+    type: int
     user_id: int
 
     class Config:
