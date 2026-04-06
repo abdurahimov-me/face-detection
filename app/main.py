@@ -13,6 +13,7 @@ def app(_=None) -> FastAPI:
             "defaultModelsExpandDepth": -1,
         },
         lifespan=Server.lifespan,
+        root_path="/chat-back",
     )
 
     @main.get('/', include_in_schema=False)
