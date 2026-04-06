@@ -6,4 +6,4 @@ from .user import UserGRPCClientService
 from ..client import grpc_client
 
 # user grpc service
-user_service = UserGRPCClientService(grpc_client)
+user_service: UserGRPCClientService = UserGRPCClientService(grpc_client)
