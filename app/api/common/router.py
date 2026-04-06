@@ -45,7 +45,8 @@ async def update_file(
     "/testtt"
 )
 async def testtt():
-    res = (await user_service.get_user(123, "salom"))
+    res = (await user_service.get_user("as", "salom"))
+
     return {
         "id": res.id,
         "first_name": res.first_name,

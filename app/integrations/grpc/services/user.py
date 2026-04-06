@@ -24,3 +24,4 @@ class UserGRPCClientService:
             user_pb2.GetUsersRequest(user_ids=user_ids, tenant=tenant)
         )
         return list(response.users)
+
