@@ -3,7 +3,7 @@ import os
 import typing as t
 from uuid import uuid4
 
-import aiofiles
+from PIL import Image
 
 from models import File
 from resources.enums import FileType
@@ -26,6 +26,23 @@ def get_file_type(ext: str) -> FileType:
     return FileType.DOCUMENT
 
 
+def extract_metadata(file_bytes: bytes, ext: str) -> dict:
+    metadata = {}
+
+    metadata["size"] = len(file_bytes)
+
+    if ext in ALLOWED_PHOTO_EXTS:
+        try:
+            img = Image.open(io.BytesIO(file_bytes))
+            metadata["width"] = img.width
+            metadata["height"] = img.height
+            metadata["format"] = img.format
+        except Exception:
+            pass
+
+    return metadata
+
+
 class CommonService(BaseHTTPService):
 
     async def create_file(
@@ -34,24 +51,32 @@ class CommonService(BaseHTTPService):
     ) -> t.List[File]:
         user = await self.get_user(rais_exception=True)
         objects = []
+
         for file in schema.files:
             _, ext = os.path.splitext(file.filename)
             ext = ext.lower()
+
             unique_filename = f"{uuid4()}{ext}"
             file_type = get_file_type(ext)
             file_path = f"files/{unique_filename}"
 
-            content = io.BytesIO(await file.read())
+            file_bytes = await file.read()
+
+            metadata = extract_metadata(file_bytes, ext)
+
+            content = io.BytesIO(file_bytes)
             await storage.async_upload_fileobj(content, file_path)
 
             db_file = File(
                 file=file_path,
                 ext=ext.lstrip("."),
                 filename=file.filename,
-                size=file.size,
+                size=metadata.get("size"),
                 type=file_type,
                 user_id=user.id,
+                meta_data=metadata,
             )
+
             objects.append(db_file)
 
         self.add_all(objects)
@@ -73,22 +98,25 @@ class CommonService(BaseHTTPService):
 
         _, ext = os.path.splitext(schema.file.filename)
         ext = ext.lower()
+
         unique_filename = f"{uuid4()}{ext}"
         file_type = get_file_type(ext)
+        file_path = f"files/{unique_filename}"
 
-        save_dir = os.path.join(UPLOAD_DIR, file_type.name.lower())
-        os.makedirs(save_dir, exist_ok=True)
-        save_path = os.path.join(save_dir, unique_filename)
+        file_bytes = await schema.file.read()
 
-        content = await schema.file.read()
-        async with aiofiles.open(save_path, "wb") as f:
-            await f.write(content)
+        metadata = extract_metadata(file_bytes, ext)
 
-        db_file.file = save_path
+        content = io.BytesIO(file_bytes)
+        await storage.async_upload_fileobj(content, file_path)
+
+        # update db
+        db_file.file = file_path
         db_file.ext = ext.lstrip(".")
         db_file.filename = schema.file.filename
-        db_file.size = len(content)
+        db_file.size = metadata.get("size")
         db_file.type = file_type
+        db_file.meta_data = metadata
 
         await self.commit()
         return db_file
