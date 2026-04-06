@@ -67,6 +67,7 @@ async def handle_chats(
                         "filename", File.filename,
                         "size", File.size,
                         "user_id", File.user_id,
+                        "meta_data", File.meta_data
                     )
                 ).label("files")
             )
