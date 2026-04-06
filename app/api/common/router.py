@@ -53,7 +53,6 @@ async def testtt():
         "last_name": res.last_name,
         "middle_name": res.middle_name,
         "face": res.face,
-
     }
     # return {
     #     "user": (await user_service.get_user(123, "salom")),
