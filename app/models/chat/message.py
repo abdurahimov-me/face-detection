@@ -26,6 +26,7 @@ class MessageRead(Base):
         sa.BigInteger(),
         sa.ForeignKey("messages.id", ondelete="CASCADE"),
         primary_key=True,
+        index=True,
     )
 
     user_id: Mapped[int] = mapped_column(
