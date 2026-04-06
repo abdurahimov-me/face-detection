@@ -15,6 +15,7 @@ class FileModel(BaseModel):
     size: int
     type: int
     user_id: int
+    meta_data: t.Optional[t.Dict[str, t.Any]] = {}
 
     class Config:
         from_attributes = True
@@ -29,7 +30,6 @@ class MessageModel(BaseModel):
     sender_id: int
     read: bool = False
     type: int
-    meta_data: t.Optional[t.Dict[str, t.Any]] = {}
 
     class Config:
         from_attributes = True
