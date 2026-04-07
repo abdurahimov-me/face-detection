@@ -95,7 +95,16 @@ async def handle_chats(
         conversation_id = await Conversation.get_conversation_field(session, payload.conversation_uuid, "id")
 
         members_stmt = await session.execute(
-            sa.select(User.id, User.first_name, User.last_name, Member.role, User.face, Member.joined_at)
+            sa.select(
+                User.id,
+                User.user_id,
+                User.tenant,
+                User.first_name,
+                User.last_name,
+                Member.role,
+                User.face,
+                Member.joined_at,
+            )
             .join(Member, Member.user_id == User.id)
             .where(
                 Member.conversation_id == int(conversation_id),
