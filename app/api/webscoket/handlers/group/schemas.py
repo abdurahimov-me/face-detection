@@ -45,7 +45,8 @@ class MembersModel(BaseModel):
 
         if user_id and tenant:
             key = f"{user_id}:{tenant}"
-            setattr(data, "encrypt", fernet.encrypt(key))
+            data = dict(data)
+            data["encrypt"] = fernet.encrypt(key)
 
         return data
 
