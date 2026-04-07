@@ -28,7 +28,7 @@ async def handle_chats(
         partner, _ = await User.repo.db_get_or_create(
             session,
             user_id=int(partner_user_id),
-            tenant_id=partner_tenant,
+            tenant=partner_tenant,
             defaults={
                 "first_name": hr_data.first_name,
                 "last_name": hr_data.last_name,
