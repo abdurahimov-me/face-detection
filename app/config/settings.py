@@ -96,6 +96,14 @@ class AWSSettings(EnvReader):
     CDN_URL: str = None
     HR_CDN_URL: str = None
 
+    def make_cdn_url(self, path: str) -> str:
+        base_url = f'{self.CDN_URL}/{APP_SETTINGS.MEDIA_URL}'
+        return f"{base_url}/{path}"
+
+    def make_hr_cdn_url(self, path: str) -> str:
+        base_url = f'{self.HR_CDN_URL}/{APP_SETTINGS.MEDIA_URL}'
+        return f"{base_url}/{path}"
+
 
 class JWTSettings(BaseSettings):
     ALGORITHM: str = "HS256"
