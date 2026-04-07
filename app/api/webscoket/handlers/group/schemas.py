@@ -37,11 +37,12 @@ class MembersModel(BaseModel):
     @model_validator(mode="before")
     @classmethod
     def generate_encrypt(cls, data):
+        data = dict(data)
         if data.get("encrypt"):
             return data
 
-        user_id = data.user_id
-        tenant = data.tenant
+        user_id = data.get("user_id")
+        tenant = data.get("tenant")
 
         if user_id and tenant:
             key = f"{user_id}:{tenant}"
