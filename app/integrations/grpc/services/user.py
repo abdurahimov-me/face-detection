@@ -27,7 +27,7 @@ class UserGRPCClientService:
             print(e)
             return None
 
-    async def get_users(self, user_ids: list[int], tenant: str) -> t.Optional[t.List[user_pb2.UserResponse]]:
+    async def get_users(self, user_ids: t.List[int], tenant: str) -> t.Optional[t.List[user_pb2.UserResponse]]:
         try:
             response = await self._client.user.GetUsers(
                 user_pb2.GetUsersRequest(user_ids=user_ids, tenant=tenant)
