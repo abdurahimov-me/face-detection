@@ -36,6 +36,7 @@ class MembersModel(BaseModel):
     @field_validator("encrypt", mode="before")
     @classmethod
     def generate_encrypt(cls, v, info):
+        print(info.data)
         if v:
             return v
 
