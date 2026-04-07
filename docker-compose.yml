@@ -25,7 +25,7 @@ services:
       - redis_data:/data
 
   pgbouncer:
-    image: edoburu/pgbouncer:latest
+    image: edoburu/pgbouncer
     container_name: hr_chat_pgbouncer
     networks:
       - local
@@ -67,8 +67,8 @@ services:
     env_file:
       - .env
     environment:
-      - DB_HOST=hr_chat_db
-      - DB_PORT=5432
+      - DB_HOST=hr_chat_pgbouncer
+      - DB_PORT=6432
       - REDIS_HOST=hr_chat_redis
       - REDIS_PORT=6379
     depends_on:
@@ -91,10 +91,10 @@ services:
     env_file:
       - .env
     environment:
-      - DB_HOST=hr_chat_db
+      - DB_HOST=hr_chat_pgbouncer
       - REDIS_PORT=6379
       - REDIS_HOST=hr_chat_redis
-      - DB_PORT=5432
+      - DB_PORT=6432
 
 volumes:
   postgres_data: { }
