@@ -26,6 +26,7 @@ class GetUsersFromGroup(BaseModel):
 
 class MembersModel(BaseModel):
     id: int
+    user_id: int
     first_name: t.Optional[str]
     last_name: t.Optional[str]
     role: int
