@@ -58,6 +58,10 @@ class User(BaseModel, DeletedMixin):
         key = f"{self.user_id}:{self.tenant}"
         return fernet.encrypt(key)
 
+    @property
+    def full_name(self):
+        return f"{self.first_name or ''} {self.last_name or ''}"
+
     async def mark_as_typing(self):
         key = f"user_typing:{self.id}"
         await cache.set(key, True, 5)
