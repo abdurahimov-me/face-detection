@@ -40,8 +40,8 @@ class MembersModel(BaseModel):
         if data.get("encrypt"):
             return data
 
-        user_id = data.get("user_id")
-        tenant = data.get("tenant")
+        user_id = data.user_id
+        tenant = data.tenant
 
         if user_id and tenant:
             key = f"{user_id}:{tenant}"
