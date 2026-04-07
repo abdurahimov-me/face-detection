@@ -1,7 +1,7 @@
 import typing as t
 from uuid import UUID
 
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel, field_validator, model_validator
 
 from utils.customs import DateTime
 from utils.customs.formats.fernet import FernetEncrypt
@@ -33,22 +33,12 @@ class MembersModel(BaseModel):
     joined_at: DateTime
     encrypt: t.Optional[str] = None
 
-    @field_validator("encrypt", mode="before")
-    @classmethod
-    def generate_encrypt(cls, v, info):
-        print(info.data)
-        print(v)
-        if v:
-            return v
-
-        data = info.data
-        user_id = data.get("user_id")
-        tenant = data.get("tenant")
-
-        if user_id and tenant:
-            key = f"{user_id}:{tenant}"
-            return fernet.encrypt(key)
-        return v
+    @model_validator(mode="after")
+    def set_encrypt(self):
+        if not self.encrypt:
+            key = f"{self.user_id}:{self.tenant}"
+            self.encrypt = fernet.encrypt(key)
+        return self
 
     class Config:
         from_attributes = True
