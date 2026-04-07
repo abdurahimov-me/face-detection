@@ -61,7 +61,8 @@ class BaseModel(Base):
     created_at: Mapped[Optional[sa.DateTime]] = mapped_column(
         sa.DateTime(timezone=True),
         default=utcnow,
-        nullable=False
+        nullable=False,
+        index=True,
     )
     updated_at: Mapped[Optional[sa.DateTime]] = mapped_column(
         sa.DateTime(timezone=True),

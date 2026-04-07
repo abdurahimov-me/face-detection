@@ -65,6 +65,7 @@ class Message(BaseModel, DeletedMixin):
         IntEnumField(MessageType),
         server_default=sa.text("1"),
         default=MessageType.TEXT,
+        index=True,
     )
     text: Mapped[str] = mapped_column(
         sa.Text(),
