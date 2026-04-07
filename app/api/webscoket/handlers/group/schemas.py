@@ -37,6 +37,7 @@ class MembersModel(BaseModel):
     @classmethod
     def generate_encrypt(cls, v, info):
         print(info.data)
+        print(v)
         if v:
             return v
 
