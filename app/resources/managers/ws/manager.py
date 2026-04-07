@@ -80,7 +80,7 @@ class ChatWebSocketManager:
 
     async def send_to_conv(
             self,
-            conv_id: str,
+            conv_id,
             data: dict,
             event: types.EVENTS,
             exclude_conn: str = None,
