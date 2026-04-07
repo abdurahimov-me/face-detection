@@ -1,5 +1,5 @@
 from fastapi import WebSocket
-
+import sqlalchemy as sa
 from config.db import db_helper
 from integrations.grpc.services import user_grpc_service
 from models import Conversation, Member
@@ -21,6 +21,7 @@ async def handle_chats(
     async with db_helper.session() as session:
         partner_user_id, partner_tenant = payload.partner.split(":")
 
+        # 1️⃣ Partnerni DB’dan olish / yaratish
         hr_data = await user_grpc_service.get_user(user_id=int(partner_user_id), tenant=partner_tenant)
         if hr_data is None:
             raise WSException("HR service is not available")
@@ -30,19 +31,45 @@ async def handle_chats(
             user_id=int(partner_user_id),
             tenant=partner_tenant,
             defaults={
-                "first_name": hr_data.first_name,
-                "last_name": hr_data.last_name,
-                "middle_name": hr_data.middle_name,
-                "face": hr_data.face,
+                "first_name": hr_data.first_name or "",
+                "last_name": hr_data.last_name or "",
+                "middle_name": hr_data.middle_name or "",
+                "face": hr_data.face or "",
                 "extra_data": {
-                    "first_name": hr_data.first_name,
-                    "last_name": hr_data.last_name,
-                    "middle_name": hr_data.middle_name,
-                    "face": hr_data.face,
+                    "first_name": hr_data.first_name or "",
+                    "last_name": hr_data.last_name or "",
+                    "middle_name": hr_data.middle_name or "",
+                    "face": hr_data.face or "",
                 }
             }
         )
-        partner: User
+
+        existing_chat = await session.execute(
+            sa.select(Conversation)
+            .join(Member, Member.conversation_id == Conversation.id)
+            .where(
+                Conversation.type == ConversationType.DIRECT,
+                Member.user_id.in_([user.id, partner.id])
+            )
+            .group_by(Conversation.id)
+            .having(sa.func.count(Member.user_id) == 2)
+            .limit(1)
+        )
+        existing_chat = existing_chat.scalar_one_or_none()
+
+        if existing_chat:
+            return {
+                "uuid": existing_chat.uuid,
+                "name": partner.full_name,
+                "type": existing_chat.type,
+                "owner_id": existing_chat.owner_id,
+                "unread": 0,
+                "members": 2,
+                "online": False,
+                "unread_message_id": None,
+                "last_message": None,
+            }
+
         chat = Conversation(
             name=" ",
             type=ConversationType.DIRECT,
@@ -51,9 +78,11 @@ async def handle_chats(
         session.add(chat)
         await session.flush()
         session.add_all(
-            [Member(user_id=user.id, conversation_id=chat.id), Member(user_id=partner.id, conversation_id=chat.id)]
+            [Member(user_id=user.id, conversation_id=chat.id),
+             Member(user_id=partner.id, conversation_id=chat.id)]
         )
         await session.commit()
+
         return {
             "uuid": chat.uuid,
             "name": partner.full_name,
