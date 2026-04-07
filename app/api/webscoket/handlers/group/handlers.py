@@ -4,11 +4,13 @@ from sqlalchemy.dialects.postgresql import insert as psql_insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from config.db import db_helper
+from integrations.grpc.services import user_grpc_service
 from models import Conversation, Member
 from models import User
 from resources.enums import ConversationType, MemberType
 from resources.managers.ws.dispatcher import WSDispatcher
 from utils import utcnow
+from utils.exceptions import WSException
 from . import schemas
 
 dp = WSDispatcher()
@@ -17,11 +19,21 @@ dp = WSDispatcher()
 async def _get_or_crate_users_from_encrypt(
         session: AsyncSession,
         users_encrypt: list[str],
+        main_tenant: str
 ):
     pairs = []
+    user_ids = []
     for user_fernet in users_encrypt:
         user_id, tenant = user_fernet.split(":")
         pairs.append((int(user_id), tenant))
+        user_ids.append(int(user_id))
+
+    hr_users_data = await user_grpc_service.get_users(user_ids=user_ids, tenant=main_tenant)
+    if hr_users_data is None:
+        raise WSException("HR service is not available")
+
+    hr_users_data = {(d.id, main_tenant): d for d in hr_users_data}
+
     users = await session.execute(
         sa.select(User).where(
             sa.tuple_(User.user_id, User.tenant).in_(pairs)
@@ -35,11 +47,23 @@ async def _get_or_crate_users_from_encrypt(
 
     to_create = []
     for user_id, tenant in pairs:
-        if (user_id, tenant) not in existing_map:
+        hr_data = hr_users_data.get((user_id, tenant))
+        if hr_data and (user_id, tenant) not in existing_map:
             to_create.append(
                 User(
                     user_id=user_id,
                     tenant=tenant,
+                    first_name=hr_data.first_name,
+                    last_name=hr_data.last_name,
+                    middle_name=hr_data.middle_name,
+                    face=hr_data.face,
+                    extra_data={
+                        "first_name": hr_data.first_name,
+                        "last_name": hr_data.last_name,
+                        "middle_name": hr_data.middle_name,
+                        "face": hr_data.face,
+                    }
+
                 )
             )
 
@@ -55,7 +79,7 @@ async def handle_chats(
         payload: schemas.CreateGroup,
 ):
     async with db_helper.session() as session:
-        all_users = await _get_or_crate_users_from_encrypt(session, payload.users)
+        all_users = await _get_or_crate_users_from_encrypt(session, payload.users, main_tenant=user.tenant)
 
         chat = Conversation(
             name=payload.name,
@@ -126,7 +150,7 @@ async def handle_chats(
 ):
     async with db_helper.session() as session:
         conversation_id = await Conversation.get_conversation_field(session, payload.conversation_uuid, "id")
-        users = await _get_or_crate_users_from_encrypt(session, payload.users)
+        users = await _get_or_crate_users_from_encrypt(session, payload.users, main_tenant=user.tenant)
 
         members = [
             {
