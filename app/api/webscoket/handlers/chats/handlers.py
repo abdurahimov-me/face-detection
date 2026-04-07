@@ -28,7 +28,7 @@ async def handle_chats(
             )
             .select_from(Conversation)
             .join(Member, Member.conversation_id == Conversation.id)
-            .join(File, File.id == Conversation.poster_id)
+            .join(File, File.id == Conversation.poster_id, isouter=True)
             .where(Member.deleted.is_(False), Member.user_id == user.id)
             .order_by(Conversation.id.desc())
         )
