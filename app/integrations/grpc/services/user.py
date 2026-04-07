@@ -24,6 +24,7 @@ class UserGRPCClientService:
                 user_pb2.GetUserRequest(user_id=user_id, tenant=tenant)
             )
         except grpc.aio.AioRpcError as e:
+            print(e)
             return None
 
     async def get_users(self, user_ids: list[int], tenant: str) -> t.Optional[t.List[user_pb2.UserResponse]]:
@@ -33,4 +34,5 @@ class UserGRPCClientService:
             )
             return list(response.users)
         except grpc.aio.AioRpcError as e:
+            print(e)
             return None
