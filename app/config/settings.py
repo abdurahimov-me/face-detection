@@ -11,7 +11,7 @@ __all__ = (
 import os
 from datetime import timedelta
 from pathlib import Path
-from typing import ClassVar
+import typing as t
 
 from dotenv import load_dotenv
 from pydantic import PostgresDsn, RedisDsn
@@ -96,11 +96,15 @@ class AWSSettings(EnvReader):
     CDN_URL: str = None
     HR_CDN_URL: str = None
 
-    def make_cdn_url(self, path: str) -> str:
+    def make_cdn_url(self, path: t.Optional[str]) -> str:
+        if path is None:
+            return None
         base_url = f'{self.CDN_URL}/{APP_SETTINGS.MEDIA_URL}'
         return f"{base_url}/{path}"
 
-    def make_hr_cdn_url(self, path: str) -> str:
+    def make_hr_cdn_url(self, path: t.Optional[str]) -> str:
+        if path is None:
+            return None
         base_url = f'{self.HR_CDN_URL}/{APP_SETTINGS.MEDIA_URL}'
         return f"{base_url}/{path}"
 

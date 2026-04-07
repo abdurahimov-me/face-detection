@@ -1,9 +1,11 @@
 import sqlalchemy as sa
 from fastapi import WebSocket
 
+from config import AWS_SETTINGS
 from config.db import db_helper
 from models import Conversation, Message, MessageRead, Member, File
 from models import User
+from resources.enums import ConversationType
 from resources.managers.ws.connections import connections_manager
 from resources.managers.ws.dispatcher import WSDispatcher
 
@@ -33,6 +35,17 @@ async def handle_chats(
             .order_by(Conversation.id.desc())
         )
         conversations = list((await session.execute(conv_full_stmt)).mappings().all())
+        direct_chats = [c.id for c in conversations if c.type == ConversationType.DIRECT]
+        partners_stmt = (
+            sa.select(User, Conversation.id)
+            .select_from(User)
+            .join(Member, Member.user_id == User.id)
+            .join(Conversation, Conversation.id == Member.conversation_id)
+            .where(Conversation.id.in_(direct_chats), Member.deleted.is_(False), User.id != user.id)
+        )
+        partners = (await session.execute(partners_stmt)).fetchall()
+        partners_map = {i[1]: i[0] for i in partners}
+
         conv_ids = [c.id for c in conversations]
 
         if not conv_ids:
@@ -123,16 +136,25 @@ async def handle_chats(
 
     result = []
     for conv in conversations:
+        item = dict(conv)
         conv_id = conv["id"]
-        connections_manager.join_channel(user.conn_id, str(conv_id))
-        result.append({
-            **dict(conv),
+        if conv["type"] == ConversationType.DIRECT:
+            if partner := partners_map.get(conv_id):
+                item["poster"] = AWS_SETTINGS.make_hr_cdn_url(partner.face)
+                item["name"] = partner.full_name
+            else:
+                continue
+        else:
+            connections_manager.join_channel(user.conn_id, str(conv_id))
+            item["poster"] = AWS_SETTINGS.make_cdn_url(conv["poster"])
+        item.update({
             "unread": unread_map.get(conv_id, 0),
             "members": members_map.get(conv_id, 0),
             "online": False,
             "unread_message_id": first_unread_map.get(conv_id),
             "last_message": last_messages.get(conv_id),
         })
+        result.append(item)
 
     result.sort(
         key=lambda x: (
