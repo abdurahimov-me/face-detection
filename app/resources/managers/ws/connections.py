@@ -40,4 +40,8 @@ class ConnectionManager:
             await self.send(conn_id, message)
 
 
-connections_manager = ConnectionManager()
+    def __repr__(self):
+        return f"ConnectionsManager(connections={self.connections})"
+
+
+connections_manager: ConnectionManager = ConnectionManager()
