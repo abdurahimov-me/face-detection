@@ -13,7 +13,7 @@ class FileFormat(str, BaseFormat):
     def validate(cls, v=None, *args, **kwargs):
         if v and isinstance(v, str):
             return f'{cls.base_url}{v}'
-        return "https://www.freepik.com/vectors/male-face"
+        return "https://img.freepik.com/premium-vector/vector-illustration-young-man-face-with-short-brown-hair-cartoon-male-character_87771-31254.jpg"
 
 
 class HrCoreFileFormat(FileFormat):
@@ -23,4 +23,4 @@ class HrCoreFileFormat(FileFormat):
     def validate(cls, v=None, *args, **kwargs):
         if v and isinstance(v, str):
             return f'{cls.base_url}{v}'
-        return "https://www.freepik.com/vectors/male-face"
+        return "https://img.freepik.com/premium-vector/vector-illustration-young-man-face-with-short-brown-hair-cartoon-male-character_87771-31254.jpg"
