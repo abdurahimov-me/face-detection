@@ -61,11 +61,14 @@ async def handle_chats(
                 Message.reply_id,
                 Message.conversation_id,
                 Message.type,
+                User.first_name,
+                User.last_name,
                 sa.func.row_number().over(
                     partition_by=Message.conversation_id,
                     order_by=Message.id.desc()
                 ).label("rn")
             )
+            .join(User, User.id == Message.sender_id)
             .where(
                 Message.conversation_id.in_(conv_ids),
                 Message.deleted.is_(False),
