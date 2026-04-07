@@ -7,6 +7,7 @@ from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column
 
 from config.redis import cache
+from utils.security import fernet
 from ..base import BaseModel
 from ..mixinis import DeletedMixin
 
@@ -51,6 +52,11 @@ class User(BaseModel, DeletedMixin):
     @property
     def conn_id(self):
         return f"{self.user_id}:{self.tenant}"
+
+    @property
+    def encrypt(self):
+        key = f"{self.user_id}:{self.tenant}"
+        return fernet.encrypt(key)
 
     async def mark_as_typing(self):
         key = f"user_typing:{self.id}"
