@@ -6,6 +6,7 @@ from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from config.db import db_helper
+from integrations.grpc.services import user_grpc_service
 from models import User
 from resources.managers.ws.manager import chat_ws_manager
 from utils import Payload
@@ -66,12 +67,27 @@ async def user_websocket(
 
     tenant = payload.tenant
     user_id = payload.user_id
+    user_data = await user_grpc_service.get_user(int(user_id), tenant)
+
+    if user_data is None:
+        return await ws.close(code=1008)
 
     async with db_helper.session() as session:
         session: AsyncSession
 
         user, _ = await User.repo.db_get_or_create(session, tenant=tenant, user_id=user_id)
         user: User
+        user.first_name = user_data.first_name
+        user.last_name = user_data.last_name
+        user.face = user_data.face
+        user.extra_data = {
+            "first_name": user_data.first_name,
+            "last_name": user_data.last_name,
+            "face": user_data.face,
+            "middle_name": user_data.middle_name,
+            "username": user_data.username,
+        }
+        await session.commit()
 
     conn_id = user.conn_id
     await chat_ws_manager.connect(conn_id, ws)

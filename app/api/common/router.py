@@ -2,7 +2,7 @@ import typing as t
 
 from fastapi import APIRouter, Depends
 
-from integrations.grpc.services import user_service
+from integrations.grpc.services import user_grpc_service
 from resources.depends import get_token_payload
 from . import services, schemas
 from ..shared.schemas import FileModel
@@ -45,7 +45,7 @@ async def update_file(
     "/testtt"
 )
 async def testtt():
-    res = (await user_service.get_user("as", "salom"))
+    res = (await user_grpc_service.get_user("as", "salom"))
 
     return {
         "id": res.id,
