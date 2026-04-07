@@ -17,7 +17,8 @@ from .handlers import (
     conversation,
     receive_message,
     group,
-    profile
+    profile,
+    direct,
 )
 
 logger = logging.getLogger(__name__)
@@ -34,6 +35,7 @@ __ws_dispatchers__ = WSDispatchers(
         conversation.dp,
         receive_message.dp,
         profile.dp,
+        direct.dp,
     )
 )
 
