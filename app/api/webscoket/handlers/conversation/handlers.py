@@ -90,6 +90,7 @@ async def handle_chats(
                 ReplyUser.first_name.label("reply_first_name"),
                 ReplyUser.last_name.label("reply_last_name"),
                 sa.func.left(ReplyMessage.text, 20).label("reply_text"),
+                ReplyMessage.type.label("reply_type"),
                 User.user_id,
                 User.first_name,
                 User.last_name,
