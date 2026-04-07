@@ -93,7 +93,7 @@ async def handle_chats(
         event_data.update({
             "reply_text": reply_message["reply_text"],
             "reply_last_name": reply_message["reply_user_last_name"],
-            "reply_first_name": reply_message["reply_first_name"],
+            "reply_first_name": reply_message["reply_user_first_name"],
             "reply_type": reply_message["type"]
         })
     event_data["conversation_uuid"] = str(payload.conversation_uuid)
