@@ -68,6 +68,7 @@ async def handle_chats(
                 "online": False,
                 "unread_message_id": None,
                 "last_message": None,
+                "created": False
             }
 
         chat = Conversation(
@@ -93,4 +94,5 @@ async def handle_chats(
             "online": False,
             "unread_message_id": None,
             "last_message": None,
+            "created": True
         }
