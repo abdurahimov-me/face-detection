@@ -35,8 +35,8 @@ class APPSettings(EnvReader):
     PROJECT_NAME: str = "HR CHAT"
     MEDIA_URL: str = 'media/'
     STATIC_URL: str = 'static/'
-    MEDIA_DIR: ClassVar[str] = os.path.join(BASE_DIR, 'media')
-    STATIC_DIR: ClassVar[str] = os.path.join(BASE_DIR, 'static')
+    MEDIA_DIR: t.ClassVar[str] = os.path.join(BASE_DIR, 'media')
+    STATIC_DIR: t.ClassVar[str] = os.path.join(BASE_DIR, 'static')
     TIME_ZONE: str = 'Asia/Tashkent'
     SERVER_HOST: str = 'localhost'
     DEBUG: bool = True
