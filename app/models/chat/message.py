@@ -1,6 +1,7 @@
 __all__ = (
     'Message',
-    'MessageRead'
+    'MessageRead',
+    'PinnedMessage'
 )
 
 import typing as t
@@ -39,6 +40,26 @@ class MessageRead(Base):
     read_at: Mapped[sa.DateTime] = mapped_column(
         sa.DateTime(timezone=True),
         server_default=sa.func.now(),
+    )
+
+
+class PinnedMessage(BaseModel, DeletedMixin, ):
+    __tablename__ = "pinned_messages"
+
+    executor_id: Mapped[int] = mapped_column(
+        sa.BigInteger(),
+        sa.ForeignKey("users.id", ondelete="CASCADE"),
+        index=True,
+    )
+    conversation_id: Mapped[int] = mapped_column(
+        sa.BigInteger(),
+        sa.ForeignKey("conversations.id", ondelete="CASCADE"),
+        index=True,
+    )
+    message_id: Mapped[int] = mapped_column(
+        sa.BigInteger(),
+        sa.ForeignKey("messages.id", ondelete="CASCADE"),
+        index=True,
     )
 
 
