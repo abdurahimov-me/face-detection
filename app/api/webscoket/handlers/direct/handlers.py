@@ -34,4 +34,11 @@ async def handle_chats(
         return {
             "uuid": chat.uuid,
             "name": chat.name,
+            "type": chat.type,
+            "owner_id": chat.owner_id,
+            "unread": 0,
+            "members": 2,
+            "online": False,
+            "unread_message_id": None,
+            "last_message": None,
         }
