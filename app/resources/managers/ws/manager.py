@@ -57,6 +57,7 @@ class ChatWebSocketManager:
                 print(message)
                 print(self.connections.channels.get(conv_id, set()))
                 print(self.connections.connections)
+                print(self.connections.channels)
 
                 if not conv_id or not data:
                     continue
