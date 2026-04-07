@@ -56,6 +56,7 @@ class ChatWebSocketManager:
                 exclude_conn: str | None = message.get("exclude_conn")
                 print(message)
                 print(self.connections.channels.get(conv_id, set()))
+                print(self.connections.connections)
 
                 if not conv_id or not data:
                     continue
