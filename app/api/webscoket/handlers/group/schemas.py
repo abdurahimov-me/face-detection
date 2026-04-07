@@ -34,12 +34,20 @@ class MembersModel(BaseModel):
     joined_at: DateTime
     encrypt: t.Optional[str] = None
 
-    @model_validator(mode="after")
-    def set_encrypt(self):
-        if not self.encrypt:
-            key = f"{self.user_id}:{self.tenant}"
-            self.encrypt = fernet.encrypt(key)
-        return self
+    @model_validator(mode="before")
+    @classmethod
+    def generate_encrypt(cls, data):
+        if data.get("encrypt"):
+            return data
+
+        user_id = data.get("user_id")
+        tenant = data.get("tenant")
+
+        if user_id and tenant:
+            key = f"{user_id}:{tenant}"
+            data["encrypt"] = fernet.encrypt(key)
+
+        return data
 
     class Config:
         from_attributes = True
