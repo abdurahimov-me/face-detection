@@ -3,6 +3,7 @@ from fastapi import WebSocket
 
 from config import AWS_SETTINGS
 from config.db import db_helper
+from config.redis import cache
 from models import Conversation, Message, MessageRead, Member, File
 from models import User
 from resources.enums import ConversationType
@@ -145,6 +146,7 @@ async def handle_chats(
             if partner := partners_map.get(conv_id):
                 item["poster"] = AWS_SETTINGS.make_hr_cdn_url(partner.face)
                 item["name"] = partner.full_name
+                item["online"] = await cache.get(f"user_online:{partner.id}")
             else:
                 continue
         else:
@@ -153,7 +155,6 @@ async def handle_chats(
         item.update({
             "unread": unread_map.get(conv_id, 0),
             "members": members_map.get(conv_id, 0),
-            "online": False,
             "unread_message_id": first_unread_map.get(conv_id),
             "last_message": last_messages.get(conv_id),
         })
