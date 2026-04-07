@@ -93,6 +93,7 @@ async def user_websocket(
 
     conn_id = user.conn_id
     await chat_ws_manager.connect(conn_id, ws)
+    await user.mark_as_online()
 
     try:
         while True:
@@ -124,4 +125,5 @@ async def user_websocket(
 
     except WebSocketDisconnect:
         logger.info("Web socket disconnected")
+        await user.mark_as_offline()
         return await chat_ws_manager.disconnect(conn_id)
