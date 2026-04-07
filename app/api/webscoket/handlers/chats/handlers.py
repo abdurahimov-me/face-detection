@@ -2,7 +2,7 @@ import sqlalchemy as sa
 from fastapi import WebSocket
 
 from config.db import db_helper
-from models import Conversation, Message, MessageRead, Member
+from models import Conversation, Message, MessageRead, Member, File
 from models import User
 from resources.managers.ws.connections import connections_manager
 from resources.managers.ws.dispatcher import WSDispatcher
@@ -24,9 +24,11 @@ async def handle_chats(
                 Conversation.name,
                 Conversation.type,
                 Conversation.created_at,
+                File.file.label("poster"),
             )
             .select_from(Conversation)
             .join(Member, Member.conversation_id == Conversation.id)
+            .join(File, File.id == Conversation.poster_id)
             .where(Member.deleted.is_(False), Member.user_id == user.id)
             .order_by(Conversation.id.desc())
         )
