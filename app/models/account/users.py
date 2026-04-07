@@ -68,4 +68,4 @@ class User(BaseModel, DeletedMixin):
 
     async def mark_as_online(self):
         key = f"user_online:{self.id}"
-        await cache.set(key, True, 5)
+        await cache.set(key, True, 7)

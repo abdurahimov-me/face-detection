@@ -162,4 +162,4 @@ class ChatWebSocketManager:
         await websocket.send_json({"success": False, "type": "error", "message": message})
 
 
-chat_ws_manager = ChatWebSocketManager()
+chat_ws_manager: ChatWebSocketManager = ChatWebSocketManager()

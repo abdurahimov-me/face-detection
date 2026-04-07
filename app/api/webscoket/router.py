@@ -97,6 +97,7 @@ async def user_websocket(
     try:
         while True:
             message = await ws.receive_json()
+            await user.mark_as_online()
             command = message.get("command")
             payload = message.get("payload")
             request_id = message.get("request_id")
