@@ -8,7 +8,7 @@ class User(BaseModel):
     last_name = models.CharField(max_length=255, null=True, blank=True)
     face = models.CharField(max_length=1000, null=True, blank=True)
     user_id = models.BigIntegerField()
-    tenant = models.BigIntegerField()
+    tenant = models.CharField()
 
     class Meta:
         db_table = 'users'
