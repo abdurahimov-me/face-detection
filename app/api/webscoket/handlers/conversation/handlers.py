@@ -4,6 +4,7 @@ from sqlalchemy import orm
 
 from config import AWS_SETTINGS, APP_SETTINGS
 from config.db import db_helper
+from config.redis import cache
 from models import User, Message, MessageRead, Conversation, SecondaryFile, File, Member
 from resources.enums import ConversationType
 from resources.managers.ws.dispatcher import WSDispatcher
@@ -261,6 +262,7 @@ async def conversation_info(
             "type": item.type,
             "poster": AWS_SETTINGS.make_cdn_url(item.poster),
             "created_at": item.created_at.astimezone(APP_SETTINGS.TIME_ZONE).isoformat() if item.created_at else None,
+            "online": False
         }
         members_base_stmt = (
             sa.select(User)
@@ -280,5 +282,6 @@ async def conversation_info(
 
             data["name"] = partner.full_name
             data["poster"] = AWS_SETTINGS.make_hr_cdn_url(partner.face)
+            data["online"] = await cache.get(f"user_online:{partner.id}")
 
         return data
