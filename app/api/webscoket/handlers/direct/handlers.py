@@ -8,7 +8,7 @@ from resources.enums import ConversationType
 from resources.managers.ws.dispatcher import WSDispatcher
 from utils.exceptions import WSException
 from . import schemas
-
+from resources.managers.ws.manager import chat_ws_manager
 dp = WSDispatcher()
 
 
@@ -21,7 +21,6 @@ async def handle_chats(
     async with db_helper.session() as session:
         partner_user_id, partner_tenant = payload.partner.split(":")
 
-        # 1️⃣ Partnerni DB’dan olish / yaratish
         hr_data = await user_grpc_service.get_user(user_id=int(partner_user_id), tenant=partner_tenant)
         if hr_data is None:
             raise WSException("HR service is not available")
@@ -84,7 +83,7 @@ async def handle_chats(
         )
         await session.commit()
 
-        return {
+        data = {
             "uuid": chat.uuid,
             "name": partner.full_name,
             "type": chat.type,
@@ -96,3 +95,9 @@ async def handle_chats(
             "last_message": None,
             "created": True
         }
+        await chat_ws_manager.send_to_conn(
+            partner.conn_id,
+            data,
+            "new_conversation"
+        )
+        return data
