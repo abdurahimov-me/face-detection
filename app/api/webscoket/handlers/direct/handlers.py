@@ -84,7 +84,7 @@ async def handle_chats(
         await session.commit()
 
         data = {
-            "uuid": chat.uuid,
+            "uuid": str(chat.uuid),
             "name": partner.full_name,
             "type": chat.type,
             "owner_id": chat.owner_id,
