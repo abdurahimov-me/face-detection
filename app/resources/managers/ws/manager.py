@@ -50,7 +50,6 @@ class ChatWebSocketManager:
                 continue
             try:
                 message = json.loads(raw["data"])
-                print(message)
 
                 channel = raw.get("channel", "")
                 if isinstance(channel, bytes):
@@ -70,7 +69,6 @@ class ChatWebSocketManager:
         exclude_conn = message.get("exclude_conn")
         if not conv_id or not data:
             return
-        print(self.connections.channels.get(conv_id, set()))
         for conn_id in self.connections.channels.get(conv_id, set()):
             if conn_id == exclude_conn:
                 continue
