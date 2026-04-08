@@ -103,7 +103,7 @@ async def handle_chats(
         "new_message",
         user.conn_id
     )
-    return message.as_dict()
+    return event_data
 
 
 @dp.command("send_file")
