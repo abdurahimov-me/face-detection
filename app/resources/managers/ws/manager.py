@@ -33,7 +33,7 @@ class ChatWebSocketManager:
 
     async def start(self):
         await self.pubsub.connect()
-        await self.pubsub.pubsub.psubscribe("conv:*")
+        await self.pubsub.pubsub.psubscribe("conv:*", "conn:*")
         task = asyncio.create_task(self._listener())
         self.tasks.append(task)
         logger.info("ChatWebSocketManager started, listening conv:*")
@@ -50,20 +50,33 @@ class ChatWebSocketManager:
                 continue
             try:
                 message = json.loads(raw["data"])
+                channel = raw.get("channel", "")
 
-                conv_id: str | None = message.get("conv_id")
-                data: dict | None = message.get("data")
-                exclude_conn: str | None = message.get("exclude_conn")
-
-                if not conv_id or not data:
-                    continue
-                for conn_id in self.connections.channels.get(conv_id, set()):
-                    if conn_id == exclude_conn:
-                        continue
-                    await self.connections.send(conn_id, data)
+                if channel.startswith("conv:"):
+                    await self._handle_conv_message(message)
+                elif channel.startswith("conn:"):
+                    await self._handle_conn_message(message)
 
             except Exception as e:
                 logger.error(f"Listener error: {e}")
+
+    async def _handle_conv_message(self, message: dict):
+        conv_id = message.get("conv_id")
+        data = message.get("data")
+        exclude_conn = message.get("exclude_conn")
+        if not conv_id or not data:
+            return
+        for conn_id in self.connections.channels.get(conv_id, set()):
+            if conn_id == exclude_conn:
+                continue
+            await self.connections.send(conn_id, data)
+
+    async def _handle_conn_message(self, message: dict):
+        conn_id = message.get("conn_id")
+        data = message.get("data")
+        if not conn_id or not data:
+            return
+        await self.connections.send(conn_id, data)
 
     async def connect(self, conn_id: str, websocket: WebSocket):
         await websocket.accept()
@@ -94,6 +107,18 @@ class ChatWebSocketManager:
                     "data": data,
                 },
                 "exclude_conn": exclude_conn,
+            },
+        )
+
+    async def send_to_conn(self, conn_id: str, data: dict, event: types.EVENTS):
+        await self.pubsub.publish(
+            f"conn:{conn_id}",
+            {
+                "conn_id": conn_id,
+                "data": {
+                    "event": event,
+                    "data": data,
+                },
             },
         )
 

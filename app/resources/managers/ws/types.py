@@ -2,6 +2,7 @@ import typing as t
 
 EVENTS = t.Literal[
     "new_message",
+    "new_conversation",
     "message_read",
     "message_delivered",
     "message_edited",
