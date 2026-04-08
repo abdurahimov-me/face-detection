@@ -4,6 +4,7 @@ import sqlalchemy as sa
 from fastapi import WebSocket
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from config import AWS_SETTINGS
 from config.db import db_helper
 from models import User, Member, Message, Conversation, SecondaryFile
 from resources.managers.ws.dispatcher import WSDispatcher
@@ -88,7 +89,12 @@ async def handle_chats(
         session.add(message)
         await session.commit()
 
-    event_data = message.as_dict()
+    event_data = message.as_dict({
+        "user_id": user.id,
+        "first_name": user.first_name,
+        "last_name": user.last_name,
+        "face": AWS_SETTINGS.make_hr_cdn_url(user.face),
+    })
     if reply_message:
         event_data.update({
             "reply_text": reply_message["reply_text"],
