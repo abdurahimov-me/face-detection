@@ -62,6 +62,15 @@ class User(BaseModel, DeletedMixin):
     def full_name(self):
         return f"{self.first_name or ''} {self.last_name or ''}"
 
+    def as_dict(self):
+        return {
+            "id": self.id,
+            "user_id": self.user_id,
+            "encrypt": self.encrypt,
+            "first_name": self.first_name,
+            "last_name": self.last_name,
+        }
+
     async def mark_as_typing(self):
         key = f"user_typing:{self.id}"
         await cache.set(key, True, 5)
