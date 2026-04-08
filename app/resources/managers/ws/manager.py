@@ -50,7 +50,10 @@ class ChatWebSocketManager:
                 continue
             try:
                 message = json.loads(raw["data"])
+
                 channel = raw.get("channel", "")
+                if isinstance(channel, bytes):
+                    channel = channel.decode("utf-8")
 
                 if channel.startswith("conv:"):
                     await self._handle_conv_message(message)
@@ -58,7 +61,7 @@ class ChatWebSocketManager:
                     await self._handle_conn_message(message)
 
             except Exception as e:
-                logger.error(f"Listener error: {e}")
+                logger.error(f"Listener error: {e}", exc_info=True)  # to'liq traceback
 
     async def _handle_conv_message(self, message: dict):
         conv_id = message.get("conv_id")
