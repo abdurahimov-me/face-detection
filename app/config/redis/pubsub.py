@@ -11,7 +11,7 @@ class RedisPubSubManager:
         self.pubsub = None
 
     async def _get_redis_connection(self) -> aioredis.Redis:
-        return aioredis.Redis(connection_pool=redis_pool)
+        return aioredis.Redis(connection_pool=redis_pool, decode_responses=True, encoding="utf-8")
 
     async def connect(self):
         if not self.client:
