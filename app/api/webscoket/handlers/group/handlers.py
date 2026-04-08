@@ -89,11 +89,18 @@ async def handle_chats(
         )
         session.add(chat)
         await session.flush()
-        members = []
-        for u in all_users:
-            members.append(Member(user_id=u.id, conversation_id=chat.id))
-        members.append(Member(user_id=user.id, conversation_id=chat.id, role=MemberType.OWNER))
-        session.add_all(members)
+        members = [
+            {
+                "user_id": u.id,
+                "conversation_id": int(chat.id),
+                "role": MemberType.MEMBER,
+                "joined_at": utcnow()
+            }
+            for u in all_users
+        ]
+        stmt = psql_insert(Member).values(members).on_conflict_do_nothing()
+        await session.execute(stmt)
+        session.add(Member(user_id=user.id, conversation_id=chat.id, role=MemberType.OWNER))
         await session.commit()
 
         return {
