@@ -20,10 +20,9 @@ async def handle_chats(
     data = user.as_dict()
     data["conversation_uuid"] = str(payload.conversation_uuid)
     await chat_ws_manager.send_to_conv(
-        conv_id=conv_id,
+        conv_id,
         data=data,
         event="user_typing",
-        exclude_conn=user.conn_id,
     )
     return {
         "typing": True
