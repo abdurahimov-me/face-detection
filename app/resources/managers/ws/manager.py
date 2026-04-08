@@ -116,7 +116,6 @@ class ChatWebSocketManager:
         )
 
     async def send_to_conn(self, conn_id: str, data: dict, event: types.EVENTS):
-        print(data)
         await self.pubsub.publish(
             f"conn:{conn_id}",
             {
