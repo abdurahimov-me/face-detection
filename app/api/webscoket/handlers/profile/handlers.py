@@ -23,6 +23,7 @@ async def handle_chats(
         conv_id=conv_id,
         data=data,
         event="user_typing",
+        exclude_conn=user.conn_id,
     )
     return {
         "typing": True
