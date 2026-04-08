@@ -19,7 +19,6 @@ async def handle_chats(
         conv_id = await Conversation.get_conversation_field(session, payload.conversation_uuid, "id")
     data = user.as_dict()
     data["conversation_uuid"] = str(payload.conversation_uuid)
-    print("-------------", conv_id)
     await chat_ws_manager.send_to_conv(
         conv_id,
         data=data,
