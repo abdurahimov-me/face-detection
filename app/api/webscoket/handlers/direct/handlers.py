@@ -1,5 +1,7 @@
 from fastapi import WebSocket
 import sqlalchemy as sa
+
+from config import AWS_SETTINGS
 from config.db import db_helper
 from integrations.grpc.services import user_grpc_service
 from models import Conversation, Member
@@ -93,11 +95,16 @@ async def handle_chats(
             "online": False,
             "unread_message_id": None,
             "last_message": None,
-            "created": True
+            "created": True,
+            "poster": AWS_SETTINGS.make_hr_cdn_url(partner.face),
         }
+        event_data = data.copy()
+        event_data["name"] = user.full_name
+        event_data["online"] = True
+        event_data["poster"] = AWS_SETTINGS.make_hr_cdn_url(user.face)
         await chat_ws_manager.send_to_conn(
             partner.conn_id,
-            data,
+            event_data,
             "new_conversation"
         )
         return data
