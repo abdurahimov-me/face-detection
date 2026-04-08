@@ -97,14 +97,12 @@ class AWSSettings(EnvReader):
     HR_CDN_URL: str = None
 
     def make_cdn_url(self, path: t.Optional[str]) -> t.Optional[str]:
-        return "https://hips.hearstapps.com/hmg-prod/images/dairy-cow-royalty-free-image-1710959416.jpg"
         if path:
             base_url = f'{self.CDN_URL}/{APP_SETTINGS.MEDIA_URL}'
             return f"{base_url}/{path}"
         return None
 
     def make_hr_cdn_url(self, path: t.Optional[str]) -> t.Optional[str]:
-        return "https://hips.hearstapps.com/hmg-prod/images/dairy-cow-royalty-free-image-1710959416.jpg"
         if path:
             base_url = f'{self.HR_CDN_URL}/{APP_SETTINGS.MEDIA_URL}'
             return f"{base_url}/{path}"
