@@ -99,13 +99,13 @@ class AWSSettings(EnvReader):
     def make_cdn_url(self, path: t.Optional[str]) -> t.Optional[str]:
         if path:
             base_url = f'{self.CDN_URL}/{APP_SETTINGS.MEDIA_URL}'
-            return f"{base_url}/{path}"
+            return f"{base_url}{path}"
         return None
 
     def make_hr_cdn_url(self, path: t.Optional[str]) -> t.Optional[str]:
         if path:
             base_url = f'{self.HR_CDN_URL}/{APP_SETTINGS.MEDIA_URL}'
-            return f"{base_url}/{path}"
+            return f"{base_url}{path}"
         return None
 
 
