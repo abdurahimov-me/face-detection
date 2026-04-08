@@ -50,6 +50,7 @@ class ChatWebSocketManager:
                 continue
             try:
                 message = json.loads(raw["data"])
+                print(message)
 
                 channel = raw.get("channel", "")
                 if isinstance(channel, bytes):
