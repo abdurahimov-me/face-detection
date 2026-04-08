@@ -225,14 +225,3 @@ async def handle_chats(
         )
         users = (await session.execute(users_stmt)).mappings().all()
         return schemas.ReadUsersModelResponse(users=users)
-
-
-@dp.command("mark_as_typing")
-async def handle_chats(
-        websocket: WebSocket,
-        user: User,
-):
-    await user.mark_as_typing()
-    return {
-        "typing": True
-    }
