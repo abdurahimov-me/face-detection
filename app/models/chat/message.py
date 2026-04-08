@@ -110,14 +110,16 @@ class Message(BaseModel, DeletedMixin):
         passive_deletes=True,
     )
 
-    def as_dict(self):
+    def as_dict(self, extra_data: dict = None):
+        extra_data = extra_data or {}
         return {
             "message_id": self.id,
             "text": self.text,
             "type": self.type,
             "reply_id": self.reply_id,
             "topic_id": self.topic_id,
-            "sender_id": self.sender_id
+            "sender_id": self.sender_id,
+            **extra_data
         }
 
 
