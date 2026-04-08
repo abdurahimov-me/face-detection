@@ -58,3 +58,7 @@ class ReadUserModelResponse(BaseModel):
 
 class ReadUsersModelResponse(BaseModel):
     users: t.List[ReadUserModelResponse]
+
+
+class ConversationInfoModel(BaseModel):
+    conversation_uuid: UUID

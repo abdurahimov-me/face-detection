@@ -2,9 +2,12 @@ import sqlalchemy as sa
 from fastapi import WebSocket
 from sqlalchemy import orm
 
+from config import AWS_SETTINGS
 from config.db import db_helper
-from models import User, Message, MessageRead, Conversation, SecondaryFile, File
+from models import User, Message, MessageRead, Conversation, SecondaryFile, File, Member
+from resources.enums import ConversationType
 from resources.managers.ws.dispatcher import WSDispatcher
+from utils.exceptions import WSException
 from . import schemas
 
 dp = WSDispatcher()
@@ -225,3 +228,56 @@ async def handle_chats(
         )
         users = (await session.execute(users_stmt)).mappings().all()
         return schemas.ReadUsersModelResponse(users=users)
+
+
+@dp.command("conversation_info")
+async def conversation_info(
+        websocket: WebSocket,
+        payload: schemas.ConversationInfoModel,
+        user: User,
+):
+    conv_stmt = (
+        sa.select(
+            Conversation.id,
+            Conversation.uuid,
+            Conversation.name,
+            Conversation.type,
+            Conversation.created_at,
+            File.file.label("poster"),
+        )
+        .select_from(Conversation)
+        .join(File, File.id == Conversation.poster_id, isouter=True)
+        .where(Conversation.uuid == payload.conversation_uuid)
+        .limit(1)
+    )
+
+    async with db_helper.session() as session:
+        item = (await session.execute(conv_stmt)).mappings().first()
+        if item is None:
+            raise WSException("Conversation not found")
+        data = {
+            "uuid": str(item.uuid),
+            "name": item.name,
+            "type": item.type,
+            "poster": AWS_SETTINGS.make_cdn_url(item.poster),
+        }
+        members_base_stmt = (
+            sa.select(User)
+            .join(Member, Member.user_id == User.id)
+            .where(Member.conversation_id == item.id)
+        )
+
+        if item.type == ConversationType.DIRECT:
+            partner_stmt = (
+                members_base_stmt
+                .where(Member.user_id != User.id)
+                .limit(1)
+            )
+            partner = (await session.execute(partner_stmt)).scalar_one_or_none()
+            if partner is None:
+                raise WSException("Partner not found")
+
+            data["name"] = partner.full_name
+            data["poster"] = AWS_SETTINGS.make_hr_cdn_url(partner.face)
+
+        return data

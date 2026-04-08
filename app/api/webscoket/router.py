@@ -95,6 +95,7 @@ async def user_websocket(
     await chat_ws_manager.connect(conn_id, ws)
     await user.mark_as_online()
 
+
     try:
         while True:
             message = await ws.receive_json()
