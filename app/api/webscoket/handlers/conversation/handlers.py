@@ -2,7 +2,7 @@ import sqlalchemy as sa
 from fastapi import WebSocket
 from sqlalchemy import orm
 
-from config import AWS_SETTINGS
+from config import AWS_SETTINGS, APP_SETTINGS
 from config.db import db_helper
 from models import User, Message, MessageRead, Conversation, SecondaryFile, File, Member
 from resources.enums import ConversationType
@@ -260,6 +260,7 @@ async def conversation_info(
             "name": item.name,
             "type": item.type,
             "poster": AWS_SETTINGS.make_cdn_url(item.poster),
+            "created_at": item.created_at.astimezone(APP_SETTINGS.TIME_ZONE).isoformat() if item.created_at else None,
         }
         members_base_stmt = (
             sa.select(User)
