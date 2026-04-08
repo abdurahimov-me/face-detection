@@ -64,6 +64,7 @@ async def handle_chats(
                 Message.type,
                 User.first_name,
                 User.last_name,
+                User.user_id,
                 sa.func.row_number().over(
                     partition_by=Message.conversation_id,
                     order_by=Message.id.desc()
