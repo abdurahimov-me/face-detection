@@ -8,6 +8,7 @@ from config.redis import cache
 from models import User, Message, MessageRead, Conversation, SecondaryFile, File, Member
 from resources.enums import ConversationType
 from resources.managers.ws.dispatcher import WSDispatcher
+from resources.managers.ws.manager import chat_ws_manager
 from utils.exceptions import WSException
 from . import schemas
 
@@ -203,6 +204,16 @@ async def handle_chats(
             ])
         )
         await session.commit()
+        event_data = {
+            "conversation_uuid": str(payload.conversation_uuid),
+            "messages": [unread_ids]
+        }
+        await chat_ws_manager.send_to_conv(
+            conversation_id,
+            data=event_data,
+            event="message_read",
+            exclude_conn=user.conn_id,
+        )
         return {
             "marked": len(unread_ids)
         }
