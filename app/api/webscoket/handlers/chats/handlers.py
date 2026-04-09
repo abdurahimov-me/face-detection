@@ -163,7 +163,7 @@ async def handle_chats(
             "unread": unread_map.get(conv_id, 0),
             "members": members_map.get(conv_id, 0),
             "unread_message_id": first_unread_map.get(conv_id),
-            "last_message": last_messages,
+            "last_message": last_message,
         })
         result.append(item)
 
