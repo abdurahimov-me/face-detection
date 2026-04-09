@@ -3,9 +3,10 @@ from fastapi import WebSocket
 from sqlalchemy.dialects.postgresql import insert as psql_insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from config import AWS_SETTINGS
 from config.db import db_helper
 from integrations.grpc.services import user_grpc_service
-from models import Conversation, Member
+from models import Conversation, Member, File
 from models import User
 from resources.enums import ConversationType, MemberType
 from resources.managers.ws.dispatcher import WSDispatcher
@@ -176,4 +177,47 @@ async def handle_chats(
 
         return {
             "members": len(users),
+        }
+
+
+@dp.command("edit_group")
+async def handle_chats(
+        websocket: WebSocket,
+        user: User,
+        payload: schemas.EditGroup,
+):
+    async with db_helper.session() as session:
+        conversation_id = await Conversation.get_conversation_field(session, payload.conversation_uuid, "id")
+        users = await _get_or_crate_users_from_encrypt(session, payload.users, main_tenant=user.tenant)
+        conversation = await Conversation.repo.db_first(session, id=conversation_id)
+        poster = None
+        if payload.poster_id:
+            poster = await File.repo.db_first(session, id=payload.poster_id)
+            if poster is None:
+                raise WSException("Poster not found")
+
+        if conversation is None:
+            raise WSException("Conversation not found")
+
+        conversation.name = payload.name
+        conversation.poster_id = payload.poster_id
+
+        members = [
+            {
+                "user_id": u.id,
+                "conversation_id": int(conversation_id),
+                "role": MemberType.MEMBER,
+                "joined_at": utcnow()
+            }
+            for u in users
+        ]
+
+        stmt = psql_insert(Member).values(members).on_conflict_do_nothing()
+        await session.execute(stmt)
+        await session.commit()
+
+        return {
+            "uuid": conversation.uuid,
+            "name": conversation.name,
+            "poster": AWS_SETTINGS.make_cdn_url(poster.file) if poster else None,
         }

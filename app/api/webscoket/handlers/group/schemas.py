@@ -1,7 +1,7 @@
 import typing as t
 from uuid import UUID
 
-from pydantic import BaseModel, field_validator, model_validator
+from pydantic import BaseModel, model_validator
 
 from utils.customs import DateTime
 from utils.customs.formats.fernet import FernetEncrypt
@@ -13,6 +13,12 @@ class CreateGroup(BaseModel):
     name: str
     poster_id: t.Optional[int] = None
     users: t.List[FernetEncrypt]
+
+
+class EditGroup(BaseModel):
+    name: t.Optional[str] = None
+    poster_id: t.Optional[int] = None
+    users: t.List[FernetEncrypt] = []
 
 
 class AddUsersToGroup(BaseModel):
