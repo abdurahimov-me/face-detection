@@ -169,9 +169,9 @@ async def handle_chats(
 
     result.sort(
         key=lambda x: (
-            x["last_message"]["created_at"]
+            x["last_message"].get("created_at")
             if x["last_message"]
-            else x["created_at"]
+            else x.get("created_at")
         ),
         reverse=True
     )
