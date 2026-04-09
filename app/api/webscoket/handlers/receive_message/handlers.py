@@ -1,3 +1,4 @@
+import typing as t
 from uuid import UUID
 
 import sqlalchemy as sa
@@ -52,43 +53,37 @@ async def _check_user_is_member(
         raise WSException("User is not member or owner of conversation")
 
 
-@dp.command("send_message")
-async def handle_chats(
-        websocket: WebSocket,
-        payload: schemas.SendMessageModel,
-        user: User,
+async def _get_reply_message(
+        session: AsyncSession,
+        reply_id: t.Optional[int],
 ):
-    async with db_helper.session() as session:
-        conversation_id = await _get_chat_id(session, payload.conversation_uuid)
-        await _check_user_is_member(session, user.id, conversation_id)
-        reply_message = None
-        if payload.reply_id:
-            reply_message_stmt = (
-                sa.select(
-                    Message.id,
-                    Message.type,
-                    sa.func.left(Message.text, 20).label("reply_text"),
-                    User.first_name.label("reply_user_first_name"),
-                    User.last_name.label("reply_user_last_name"),
-                )
-                .select_from(Message)
-                .join(User, User.id == Message.sender_id)
-                .where(Message.id == payload.reply_id)
-                .limit(1)
+    if reply_id:
+        reply_message_stmt = (
+            sa.select(
+                Message.id,
+                Message.type,
+                sa.func.left(Message.text, 20).label("reply_text"),
+                User.first_name.label("reply_user_first_name"),
+                User.last_name.label("reply_user_last_name"),
             )
-            reply_message = (await session.execute(reply_message_stmt)).mappings().first()
-            if not reply_message:
-                raise WSException("Reply message not found")
-
-        message = Message(
-            text=payload.text,
-            sender_id=user.id,
-            conversation_id=conversation_id,
-            reply_id=payload.reply_id,
+            .select_from(Message)
+            .join(User, User.id == Message.sender_id)
+            .where(Message.id == reply_id)
+            .limit(1)
         )
-        session.add(message)
-        await session.commit()
+        reply_message = (await session.execute(reply_message_stmt)).mappings().first()
+        if not reply_message:
+            raise WSException("Reply message not found")
+        return reply_message
+    return None
 
+
+def _get_event_data(
+        message: Message,
+        user: User,
+        reply_message,
+        conversation_uuid,
+):
     event_data = message.as_dict({
         "user_id": user.id,
         "first_name": user.first_name,
@@ -102,7 +97,30 @@ async def handle_chats(
             "reply_first_name": reply_message["reply_user_first_name"],
             "reply_type": reply_message["type"]
         })
-    event_data["conversation_uuid"] = str(payload.conversation_uuid)
+    event_data["conversation_uuid"] = str(conversation_uuid)
+    return event_data
+
+
+@dp.command("send_message")
+async def handle_chats(
+        websocket: WebSocket,
+        payload: schemas.SendMessageModel,
+        user: User,
+):
+    async with db_helper.session() as session:
+        conversation_id = await _get_chat_id(session, payload.conversation_uuid)
+        await _check_user_is_member(session, user.id, conversation_id)
+        reply_message = await _get_reply_message(session, payload.reply_id)
+        message = Message(
+            text=payload.text,
+            sender_id=user.id,
+            conversation_id=conversation_id,
+            reply_id=payload.reply_id,
+        )
+        session.add(message)
+        await session.commit()
+
+    event_data = _get_event_data(message, user, reply_message, payload.conversation_uuid)
     await chat_ws_manager.send_to_conv(
         conversation_id,
         event_data,
@@ -121,6 +139,7 @@ async def handle_chats(
     async with db_helper.session() as session:
         conversation_id = await _get_chat_id(session, payload.conversation_uuid)
         await _check_user_is_member(session, user.id, conversation_id)
+        reply_message = await _get_reply_message(session, payload.reply_id)
         msg = Message(
             text=payload.text,
             sender_id=user.id,
@@ -141,10 +160,11 @@ async def handle_chats(
         session.add_all(files)
 
         await session.commit()
+    event_data = _get_event_data(msg, user, reply_message, payload.conversation_uuid)
     await chat_ws_manager.send_to_conv(
         conversation_id,
-        msg.as_dict(),
+        event_data,
         "new_message",
         user.conn_id
     )
-    return msg.as_dict()
+    return event_data
