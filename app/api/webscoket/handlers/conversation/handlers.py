@@ -2,7 +2,7 @@ import sqlalchemy as sa
 from fastapi import WebSocket
 from sqlalchemy import orm
 
-from config import AWS_SETTINGS, APP_SETTINGS
+from config import AWS_SETTINGS
 from config.db import db_helper
 from config.redis import cache
 from models import User, Message, MessageRead, Conversation, SecondaryFile, File, Member
@@ -255,6 +255,7 @@ async def conversation_info(
             Conversation.name,
             Conversation.type,
             Conversation.created_at,
+            Conversation.poster_id,
             File.file.label("poster"),
         )
         .select_from(Conversation)
@@ -273,7 +274,8 @@ async def conversation_info(
             "type": item.type,
             "poster": AWS_SETTINGS.make_cdn_url(item.poster),
             "created_at": item.created_at.isoformat(),
-            "online": False
+            "online": False,
+            "poster_id": item.poster_id,
         }
         members_base_stmt = (
             sa.select(User)
