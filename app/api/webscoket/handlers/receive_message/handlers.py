@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from config import AWS_SETTINGS
 from config.db import db_helper
-from models import User, Member, Message, Conversation, SecondaryFile
+from models import User, Member, Message, Conversation, SecondaryFile, File
 from resources.managers.ws.dispatcher import WSDispatcher
 from resources.managers.ws.manager import chat_ws_manager
 from utils.exceptions import WSException
@@ -139,6 +139,11 @@ async def handle_chats(
     async with db_helper.session() as session:
         conversation_id = await _get_chat_id(session, payload.conversation_uuid)
         await _check_user_is_member(session, user.id, conversation_id)
+
+        files = await File.repo.db_filter(session, id__in=payload.files)
+        if len(files) != len(payload.files):
+            raise WSException("Some files not found")
+
         reply_message = await _get_reply_message(session, payload.reply_id)
         msg = Message(
             text=payload.text,
@@ -161,6 +166,15 @@ async def handle_chats(
 
         await session.commit()
     event_data = _get_event_data(msg, user, reply_message, payload.conversation_uuid)
+    event_data["files"] = [{
+        "id": f.id,
+        "file": AWS_SETTINGS.make_cdn_url(f.file),
+        "filename": f.filename,
+        "size": f.size,
+        "type": f.type,
+        "meta_data": f.meta_data,
+    } for f in files]
+
     await chat_ws_manager.send_to_conv(
         conversation_id,
         event_data,
