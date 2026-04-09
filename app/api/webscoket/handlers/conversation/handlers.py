@@ -277,7 +277,7 @@ async def conversation_info(
         }
         members_base_stmt = (
             sa.select(User)
-            .join(Member, Member.user_id == User.id)
+            .join(Member, Member.user_id == user.id)
             .where(Member.conversation_id == item.id)
         )
 
