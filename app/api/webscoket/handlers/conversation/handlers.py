@@ -272,7 +272,7 @@ async def conversation_info(
             "name": item.name,
             "type": item.type,
             "poster": AWS_SETTINGS.make_cdn_url(item.poster),
-            "created_at": (item.created_at.astimezone(APP_SETTINGS.TIME_ZONE)).isoformat(),
+            "created_at": item.created_at.isoformat(),
             "online": False
         }
         members_base_stmt = (
