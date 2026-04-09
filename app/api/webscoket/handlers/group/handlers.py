@@ -10,6 +10,7 @@ from models import Conversation, Member, File
 from models import User
 from resources.enums import ConversationType, MemberType
 from resources.managers.ws.dispatcher import WSDispatcher
+from resources.managers.ws.manager import chat_ws_manager
 from utils import utcnow
 from utils.exceptions import WSException
 from . import schemas
@@ -215,9 +216,17 @@ async def handle_chats(
         stmt = psql_insert(Member).values(members).on_conflict_do_nothing()
         await session.execute(stmt)
         await session.commit()
-
-        return {
-            "uuid": conversation.uuid,
+        data = {
+            "uuid": str(conversation.uuid),
             "name": conversation.name,
             "poster": AWS_SETTINGS.make_cdn_url(poster.file) if poster else None,
         }
+
+        await chat_ws_manager.send_to_conv(
+            conversation_id,
+            data,
+            "edit_group",
+            exclude_conn=user.conn_id,
+        )
+
+        return data

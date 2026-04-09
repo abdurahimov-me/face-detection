@@ -11,4 +11,5 @@ EVENTS = t.Literal[
     "user_stop_typing",
     "user_online",
     "user_offline",
+    "edit_group"
 ]
