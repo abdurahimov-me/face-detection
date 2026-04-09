@@ -1,3 +1,5 @@
+import typing as t
+
 import sqlalchemy as sa
 from fastapi import WebSocket
 
@@ -143,6 +145,9 @@ async def handle_chats(
     for conv in conversations:
         item = dict(conv)
         conv_id = conv["id"]
+        last_message: t.Optional[t.Dict] = last_messages.get(conv_id)
+        if last_message:
+            last_message["read"] = True
         if conv["type"] == ConversationType.DIRECT:
             if partner := partners_map.get(conv_id):
                 connections_manager.join_channel(user.conn_id, str(conv_id))
@@ -158,7 +163,7 @@ async def handle_chats(
             "unread": unread_map.get(conv_id, 0),
             "members": members_map.get(conv_id, 0),
             "unread_message_id": first_unread_map.get(conv_id),
-            "last_message": last_messages.get(conv_id),
+            "last_message": last_messages,
         })
         result.append(item)
 
