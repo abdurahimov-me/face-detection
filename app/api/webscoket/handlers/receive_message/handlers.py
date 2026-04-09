@@ -140,8 +140,8 @@ async def handle_chats(
         conversation_id = await _get_chat_id(session, payload.conversation_uuid)
         await _check_user_is_member(session, user.id, conversation_id)
 
-        files = await File.repo.db_filter(session, id__in=payload.files)
-        if len(files) != len(payload.files):
+        file_objs = await File.repo.db_filter(session, id__in=payload.files)
+        if len(file_objs) != len(payload.files):
             raise WSException("Some files not found")
 
         reply_message = await _get_reply_message(session, payload.reply_id)
@@ -173,7 +173,7 @@ async def handle_chats(
         "size": f.size,
         "type": f.type,
         "meta_data": f.meta_data,
-    } for f in files]
+    } for f in file_objs]
 
     await chat_ws_manager.send_to_conv(
         conversation_id,
