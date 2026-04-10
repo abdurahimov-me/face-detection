@@ -1,10 +1,15 @@
+from dataclasses import dataclass
+
 from pydantic_core import core_schema
 
 from utils.security import fernet
 from .base import BaseFormat
 
 
-class FernetEncrypt(str, BaseFormat):
+@dataclass(frozen=True)
+class FernetEncrypt(BaseFormat):
+    user_id: int
+    tenant: str
     json_schema = {
         "type": "string",
         "format": "fernet-encrypted",
@@ -22,13 +27,13 @@ class FernetEncrypt(str, BaseFormat):
         ])
 
     @classmethod
-    def validate(cls, v=None, *args, **kwargs):
+    def validate(cls, v: str = None, *args, **kwargs):
         try:
             decrypted = fernet.decrypt(v)
 
             if isinstance(decrypted, bytes):
                 decrypted = decrypted.decode()
-
-            return cls(decrypted)
+            user_id, tenant = decrypted.split(':')
+            return cls(user_id=int(user_id), tenant=tenant)
         except Exception as e:
             raise ValueError(f"Invalid encrypted value: {e}")
