@@ -1,3 +1,5 @@
+import typing as t
+
 import sqlalchemy as sa
 from fastapi import WebSocket
 from sqlalchemy.dialects.postgresql import insert as psql_insert
@@ -6,9 +8,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from config import AWS_SETTINGS
 from config.db import db_helper
 from integrations.grpc.services import user_grpc_service
-from models import Conversation, Member, File
+from models import Conversation, Member, File, Message
 from models import User
-from resources.enums import ConversationType, MemberType
+from resources.enums import ConversationType, MemberType, MessageType, MessageEvent
 from resources.managers.ws.dispatcher import WSDispatcher
 from resources.managers.ws.manager import chat_ws_manager
 from utils import utcnow
@@ -80,7 +82,11 @@ async def handle_chats(
         payload: schemas.CreateGroup,
 ):
     async with db_helper.session() as session:
-        all_users = await _get_or_crate_users_from_encrypt(session, payload.users, main_tenant=user.tenant)
+        all_users: t.List[User] = await _get_or_crate_users_from_encrypt(
+            session,
+            payload.users,
+            main_tenant=user.tenant
+        )
 
         chat = Conversation(
             name=payload.name,
@@ -102,20 +108,28 @@ async def handle_chats(
         stmt = psql_insert(Member).values(members).on_conflict_do_nothing()
         await session.execute(stmt)
         session.add(Member(user_id=user.id, conversation_id=chat.id, role=MemberType.OWNER))
+        session.add(Message(conversation_id=chat.id, type=MessageType.EVENT, text=MessageEvent.CREATED_GROUP))
         await session.commit()
 
-        return {
-            "uuid": chat.uuid,
+        data = {
+            "uuid": str(chat.uuid),
             "name": chat.name,
             "type": chat.type,
             "owner_id": chat.owner_id,
-            "unread": 0,
+            "unread": 1,
             "members": len(all_users) + 1,
             "online": False,
             "unread_message_id": None,
             "last_message": None,
             "created": True,
         }
+        for u in all_users:
+            await chat_ws_manager.send_to_conn(
+                conn_id=u.conn_id,
+                data=data,
+                event="new_conversation"
+            )
+        return data
 
 
 @dp.command("get_users_from_group")

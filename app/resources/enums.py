@@ -1,4 +1,4 @@
-from utils.customs import IntEnum
+from utils.customs import IntEnum, StrEnum
 
 
 class ConversationType(IntEnum):
@@ -25,3 +25,9 @@ class MessageType(IntEnum):
     AUDIO = 3
     DOCUMENT = 4
     VIDEO = 5
+    EVENT = 6
+
+
+class MessageEvent(StrEnum):
+    CREATED_GROUP = "created_group"
+    CREATED_DIRECT = "created_direct"
