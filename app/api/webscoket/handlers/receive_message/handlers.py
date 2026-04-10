@@ -115,7 +115,7 @@ async def handle_chats(
             text=payload.text,
             sender_id=user.id,
             conversation_id=conversation_id,
-            reply_id=payload.reply_id,
+            reply_id=payload.reply_id if reply_message else None,
         )
         session.add(message)
         await session.commit()
@@ -149,7 +149,7 @@ async def handle_chats(
             text=payload.text,
             sender_id=user.id,
             conversation_id=conversation_id,
-            reply_id=payload.reply_id,
+            reply_id=payload.reply_id if reply_message else None,
             type=payload.type
         )
         session.add(msg)
