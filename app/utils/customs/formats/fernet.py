@@ -7,9 +7,13 @@ from .base import BaseFormat
 
 
 @dataclass(frozen=True)
-class FernetEncrypt(BaseFormat):
+class UserEncrypt(BaseFormat):
     user_id: int
     tenant: str
+
+    def get_both(self):
+        return self.user_id, self.tenant
+
     json_schema = {
         "type": "string",
         "format": "fernet-encrypted",

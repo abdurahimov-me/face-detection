@@ -2,7 +2,6 @@ import typing as t
 
 from fastapi import APIRouter, Depends
 
-from integrations.grpc.services import user_grpc_service
 from resources.depends import get_token_payload
 from . import services, schemas
 from ..shared.schemas import FileModel
@@ -41,21 +40,8 @@ async def update_file(
     return await service.update_file(schema)
 
 
-@router.get(
-    "/testtt"
-)
-async def testtt():
-    res = (await user_grpc_service.get_user("as", "salom"))
-
-    return {
-        "id": res.id,
-        "first_name": res.first_name,
-        "last_name": res.last_name,
-        "middle_name": res.middle_name,
-        "face": res.face,
-    }
-    # return {
-    #     "user": (await user_service.get_user(123, "salom")),
-    #     "users": await user_service.get_users([12312, 12312], "salom"),
-    # }
-#
+@router.post("/test")
+async def salom(
+        schema: schemas.CreateSalomSchema,
+):
+    return schema

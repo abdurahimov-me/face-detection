@@ -4,7 +4,7 @@ from uuid import UUID
 from pydantic import BaseModel, model_validator
 
 from utils.customs import DateTime
-from utils.customs.formats.fernet import FernetEncrypt
+from utils.customs.formats.fernet import UserEncrypt
 from utils.customs.formats.file import HrCoreFileFormat
 from utils.security import fernet
 
@@ -12,19 +12,19 @@ from utils.security import fernet
 class CreateGroup(BaseModel):
     name: str
     poster_id: t.Optional[int] = None
-    users: t.List[FernetEncrypt]
+    users: t.List[UserEncrypt]
 
 
 class EditGroup(BaseModel):
     conversation_uuid: UUID
     name: t.Optional[str] = None
     poster_id: t.Optional[int] = None
-    users: t.List[FernetEncrypt] = []
+    users: t.List[UserEncrypt] = []
 
 
 class AddUsersToGroup(BaseModel):
     conversation_uuid: UUID
-    users: t.List[FernetEncrypt]
+    users: t.List[UserEncrypt]
 
 
 class GetUsersFromGroup(BaseModel):

@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 
-from utils.customs.formats.fernet import FernetEncrypt
+from utils.customs.formats.fernet import UserEncrypt
 
 
 class StartConversation(BaseModel):
-    partner: FernetEncrypt
+    partner: UserEncrypt

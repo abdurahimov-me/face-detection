@@ -5,6 +5,7 @@ from pydantic import BaseModel
 
 from resources.enums import FileType
 from utils.customs import as_form
+from utils.customs.formats.fernet import UserEncrypt
 
 
 @as_form
@@ -17,3 +18,7 @@ class UpdateFileSchema(BaseModel):
 class CreateFileSchema(BaseModel):
     type: FileType
     files: t.List[UploadFile]
+
+
+class CreateSalomSchema(BaseModel):
+    partner: UserEncrypt

@@ -12,6 +12,7 @@ from resources.enums import ConversationType, MemberType
 from resources.managers.ws.dispatcher import WSDispatcher
 from resources.managers.ws.manager import chat_ws_manager
 from utils import utcnow
+from utils.customs.formats.fernet import UserEncrypt
 from utils.exceptions import WSException
 from . import schemas
 
@@ -20,15 +21,14 @@ dp = WSDispatcher()
 
 async def _get_or_crate_users_from_encrypt(
         session: AsyncSession,
-        users_encrypt: list[str],
+        users_encrypt: list[UserEncrypt],
         main_tenant: str
 ):
     pairs = []
     user_ids = []
     for user_fernet in users_encrypt:
-        user_id, tenant = user_fernet.split(":")
-        pairs.append((int(user_id), tenant))
-        user_ids.append(int(user_id))
+        pairs.append(user_fernet.get_both())
+        user_ids.append(user_fernet.user_id)
     hr_users_data = await user_grpc_service.get_users(user_ids=user_ids, tenant=main_tenant)
     if hr_users_data is None:
         raise WSException("HR service is not available")

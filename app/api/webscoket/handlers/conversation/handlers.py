@@ -251,9 +251,11 @@ async def conversation_info(
     conversation_uuid = payload.conversation_uuid
     async with db_helper.session() as session:
         if conversation_uuid is None and payload.partner:
-            partner_user_id, partner_tenant = payload.partner.split(":")
-            partner: User = await User.repo.db_first(session=session, user_id=int(partner_user_id),
-                                                     tenant=partner_tenant)
+            partner: User = await User.repo.db_first(
+                session=session,
+                user_id=payload.partner.user_id,
+                tenant=payload.partner.tenant,
+            )
             if not partner:
                 raise WSException("Partner not found")
             conv_stmt = (

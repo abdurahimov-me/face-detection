@@ -21,16 +21,18 @@ async def handle_chats(
         payload: schemas.StartConversation,
 ):
     async with db_helper.session() as session:
-        partner_user_id, partner_tenant = payload.partner.split(":")
 
-        hr_data = await user_grpc_service.get_user(user_id=int(partner_user_id), tenant=partner_tenant)
+        hr_data = await user_grpc_service.get_user(
+            user_id=payload.partner.user_id,
+            tenant=payload.partner.tenant
+        )
         if hr_data is None:
             raise WSException("HR service is not available")
 
         partner, _ = await User.repo.db_get_or_create(
             session,
-            user_id=int(partner_user_id),
-            tenant=partner_tenant,
+            user_id=payload.partner.user_id,
+            tenant=payload.partner.tenant,
             defaults={
                 "first_name": hr_data.first_name or "",
                 "last_name": hr_data.last_name or "",
