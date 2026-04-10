@@ -150,9 +150,11 @@ async def handle_chats(
             last_message["read"] = True
         if conv["type"] == ConversationType.DIRECT:
             if partner := partners_map.get(conv_id):
+                partner: User
                 connections_manager.join_channel(user.conn_id, str(conv_id))
                 item["poster"] = AWS_SETTINGS.make_hr_cdn_url(partner.face)
                 item["name"] = partner.full_name
+                item["encrypt"] = partner.encrypt
                 item["online"] = await cache.get(f"user_online:{partner.id}")
             else:
                 continue
