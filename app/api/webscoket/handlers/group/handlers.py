@@ -29,7 +29,6 @@ async def _get_or_crate_users_from_encrypt(
         user_id, tenant = user_fernet.split(":")
         pairs.append((int(user_id), tenant))
         user_ids.append(int(user_id))
-    print(main_tenant)
     hr_users_data = await user_grpc_service.get_users(user_ids=user_ids, tenant=main_tenant)
     if hr_users_data is None:
         raise WSException("HR service is not available")
@@ -200,9 +199,10 @@ async def handle_chats(
 
         if conversation is None:
             raise WSException("Conversation not found")
-
-        conversation.name = payload.name
-        conversation.poster_id = payload.poster_id
+        data = payload.model_dump(exclude_unset=True)
+        data.pop("conversation_uuid", None)
+        for k, v in data.items():
+            setattr(conversation, k, v)
 
         members = [
             {
