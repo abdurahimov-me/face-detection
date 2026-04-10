@@ -193,7 +193,7 @@ async def handle_chats(
         await session.flush()
         conversation = await Conversation.repo.db_first(session, id=conversation_id)
         poster = None
-        if payload.poster_id:
+        if payload.poster_id is not None:
             poster = await File.repo.db_first(session, id=payload.poster_id)
             if poster is None:
                 raise WSException("Poster not found")
