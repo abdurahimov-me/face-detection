@@ -226,7 +226,7 @@ async def handle_chats(
         user: User,
 ):
     async with db_helper.session() as session:
-        conv_id = await Conversation.get_conversation_field(session, payload.conversation_uuid, "id")
+        # conv_id = await Conversation.get_conversation_field(session, payload.conversation_uuid, "id")
         users_stmt = (
             sa.select(User.id, User.first_name, User.last_name, User.face, MessageRead.read_at)
             .select_from(MessageRead)
