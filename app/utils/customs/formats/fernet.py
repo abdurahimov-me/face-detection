@@ -13,10 +13,13 @@ class FernetEncrypt(str, BaseFormat):
 
     @classmethod
     def __get_pydantic_core_schema__(cls, source_type, handler):
-        return core_schema.no_info_after_validator_function(
-            cls.validate,
-            core_schema.str_schema()
-        )
+        return core_schema.union_schema([
+            core_schema.none_schema(),  # ✅ None allowed
+            core_schema.no_info_after_validator_function(
+                cls.validate,
+                core_schema.str_schema()
+            )
+        ])
 
     @classmethod
     def validate(cls, v=None, *args, **kwargs):
