@@ -248,53 +248,79 @@ async def conversation_info(
         payload: schemas.ConversationInfoModel,
         user: User,
 ):
-    conv_stmt = (
-        sa.select(
-            Conversation.id,
-            Conversation.uuid,
-            Conversation.name,
-            Conversation.type,
-            Conversation.created_at,
-            Conversation.poster_id,
-            File.file.label("poster"),
-        )
-        .select_from(Conversation)
-        .join(File, File.id == Conversation.poster_id, isouter=True)
-        .where(Conversation.uuid == payload.conversation_uuid)
-        .limit(1)
-    )
-
+    conversation_uuid = payload.conversation_uuid
     async with db_helper.session() as session:
-        item = (await session.execute(conv_stmt)).mappings().first()
-        if item is None:
-            raise WSException("Conversation not found")
-        data = {
-            "uuid": str(item.uuid),
-            "name": item.name,
-            "type": item.type,
-            "poster": AWS_SETTINGS.make_cdn_url(item.poster),
-            "created_at": item.created_at.isoformat(),
-            "online": False,
-            "poster_id": item.poster_id,
-        }
-        members_base_stmt = (
-            sa.select(User)
-            .join(Member, Member.user_id == user.id)
-            .where(Member.conversation_id == item.id)
-        )
-
-        if item.type == ConversationType.DIRECT:
-            partner_stmt = (
-                members_base_stmt
-                .where(Member.user_id != User.id)
+        if conversation_uuid is None and payload.partner:
+            partner_user_id, partner_tenant = payload.partner.split(":")
+            partner: User = await User.repo.db_first(session=session, user_id=int(partner_user_id),
+                                                     tenant=partner_tenant)
+            if not partner:
+                raise WSException("Partner not found")
+            conv_stmt = (
+                sa.select(Conversation.uuid)
+                .select_from(Conversation)
+                .join(Member, Member.conversation_id == Conversation.id)
+                .where(Member.user_id == user.id)
                 .limit(1)
             )
-            partner = (await session.execute(partner_stmt)).scalar_one_or_none()
-            if partner is None:
-                raise WSException("Partner not found")
+            conversation_uuid = (await session.execute(conv_stmt)).scalar_one_or_none()
+            if not conversation_uuid:
+                return {
+                    "name": partner.full_name,
+                    "encrypt": partner.encrypt,
+                    "poster": AWS_SETTINGS.make_hr_cdn_url(partner.face),
+                    "online": await partner.is_online(),
+                }
 
-            data["name"] = partner.full_name
-            data["poster"] = AWS_SETTINGS.make_hr_cdn_url(partner.face)
-            data["online"] = bool(await cache.get(f"user_online:{partner.id}"))
+        if conversation_uuid:
+            conv_stmt = (
+                sa.select(
+                    Conversation.id,
+                    Conversation.uuid,
+                    Conversation.name,
+                    Conversation.type,
+                    Conversation.created_at,
+                    Conversation.poster_id,
+                    File.file.label("poster"),
+                )
+                .select_from(Conversation)
+                .join(File, File.id == Conversation.poster_id, isouter=True)
+                .where(Conversation.uuid == conversation_uuid)
+                .limit(1)
+            )
 
-        return data
+            item = (await session.execute(conv_stmt)).mappings().first()
+            if item is None:
+                raise WSException("Conversation not found")
+            data = {
+                "uuid": str(item.uuid),
+                "name": item.name,
+                "type": item.type,
+                "poster": AWS_SETTINGS.make_cdn_url(item.poster),
+                "created_at": item.created_at.isoformat(),
+                "online": False,
+                "poster_id": item.poster_id,
+            }
+            members_base_stmt = (
+                sa.select(User)
+                .join(Member, Member.user_id == user.id)
+                .where(Member.conversation_id == item.id)
+            )
+
+            if item.type == ConversationType.DIRECT:
+                partner_stmt = (
+                    members_base_stmt
+                    .where(Member.user_id != User.id)
+                    .limit(1)
+                )
+                partner = (await session.execute(partner_stmt)).scalar_one_or_none()
+                if partner is None:
+                    raise WSException("Partner not found")
+
+                data["name"] = partner.full_name
+                data["poster"] = AWS_SETTINGS.make_hr_cdn_url(partner.face)
+                data["online"] = bool(await cache.get(f"user_online:{partner.id}"))
+
+            return data
+
+    raise WSException("Method not implemented")

@@ -82,3 +82,7 @@ class User(BaseModel, DeletedMixin):
     async def mark_as_offline(self):
         key = f"user_online:{self.id}"
         await cache.delete(key)
+
+    async def is_online(self):
+        key = f"user_online:{self.id}"
+        return bool(await cache.get(key))

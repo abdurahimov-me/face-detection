@@ -5,6 +5,7 @@ from pydantic import BaseModel, Field
 
 from api.shared.schemas import MessageModel, FileModel
 from utils.customs import DateTime
+from utils.customs.formats.fernet import FernetEncrypt
 from utils.customs.formats.file import HrCoreFileFormat
 
 
@@ -62,4 +63,5 @@ class ReadUsersModelResponse(BaseModel):
 
 
 class ConversationInfoModel(BaseModel):
-    conversation_uuid: UUID
+    conversation_uuid: t.Optional[UUID]
+    partner: t.Optional[FernetEncrypt]
