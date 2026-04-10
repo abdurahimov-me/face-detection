@@ -33,6 +33,7 @@ class ChatMessageModel(MessageModel):
     reply_first_name: t.Optional[str] = None
     reply_last_name: t.Optional[str] = None
     reply_text: t.Optional[str] = None
+    reply_type: t.Optional[int] = None
     files: t.Optional[t.List[FileModel]] = None
 
 

@@ -19,7 +19,7 @@ ReplyUser = orm.aliased(User)
 
 
 @dp.command("get_messages")
-async def handle_chats(
+async def handle_get_messages(
         websocket: WebSocket,
         payload: schemas.GetMessagesModel,
         user: User,
@@ -160,7 +160,7 @@ async def handle_chats(
 
 
 @dp.command("mark_as_read")
-async def handle_chats(
+async def handle_mark_as_read(
         websocket: WebSocket,
         payload: schemas.MarkAsReadModel,
         user: User,
