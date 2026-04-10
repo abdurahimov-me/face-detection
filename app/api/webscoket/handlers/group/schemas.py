@@ -16,6 +16,7 @@ class CreateGroup(BaseModel):
 
 
 class EditGroup(BaseModel):
+    conversation_uuid: UUID
     name: t.Optional[str] = None
     poster_id: t.Optional[int] = None
     users: t.List[FernetEncrypt] = []
