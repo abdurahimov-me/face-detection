@@ -213,6 +213,7 @@ async def handle_chats(
             }
             for u in users
         ]
+        print(users)
 
         stmt = psql_insert(Member).values(members).on_conflict_do_nothing()
         await session.execute(stmt)
