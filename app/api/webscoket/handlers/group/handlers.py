@@ -108,7 +108,7 @@ async def handle_chats(
         stmt = psql_insert(Member).values(members).on_conflict_do_nothing()
         await session.execute(stmt)
         session.add(Member(user_id=user.id, conversation_id=chat.id, role=MemberType.OWNER))
-        session.add(Message(conversation_id=chat.id, type=MessageType.EVENT, text=MessageEvent.CREATED_GROUP))
+        session.add(Message(conversation_id=chat.id, type=MessageType.EVENT, text=MessageEvent.CREATED_GROUP, sender_id=user.id))
         await session.commit()
 
         data = {
