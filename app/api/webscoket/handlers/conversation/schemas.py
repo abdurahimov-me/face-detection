@@ -63,5 +63,5 @@ class ReadUsersModelResponse(BaseModel):
 
 
 class ConversationInfoModel(BaseModel):
-    conversation_uuid: t.Optional[UUID]
-    partner: t.Optional[FernetEncrypt]
+    conversation_uuid: t.Optional[UUID] = None
+    partner: t.Optional[FernetEncrypt] = None
