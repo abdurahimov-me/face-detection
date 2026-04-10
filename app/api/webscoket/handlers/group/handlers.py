@@ -190,6 +190,7 @@ async def handle_chats(
     async with db_helper.session() as session:
         conversation_id = await Conversation.get_conversation_field(session, payload.conversation_uuid, "id")
         users = await _get_or_crate_users_from_encrypt(session, payload.users, main_tenant=user.tenant)
+        await session.flush()
         conversation = await Conversation.repo.db_first(session, id=conversation_id)
         poster = None
         if payload.poster_id:
