@@ -97,8 +97,9 @@ class CommonService(BaseHTTPService):
         file_path = f"files/{unique_filename}"
 
         file_bytes = await schema.file.read()
-
-        metadata = extract_metadata(file_bytes, ext)
+        metadata = schema.metadata or {}
+        extra_metadata = extract_metadata(file_bytes, ext)
+        metadata = {**metadata, **extra_metadata}
 
         content = io.BytesIO(file_bytes)
         await storage.async_upload_fileobj(content, file_path)
