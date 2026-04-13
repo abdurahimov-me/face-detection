@@ -29,6 +29,18 @@ async def create_file(
     return await service.create_file(schema)
 
 
+@router.post(
+    '/upload-audio/',
+    dependencies=[Depends(get_token_payload)],
+    response_model=FileModel,
+)
+async def create_file(
+        service: services.CommonService.annotated("db", "payload"),
+        schema: schemas.UploadAudioSchema.as_form,
+):
+    return await service.upload_audio(schema)
+
+
 @router.put(
     '/update-file/',
     dependencies=[Depends(get_token_payload)]

@@ -9,7 +9,7 @@ from models import File
 from resources.enums import FileType
 from resources.services import BaseHTTPService
 from utils.storages import storage
-from .schemas import UpdateFileSchema, CreateFileSchema
+from .schemas import UpdateFileSchema, CreateFileSchema, UploadAudioSchema
 
 UPLOAD_DIR = "media"
 ALLOWED_PHOTO_EXTS = {".jpg", ".jpeg", ".png", ".gif", ".webp"}
@@ -82,6 +82,40 @@ class CommonService(BaseHTTPService):
         self.add_all(objects)
         await self.commit()
         return objects
+
+    async def upload_audio(
+            self,
+            schema: UploadAudioSchema,
+    ) -> File:
+        user = await self.get_user(rais_exception=True)
+
+        _, ext = os.path.splitext(schema.file.filename)
+        ext = ext.lower()
+
+        unique_filename = f"{uuid4()}{ext}"
+        file_type = get_file_type(ext)
+        file_path = f"files/{unique_filename}"
+
+        file_bytes = await schema.file.read()
+
+        metadata = extract_metadata(file_bytes, ext)
+
+        content = io.BytesIO(file_bytes)
+        await storage.async_upload_fileobj(content, file_path)
+
+        db_file = File(
+            file=file_path,
+            ext=ext.lstrip("."),
+            filename=schema.file.filename,
+            size=metadata.get("size"),
+            type=file_type,
+            user_id=user.id,
+            meta_data=metadata,
+        )
+
+        self.add(db_file)
+        await self.commit()
+        return db_file
 
     async def update_file(
             self,
