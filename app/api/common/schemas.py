@@ -26,7 +26,7 @@ class UploadAudioSchema(BaseModel):
     file: UploadFile
     meta_data: t.Union[str, t.Dict[str, t.Any]]
 
-    @field_validator('metadata', mode="after")
+    @field_validator('meta_data', mode="after")
     def validate_metadata(cls, v):
         if isinstance(v, str):
             return json.loads(v)
