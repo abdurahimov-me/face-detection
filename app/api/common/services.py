@@ -97,7 +97,7 @@ class CommonService(BaseHTTPService):
         file_path = f"files/{unique_filename}"
 
         file_bytes = await schema.file.read()
-        metadata = schema.metadata or {}
+        metadata = schema.meta_data or {}
         extra_metadata = extract_metadata(file_bytes, ext)
         metadata = {**metadata, **extra_metadata}
 
