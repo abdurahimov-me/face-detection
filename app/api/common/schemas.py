@@ -24,7 +24,7 @@ class CreateFileSchema(BaseModel):
 @as_form
 class UploadAudioSchema(BaseModel):
     file: UploadFile
-    metadata: t.Union[str, t.Dict[str, t.Any]]
+    meta_data: t.Union[str, t.Dict[str, t.Any]]
 
     @field_validator('metadata', mode="after")
     def validate_metadata(cls, v):
