@@ -251,6 +251,7 @@ async def conversation_info(
     conversation_uuid = payload.conversation_uuid
     async with db_helper.session() as session:
         if conversation_uuid is None and payload.partner:
+            print(payload.partner)
             partner: User = await User.repo.db_first(
                 session=session,
                 user_id=payload.partner.user_id,

@@ -41,3 +41,7 @@ class UserEncrypt(BaseFormat):
             return cls(user_id=int(user_id), tenant=tenant)
         except Exception as e:
             raise ValueError(f"Invalid encrypted value: {e}")
+
+
+    def __repr__(self):
+        return f"{self.__class__.__name__}({self.user_id}, {self.tenant})"
