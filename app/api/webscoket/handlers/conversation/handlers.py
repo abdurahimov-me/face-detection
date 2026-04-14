@@ -321,7 +321,7 @@ async def conversation_info(
 
                 data["name"] = partner.full_name
                 data["poster"] = AWS_SETTINGS.make_hr_cdn_url(partner.face)
-                data["online"] = bool(await cache.get(f"user_online:{partner.id}"))
+                data["online"] = await partner.is_online()
                 data["encrypt"] = partner.encrypt
 
             return data
