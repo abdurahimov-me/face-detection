@@ -81,7 +81,11 @@ async def handle_get_messages(
             .group_by(SecondaryFile.message_id)
             .subquery()
         )
-
+        read_exists = sa.exists().where(
+            sa.and_(
+                MessageRead.message_id == Message.id,
+            )
+        )
         base_stmt = (
             sa.select(
                 Message.id,
@@ -99,14 +103,7 @@ async def handle_get_messages(
                 User.first_name,
                 User.last_name,
                 User.face,
-                sa.select(
-                    sa.exists().where(
-                        sa.and_(
-                            MessageRead.message_id == Message.id,
-                            MessageRead.user_id != Message.sender_id,
-                        )
-                    )
-                ).scalar_subquery().label("read"),
+                read_exists.label("read"),
                 sa.func.coalesce(files_subquery.c.files, sa.cast(sa.text("'[]'"), sa.JSON)).label("files"),
             )
             .join(User, User.id == Message.sender_id)
