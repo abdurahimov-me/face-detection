@@ -10,7 +10,7 @@ dp = WSDispatcher()
 
 
 @dp.command("mark_as_typing")
-async def handle_chats(
+async def mark_as_typing(
         websocket: WebSocket,
         user: User,
         payload: schemas.MarkAsTyping
