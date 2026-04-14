@@ -102,8 +102,8 @@ async def handle_chats(
             "unread": 1,
             "members": 2,
             "online": False,
-            "unread_message_id": None,
-            "last_message": last_message,
+            "unread_message_id": last_message.id,
+            "last_message": last_message.as_dict(),
             "created": True,
             "poster": AWS_SETTINGS.make_hr_cdn_url(partner.face),
         }
