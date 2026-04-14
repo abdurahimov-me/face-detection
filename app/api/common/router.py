@@ -57,3 +57,11 @@ async def salom(
         schema: schemas.CreateSalomSchema,
 ):
     return schema
+
+
+@router.get("/test/{message_id}")
+async def salom(
+        message_id: int,
+        service: services.CommonService.annotated("db"),
+):
+    return await service.get_read_users(message_id)

@@ -5,7 +5,7 @@ from uuid import uuid4
 
 from PIL import Image
 
-from models import File
+from models import File, MessageRead
 from resources.enums import FileType
 from resources.services import BaseHTTPService
 from utils.storages import storage
@@ -171,3 +171,7 @@ class CommonService(BaseHTTPService):
 
         file.deleted = True
         await self.commit()
+
+
+    async def get_read_users(self, message_id: int):
+        return await MessageRead.repo.db_filter(self.db, message_id=message_id)
