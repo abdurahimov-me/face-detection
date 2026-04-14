@@ -11,6 +11,7 @@ from integrations.grpc.services import user_grpc_service
 from models import Conversation, Member, File, Message
 from models import User
 from resources.enums import ConversationType, MemberType
+from resources.managers.ws.connections import connections_manager
 from resources.managers.ws.dispatcher import WSDispatcher
 from resources.managers.ws.manager import chat_ws_manager
 from utils import utcnow
@@ -130,6 +131,10 @@ async def handle_chats(
                 data=data,
                 event="new_conversation"
             )
+
+        for u in all_users:
+            if connections_manager.check_connection(u.conn_id):
+                connections_manager.join_channel(u.conn_id, str(chat.id))
         return data
 
 
