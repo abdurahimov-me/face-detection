@@ -108,7 +108,8 @@ async def handle_chats(
         stmt = psql_insert(Member).values(members).on_conflict_do_nothing()
         await session.execute(stmt)
         session.add(Member(user_id=user.id, conversation_id=chat.id, role=MemberType.OWNER))
-        session.add(Message.create_event_message("created_group", conv_id=chat.id, sender_id=user.id))
+        last_message = Message.create_event_message("created_group", conv_id=chat.id, sender_id=user.id)
+        session.add(last_message)
         await session.commit()
 
         data = {
@@ -119,8 +120,8 @@ async def handle_chats(
             "unread": 1,
             "members": len(all_users) + 1,
             "online": False,
-            "unread_message_id": None,
-            "last_message": None,
+            "unread_message_id": last_message.id,
+            "last_message": last_message.as_dict(),
             "created": True,
         }
         for u in all_users:
