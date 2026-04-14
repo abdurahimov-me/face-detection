@@ -1,5 +1,5 @@
-from fastapi import WebSocket
 import sqlalchemy as sa
+from fastapi import WebSocket
 
 from config import AWS_SETTINGS
 from config.db import db_helper
@@ -8,9 +8,10 @@ from models import Conversation, Member, Message
 from models import User
 from resources.enums import ConversationType
 from resources.managers.ws.dispatcher import WSDispatcher
+from resources.managers.ws.manager import chat_ws_manager
 from utils.exceptions import WSException
 from . import schemas
-from resources.managers.ws.manager import chat_ws_manager
+
 dp = WSDispatcher()
 
 
@@ -85,11 +86,12 @@ async def handle_chats(
             [Member(user_id=user.id, conversation_id=chat.id),
              Member(user_id=partner.id, conversation_id=chat.id)]
         )
-        session.add(Message.create_event_message(
+        last_message = Message.create_event_message(
             "created_direct",
             conv_id=chat.id,
             sender_id=user.id,
-        ))
+        )
+        session.add(last_message)
         await session.commit()
 
         data = {
@@ -101,7 +103,7 @@ async def handle_chats(
             "members": 2,
             "online": False,
             "unread_message_id": None,
-            "last_message": None,
+            "last_message": last_message,
             "created": True,
             "poster": AWS_SETTINGS.make_hr_cdn_url(partner.face),
         }
