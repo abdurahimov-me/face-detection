@@ -269,6 +269,7 @@ async def conversation_info(
             )
             conversation_uuid = (await session.execute(conv_stmt)).scalar_one_or_none()
             if not conversation_uuid:
+                print(partner.full_name)
                 return {
                     "name": partner.full_name,
                     "encrypt": partner.encrypt,
