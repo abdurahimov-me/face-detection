@@ -241,7 +241,6 @@ async def handle_chats(
         users = (await session.execute(users_stmt)).mappings().all()
         return schemas.ReadUsersModelResponse(users=users)
 
-
 @dp.command("conversation_info")
 async def conversation_info(
         websocket: WebSocket,
@@ -251,25 +250,31 @@ async def conversation_info(
     conversation_uuid = payload.conversation_uuid
     async with db_helper.session() as session:
         if conversation_uuid is None and payload.partner:
-            print(payload.partner)
             partner: User = await User.repo.db_first(
                 session=session,
                 user_id=payload.partner.user_id,
                 tenant=payload.partner.tenant,
             )
-            print(partner.full_name)
             if not partner:
                 raise WSException("Partner not found")
+
+            # ✅ Ikkala user ham a'zo bo'lgan conversationni topish
             conv_stmt = (
                 sa.select(Conversation.uuid)
                 .select_from(Conversation)
                 .join(Member, Member.conversation_id == Conversation.id)
+                .where(
+                    Conversation.id.in_(
+                        sa.select(Member.conversation_id)
+                        .where(Member.user_id == partner.id)
+                    ),
+                    Conversation.type == ConversationType.DIRECT,
+                )
                 .where(Member.user_id == user.id)
                 .limit(1)
             )
             conversation_uuid = (await session.execute(conv_stmt)).scalar_one_or_none()
             if not conversation_uuid:
-                print(partner.full_name)
                 return {
                     "name": partner.full_name,
                     "encrypt": partner.encrypt,
@@ -297,6 +302,7 @@ async def conversation_info(
             item = (await session.execute(conv_stmt)).mappings().first()
             if item is None:
                 raise WSException("Conversation not found")
+
             data = {
                 "uuid": str(item.uuid),
                 "name": item.name,
@@ -306,16 +312,17 @@ async def conversation_info(
                 "online": False,
                 "poster_id": item.poster_id,
             }
+
             members_base_stmt = (
                 sa.select(User)
-                .join(Member, Member.user_id == user.id)
+                .join(Member, Member.user_id == User.id)
                 .where(Member.conversation_id == item.id)
             )
 
             if item.type == ConversationType.DIRECT:
                 partner_stmt = (
                     members_base_stmt
-                    .where(Member.user_id != User.id)
+                    .where(Member.user_id != user.id)  # ✅ user.id, User.id emas
                     .limit(1)
                 )
                 partner = (await session.execute(partner_stmt)).scalar_one_or_none()
