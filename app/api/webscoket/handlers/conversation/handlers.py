@@ -4,7 +4,6 @@ from sqlalchemy import orm
 
 from config import AWS_SETTINGS
 from config.db import db_helper
-from config.redis import cache
 from models import User, Message, MessageRead, Conversation, SecondaryFile, File, Member
 from resources.enums import ConversationType
 from resources.managers.ws.dispatcher import WSDispatcher
