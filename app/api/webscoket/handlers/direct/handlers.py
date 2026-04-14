@@ -17,7 +17,7 @@ dp = WSDispatcher()
 
 
 @dp.command("start_direct_conversation")
-async def handle_chats(
+async def start_direct_conversation(
         websocket: WebSocket,
         user: User,
         payload: schemas.StartConversation,
