@@ -86,10 +86,10 @@ class ChatWebSocketManager:
         self.connections.connections[conn_id] = websocket
 
     async def disconnect(self, conn_id: str):
-        self.connections.disconnect(conn_id)
+        self.connections.disconnect(str(conn_id))
 
     def join_channel(self, conn_id: str, conv_id: str):
-        self.connections.join_channel(conn_id, conv_id)
+        self.connections.join_channel(conn_id, str(conv_id))
 
     def leave_channel(self, conn_id: str, conv_id: str):
         self.connections.leave_channel(conn_id, conv_id)

@@ -7,6 +7,7 @@ from integrations.grpc.services import user_grpc_service
 from models import Conversation, Member, Message
 from models import User
 from resources.enums import ConversationType
+from resources.managers.ws.connections import connections_manager
 from resources.managers.ws.dispatcher import WSDispatcher
 from resources.managers.ws.manager import chat_ws_manager
 from utils.exceptions import WSException
@@ -101,7 +102,7 @@ async def handle_chats(
             "owner_id": chat.owner_id,
             "unread": 1,
             "members": 2,
-            "online": False,
+            "online": await partner.is_online(),
             "unread_message_id": last_message.id,
             "last_message": last_message.as_dict(),
             "created": True,
@@ -111,9 +112,14 @@ async def handle_chats(
         event_data["name"] = user.full_name
         event_data["online"] = True
         event_data["poster"] = AWS_SETTINGS.make_hr_cdn_url(user.face)
+
         await chat_ws_manager.send_to_conn(
             partner.conn_id,
             event_data,
             "new_conversation"
         )
+        chat_ws_manager.join_channel(user.conn_id, str(chat.id))
+        if connections_manager.check_connection(partner.conn_id):
+            chat_ws_manager.join_channel(partner.conn_id, str(chat.id))
+
         return data
