@@ -74,7 +74,7 @@ def upgrade() -> None:
         sa.Column("filename", sa.String(length=255), nullable=False),
         sa.Column("size", sa.BigInteger(), nullable=False),
         sa.Column(
-            "type", utils.customs.fields.enum.IntEnumField(), nullable=False
+            "type", sa.SmallInteger(), nullable=False
         ),
         sa.Column("user_id", sa.BigInteger(), nullable=False),
         sa.Column(
@@ -116,7 +116,7 @@ def upgrade() -> None:
         "conversations",
         sa.Column("name", sa.String(length=255), nullable=True),
         sa.Column(
-            "type", utils.customs.fields.enum.IntEnumField(), nullable=False
+            "type", sa.SmallInteger(), nullable=False
         ),
         sa.Column("poster_id", sa.BigInteger(), nullable=True),
         sa.Column("background", sa.String(length=255), nullable=True),
@@ -197,7 +197,7 @@ def upgrade() -> None:
         sa.Column("user_id", sa.BigInteger(), nullable=False),
         sa.Column("conversation_id", sa.BigInteger(), nullable=False),
         sa.Column(
-            "role", utils.customs.fields.enum.IntEnumField(), nullable=False
+            "role", sa.SmallInteger(), nullable=False
         ),
         sa.Column("joined_at", sa.DateTime(timezone=True), nullable=False),
         sa.Column("left_at", sa.DateTime(timezone=True), nullable=True),
@@ -309,7 +309,7 @@ def upgrade() -> None:
         sa.Column("topic_id", sa.BigInteger(), nullable=True),
         sa.Column(
             "type",
-            utils.customs.fields.enum.IntEnumField(),
+            sa.SmallInteger(),
             server_default=sa.text("1"),
             nullable=True,
         ),
