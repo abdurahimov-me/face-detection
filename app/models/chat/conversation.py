@@ -37,6 +37,10 @@ class Conversation(BaseModel, UUIDMixin, DeletedMixin):
         nullable=True,
         index=True,
     )
+    background: Mapped[str] = mapped_column(
+        sa.String(255),
+        nullable=True,
+    )
     owner_id: Mapped[int] = mapped_column(
         sa.BigInteger(),
         sa.ForeignKey("users.id", ondelete="CASCADE"),
