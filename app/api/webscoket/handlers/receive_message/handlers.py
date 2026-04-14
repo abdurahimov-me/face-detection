@@ -102,7 +102,7 @@ def _get_event_data(
 
 
 @dp.command("send_message")
-async def handle_chats(
+async def send_message(
         websocket: WebSocket,
         payload: schemas.SendMessageModel,
         user: User,
@@ -131,7 +131,7 @@ async def handle_chats(
 
 
 @dp.command("send_file")
-async def handle_chats(
+async def send_file(
         websocket: WebSocket,
         payload: schemas.SendFilesModel,
         user: User,
