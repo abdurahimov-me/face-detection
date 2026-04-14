@@ -40,5 +40,23 @@ class Message(BaseModel):
     text = models.TextField()
     reply = models.ForeignKey("self", on_delete=models.PROTECT, null=True, blank=True)
     type = models.SmallIntegerField()
+
     class Meta:
         db_table = 'messages'
+
+
+class MessageRead(models.Model):
+    id = None
+    message = models.ForeignKey(
+        "Message",
+        on_delete=models.CASCADE
+    )
+    user = models.ForeignKey(
+        "users.User",
+        on_delete=models.CASCADE
+    )
+    read_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = "message_reads"
+        unique_together = ("message", "user")
