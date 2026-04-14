@@ -53,6 +53,11 @@ async def handle_chats(
 
         if not conv_ids:
             return []
+        read_exists = sa.exists().where(
+            sa.and_(
+                MessageRead.message_id == Message.id,
+            )
+        )
 
         last_msg_subq = (
             sa.select(
@@ -64,6 +69,7 @@ async def handle_chats(
                 Message.reply_id,
                 Message.conversation_id,
                 Message.type,
+                read_exists.label("read"),
                 User.first_name,
                 User.last_name,
                 User.user_id,
@@ -146,8 +152,6 @@ async def handle_chats(
         item = dict(conv)
         conv_id = conv["id"]
         last_message: t.Optional[t.Dict] = last_messages.get(conv_id)
-        if last_message:
-            last_message["read"] = True
         if conv["type"] == ConversationType.DIRECT:
             if partner := partners_map.get(conv_id):
                 partner: User
