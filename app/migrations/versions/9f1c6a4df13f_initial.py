@@ -1,8 +1,8 @@
 """initial
 
-Revision ID: 595cd263ea07
+Revision ID: 9f1c6a4df13f
 Revises:
-Create Date: 2026-03-31 12:28:21.780854
+Create Date: 2026-04-14 15:00:55.155250
 
 """
 
@@ -13,7 +13,7 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision: str = "595cd263ea07"
+revision: str = "9f1c6a4df13f"
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -57,6 +57,9 @@ def upgrade() -> None:
         sa.UniqueConstraint("user_id", "tenant", name="uq_user_tenant"),
     )
     op.create_index(
+        op.f("ix_users_created_at"), "users", ["created_at"], unique=False
+    )
+    op.create_index(
         op.f("ix_users_deleted"), "users", ["deleted"], unique=False
     )
     op.create_index(op.f("ix_users_id"), "users", ["id"], unique=False)
@@ -74,6 +77,9 @@ def upgrade() -> None:
             "type", sa.SmallInteger(), nullable=False
         ),
         sa.Column("user_id", sa.BigInteger(), nullable=False),
+        sa.Column(
+            "meta_data", postgresql.JSONB(astext_type=sa.Text()), nullable=True
+        ),
         sa.Column("created_at", sa.DateTime(timezone=True), nullable=False),
         sa.Column("updated_at", sa.DateTime(timezone=True), nullable=False),
         sa.Column(
@@ -99,6 +105,9 @@ def upgrade() -> None:
         sa.PrimaryKeyConstraint("id"),
     )
     op.create_index(
+        op.f("ix_files_created_at"), "files", ["created_at"], unique=False
+    )
+    op.create_index(
         op.f("ix_files_deleted"), "files", ["deleted"], unique=False
     )
     op.create_index(op.f("ix_files_id"), "files", ["id"], unique=False)
@@ -111,6 +120,11 @@ def upgrade() -> None:
         ),
         sa.Column("poster_id", sa.BigInteger(), nullable=True),
         sa.Column("owner_id", sa.BigInteger(), nullable=False),
+        sa.Column(
+            "extra_data",
+            postgresql.JSONB(astext_type=sa.Text()),
+            nullable=True,
+        ),
         sa.Column("created_at", sa.DateTime(timezone=True), nullable=False),
         sa.Column("updated_at", sa.DateTime(timezone=True), nullable=False),
         sa.Column(
@@ -143,6 +157,12 @@ def upgrade() -> None:
             ["files.id"],
         ),
         sa.PrimaryKeyConstraint("id"),
+    )
+    op.create_index(
+        op.f("ix_conversations_created_at"),
+        "conversations",
+        ["created_at"],
+        unique=False,
     )
     op.create_index(
         op.f("ix_conversations_deleted"),
@@ -180,6 +200,11 @@ def upgrade() -> None:
         ),
         sa.Column("joined_at", sa.DateTime(timezone=True), nullable=False),
         sa.Column("left_at", sa.DateTime(timezone=True), nullable=True),
+        sa.Column(
+            "extra_data",
+            postgresql.JSONB(astext_type=sa.Text()),
+            nullable=True,
+        ),
         sa.Column("created_at", sa.DateTime(timezone=True), nullable=False),
         sa.Column("updated_at", sa.DateTime(timezone=True), nullable=False),
         sa.Column(
@@ -214,6 +239,9 @@ def upgrade() -> None:
         unique=False,
     )
     op.create_index(
+        op.f("ix_members_created_at"), "members", ["created_at"], unique=False
+    )
+    op.create_index(
         op.f("ix_members_deleted"), "members", ["deleted"], unique=False
     )
     op.create_index(op.f("ix_members_id"), "members", ["id"], unique=False)
@@ -225,6 +253,11 @@ def upgrade() -> None:
         sa.Column("executor_id", sa.BigInteger(), nullable=False),
         sa.Column("conversation_id", sa.BigInteger(), nullable=False),
         sa.Column("title", sa.String(length=255), nullable=False),
+        sa.Column(
+            "extra_data",
+            postgresql.JSONB(astext_type=sa.Text()),
+            nullable=True,
+        ),
         sa.Column("created_at", sa.DateTime(timezone=True), nullable=False),
         sa.Column("updated_at", sa.DateTime(timezone=True), nullable=False),
         sa.Column(
@@ -258,6 +291,9 @@ def upgrade() -> None:
         unique=False,
     )
     op.create_index(
+        op.f("ix_topics_created_at"), "topics", ["created_at"], unique=False
+    )
+    op.create_index(
         op.f("ix_topics_deleted"), "topics", ["deleted"], unique=False
     )
     op.create_index(
@@ -269,8 +305,19 @@ def upgrade() -> None:
         sa.Column("sender_id", sa.BigInteger(), nullable=False),
         sa.Column("conversation_id", sa.BigInteger(), nullable=False),
         sa.Column("topic_id", sa.BigInteger(), nullable=True),
+        sa.Column(
+            "type",
+            sa.SmallInteger(),
+            server_default=sa.text("1"),
+            nullable=True,
+        ),
         sa.Column("text", sa.Text(), nullable=False),
-        sa.Column("reply_id", sa.BigInteger(), nullable=False),
+        sa.Column("reply_id", sa.BigInteger(), nullable=True),
+        sa.Column(
+            "extra_data",
+            postgresql.JSONB(astext_type=sa.Text()),
+            nullable=True,
+        ),
         sa.Column("created_at", sa.DateTime(timezone=True), nullable=False),
         sa.Column("updated_at", sa.DateTime(timezone=True), nullable=False),
         sa.Column(
@@ -310,6 +357,12 @@ def upgrade() -> None:
         unique=False,
     )
     op.create_index(
+        op.f("ix_messages_created_at"),
+        "messages",
+        ["created_at"],
+        unique=False,
+    )
+    op.create_index(
         op.f("ix_messages_deleted"), "messages", ["deleted"], unique=False
     )
     op.create_index(op.f("ix_messages_id"), "messages", ["id"], unique=False)
@@ -321,6 +374,9 @@ def upgrade() -> None:
     )
     op.create_index(
         op.f("ix_messages_topic_id"), "messages", ["topic_id"], unique=False
+    )
+    op.create_index(
+        op.f("ix_messages_type"), "messages", ["type"], unique=False
     )
     op.create_table(
         "message_files",
@@ -361,9 +417,82 @@ def upgrade() -> None:
         sa.PrimaryKeyConstraint("message_id", "user_id"),
     )
     op.create_index(
+        op.f("ix_message_reads_message_id"),
+        "message_reads",
+        ["message_id"],
+        unique=False,
+    )
+    op.create_index(
         op.f("ix_message_reads_user_id"),
         "message_reads",
         ["user_id"],
+        unique=False,
+    )
+    op.create_table(
+        "pinned_messages",
+        sa.Column("executor_id", sa.BigInteger(), nullable=False),
+        sa.Column("conversation_id", sa.BigInteger(), nullable=False),
+        sa.Column("message_id", sa.BigInteger(), nullable=False),
+        sa.Column("created_at", sa.DateTime(timezone=True), nullable=False),
+        sa.Column("updated_at", sa.DateTime(timezone=True), nullable=False),
+        sa.Column(
+            "id",
+            sa.BigInteger(),
+            sa.Identity(
+                always=False,
+                start=1,
+                increment=1,
+                minvalue=1,
+                maxvalue=9223372036854775807,
+                cycle=False,
+                cache=1,
+            ),
+            autoincrement=True,
+            nullable=False,
+        ),
+        sa.Column("deleted", sa.Boolean(), nullable=False),
+        sa.ForeignKeyConstraint(
+            ["conversation_id"], ["conversations.id"], ondelete="CASCADE"
+        ),
+        sa.ForeignKeyConstraint(
+            ["executor_id"], ["users.id"], ondelete="CASCADE"
+        ),
+        sa.ForeignKeyConstraint(
+            ["message_id"], ["messages.id"], ondelete="CASCADE"
+        ),
+        sa.PrimaryKeyConstraint("id"),
+    )
+    op.create_index(
+        op.f("ix_pinned_messages_conversation_id"),
+        "pinned_messages",
+        ["conversation_id"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_pinned_messages_created_at"),
+        "pinned_messages",
+        ["created_at"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_pinned_messages_deleted"),
+        "pinned_messages",
+        ["deleted"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_pinned_messages_executor_id"),
+        "pinned_messages",
+        ["executor_id"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_pinned_messages_id"), "pinned_messages", ["id"], unique=False
+    )
+    op.create_index(
+        op.f("ix_pinned_messages_message_id"),
+        "pinned_messages",
+        ["message_id"],
         unique=False,
     )
     # ### end Alembic commands ###
@@ -372,28 +501,53 @@ def upgrade() -> None:
 def downgrade() -> None:
     """Downgrade schema."""
     # ### commands auto generated by Alembic - please adjust! ###
+    op.drop_index(
+        op.f("ix_pinned_messages_message_id"), table_name="pinned_messages"
+    )
+    op.drop_index(op.f("ix_pinned_messages_id"), table_name="pinned_messages")
+    op.drop_index(
+        op.f("ix_pinned_messages_executor_id"), table_name="pinned_messages"
+    )
+    op.drop_index(
+        op.f("ix_pinned_messages_deleted"), table_name="pinned_messages"
+    )
+    op.drop_index(
+        op.f("ix_pinned_messages_created_at"), table_name="pinned_messages"
+    )
+    op.drop_index(
+        op.f("ix_pinned_messages_conversation_id"),
+        table_name="pinned_messages",
+    )
+    op.drop_table("pinned_messages")
     op.drop_index(op.f("ix_message_reads_user_id"), table_name="message_reads")
+    op.drop_index(
+        op.f("ix_message_reads_message_id"), table_name="message_reads"
+    )
     op.drop_table("message_reads")
     op.drop_index(
         op.f("ix_message_files_message_id"), table_name="message_files"
     )
     op.drop_index(op.f("ix_message_files_file_id"), table_name="message_files")
     op.drop_table("message_files")
+    op.drop_index(op.f("ix_messages_type"), table_name="messages")
     op.drop_index(op.f("ix_messages_topic_id"), table_name="messages")
     op.drop_index(op.f("ix_messages_sender_id"), table_name="messages")
     op.drop_index(op.f("ix_messages_reply_id"), table_name="messages")
     op.drop_index(op.f("ix_messages_id"), table_name="messages")
     op.drop_index(op.f("ix_messages_deleted"), table_name="messages")
+    op.drop_index(op.f("ix_messages_created_at"), table_name="messages")
     op.drop_index(op.f("ix_messages_conversation_id"), table_name="messages")
     op.drop_table("messages")
     op.drop_index(op.f("ix_topics_id"), table_name="topics")
     op.drop_index(op.f("ix_topics_executor_id"), table_name="topics")
     op.drop_index(op.f("ix_topics_deleted"), table_name="topics")
+    op.drop_index(op.f("ix_topics_created_at"), table_name="topics")
     op.drop_index(op.f("ix_topics_conversation_id"), table_name="topics")
     op.drop_table("topics")
     op.drop_index(op.f("ix_members_user_id"), table_name="members")
     op.drop_index(op.f("ix_members_id"), table_name="members")
     op.drop_index(op.f("ix_members_deleted"), table_name="members")
+    op.drop_index(op.f("ix_members_created_at"), table_name="members")
     op.drop_index(op.f("ix_members_conversation_id"), table_name="members")
     op.drop_table("members")
     op.drop_index(op.f("ix_conversations_uuid"), table_name="conversations")
@@ -406,14 +560,19 @@ def downgrade() -> None:
     )
     op.drop_index(op.f("ix_conversations_id"), table_name="conversations")
     op.drop_index(op.f("ix_conversations_deleted"), table_name="conversations")
+    op.drop_index(
+        op.f("ix_conversations_created_at"), table_name="conversations"
+    )
     op.drop_table("conversations")
     op.drop_index(op.f("ix_files_type"), table_name="files")
     op.drop_index(op.f("ix_files_id"), table_name="files")
     op.drop_index(op.f("ix_files_deleted"), table_name="files")
+    op.drop_index(op.f("ix_files_created_at"), table_name="files")
     op.drop_table("files")
     op.drop_index(op.f("ix_users_user_id"), table_name="users")
     op.drop_index(op.f("ix_users_tenant"), table_name="users")
     op.drop_index(op.f("ix_users_id"), table_name="users")
     op.drop_index(op.f("ix_users_deleted"), table_name="users")
+    op.drop_index(op.f("ix_users_created_at"), table_name="users")
     op.drop_table("users")
     # ### end Alembic commands ###
