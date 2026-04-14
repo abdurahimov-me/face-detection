@@ -25,6 +25,10 @@ class Topic(BaseModel, DeletedMixin):
     title: Mapped[str] = mapped_column(
         sa.String(255),
     )
+    background: Mapped[str] = mapped_column(
+        sa.String(255),
+        nullable=True,
+    )
     extra_data: Mapped[dict] = mapped_column(
         JSONB,
         nullable=True,
