@@ -103,6 +103,7 @@ async def handle_get_messages(
                     sa.exists().where(
                         sa.and_(
                             MessageRead.message_id == Message.id,
+                            MessageRead.user_id != Message.sender_id,
                         )
                     )
                 ).scalar_subquery().label("read"),
