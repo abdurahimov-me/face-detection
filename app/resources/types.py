@@ -1,7 +1,5 @@
 import typing as t
 
-
-
 MessageEvent = t.Literal[
     "created_group",
     "created_direct",
