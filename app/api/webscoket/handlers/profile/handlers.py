@@ -18,6 +18,8 @@ async def handle_chats(
     async with db_helper.session() as session:
         conv_id = await Conversation.get_conversation_field(session, payload.conversation_uuid, "id")
     data = user.as_dict()
+    data.pop("encrypt", None)
+
     data["conversation_uuid"] = str(payload.conversation_uuid)
     await chat_ws_manager.send_to_conv(
         conv_id,
