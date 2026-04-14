@@ -257,6 +257,7 @@ async def conversation_info(
                 user_id=payload.partner.user_id,
                 tenant=payload.partner.tenant,
             )
+            print(partner.full_name)
             if not partner:
                 raise WSException("Partner not found")
             conv_stmt = (
