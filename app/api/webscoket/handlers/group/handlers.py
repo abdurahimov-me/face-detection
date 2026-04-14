@@ -77,7 +77,7 @@ async def _get_or_crate_users_from_encrypt(
 
 
 @dp.command("create_group")
-async def handle_chats(
+async def create_group(
         websocket: WebSocket,
         user: User,
         payload: schemas.CreateGroup,
@@ -139,7 +139,7 @@ async def handle_chats(
 
 
 @dp.command("get_users_from_group")
-async def handle_chats(
+async def get_users_from_group(
         websocket: WebSocket,
         user: User,
         payload: schemas.GetUsersFromGroup,
@@ -172,7 +172,7 @@ async def handle_chats(
 
 
 @dp.command("add_users_to_group")
-async def handle_chats(
+async def add_users_to_group(
         websocket: WebSocket,
         user: User,
         payload: schemas.AddUsersToGroup,
@@ -201,7 +201,7 @@ async def handle_chats(
 
 
 @dp.command("edit_group")
-async def handle_chats(
+async def edit_group(
         websocket: WebSocket,
         user: User,
         payload: schemas.EditGroup,
