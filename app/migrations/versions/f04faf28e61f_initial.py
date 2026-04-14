@@ -1,8 +1,8 @@
 """initial
 
-Revision ID: 9f1c6a4df13f
+Revision ID: f04faf28e61f
 Revises:
-Create Date: 2026-04-14 15:00:55.155250
+Create Date: 2026-04-14 16:59:48.930341
 
 """
 
@@ -13,7 +13,7 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision: str = "9f1c6a4df13f"
+revision: str = "f04faf28e61f"
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -74,7 +74,7 @@ def upgrade() -> None:
         sa.Column("filename", sa.String(length=255), nullable=False),
         sa.Column("size", sa.BigInteger(), nullable=False),
         sa.Column(
-            "type", sa.SmallInteger(), nullable=False
+            "type", utils.customs.fields.enum.IntEnumField(), nullable=False
         ),
         sa.Column("user_id", sa.BigInteger(), nullable=False),
         sa.Column(
@@ -116,9 +116,10 @@ def upgrade() -> None:
         "conversations",
         sa.Column("name", sa.String(length=255), nullable=True),
         sa.Column(
-            "type", sa.SmallInteger(), nullable=False
+            "type", utils.customs.fields.enum.IntEnumField(), nullable=False
         ),
         sa.Column("poster_id", sa.BigInteger(), nullable=True),
+        sa.Column("background", sa.String(length=255), nullable=True),
         sa.Column("owner_id", sa.BigInteger(), nullable=False),
         sa.Column(
             "extra_data",
@@ -196,7 +197,7 @@ def upgrade() -> None:
         sa.Column("user_id", sa.BigInteger(), nullable=False),
         sa.Column("conversation_id", sa.BigInteger(), nullable=False),
         sa.Column(
-            "role", sa.SmallInteger(), nullable=False
+            "role", utils.customs.fields.enum.IntEnumField(), nullable=False
         ),
         sa.Column("joined_at", sa.DateTime(timezone=True), nullable=False),
         sa.Column("left_at", sa.DateTime(timezone=True), nullable=True),
@@ -253,6 +254,7 @@ def upgrade() -> None:
         sa.Column("executor_id", sa.BigInteger(), nullable=False),
         sa.Column("conversation_id", sa.BigInteger(), nullable=False),
         sa.Column("title", sa.String(length=255), nullable=False),
+        sa.Column("background", sa.String(length=255), nullable=True),
         sa.Column(
             "extra_data",
             postgresql.JSONB(astext_type=sa.Text()),
@@ -307,7 +309,7 @@ def upgrade() -> None:
         sa.Column("topic_id", sa.BigInteger(), nullable=True),
         sa.Column(
             "type",
-            sa.SmallInteger(),
+            utils.customs.fields.enum.IntEnumField(),
             server_default=sa.text("1"),
             nullable=True,
         ),
