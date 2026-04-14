@@ -238,7 +238,7 @@ async def handle_chats(
             )
         )
         users = (await session.execute(users_stmt)).mappings().all()
-        return schemas.ReadUsersModelResponse(users=users)
+    return schemas.ReadUsersModelResponse(users=users)
 
 @dp.command("conversation_info")
 async def conversation_info(
