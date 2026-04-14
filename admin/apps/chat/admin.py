@@ -16,7 +16,7 @@ class MemberAdmin(unfold.ModelAdmin):
 
 @admin.register(models.Message)
 class MessageAdmin(unfold.ModelAdmin):
-    list_display = ('sender', 'conversation', 'text', 'created_at')
+    list_display = ("id", 'sender', 'conversation', 'text', 'created_at')
 
 
 @admin.register(models.MessageRead)
