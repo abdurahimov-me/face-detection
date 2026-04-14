@@ -16,4 +16,4 @@ class User(BaseModel):
         verbose_name_plural = 'Users'
 
     def __str__(self):
-        return f"{self.first_name} {self.last_name} - {self.user_id} - {self.tenant}"
+        return f"{self.id} - {self.first_name} {self.last_name} - {self.user_id} - {self.tenant}"
