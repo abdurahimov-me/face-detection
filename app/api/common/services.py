@@ -4,7 +4,7 @@ import typing as t
 from uuid import uuid4
 
 from PIL import Image
-
+import sqlalchemy as sa
 from models import File, MessageRead
 from resources.enums import FileType
 from resources.services import BaseHTTPService
@@ -174,4 +174,9 @@ class CommonService(BaseHTTPService):
 
 
     async def get_read_users(self, message_id: int):
-        return await MessageRead.repo.db_filter(self.db, message_id=message_id)
+        stmt = sa.select(
+            MessageRead.user_id,
+            MessageRead.message_id,
+            MessageRead.read_at,
+        ).where(MessageRead.message_id == message_id)
+        return (await self.execute(stmt)).mappings().all()
