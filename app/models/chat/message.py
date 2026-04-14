@@ -4,6 +4,7 @@ __all__ = (
     'PinnedMessage'
 )
 
+import json
 import typing as t
 
 import sqlalchemy as sa
@@ -11,6 +12,7 @@ from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column, relationship, column_property
 
 from resources.enums import MessageType
+from resources.types import MessageEvent
 from utils.customs import IntEnumField
 from ..base import BaseModel, Base
 from ..mixinis import DeletedMixin
@@ -121,6 +123,31 @@ class Message(BaseModel, DeletedMixin):
             "sender_id": self.sender_id,
             **extra_data
         }
+
+    @classmethod
+    def create_event_message(
+            cls,
+            event: MessageEvent,
+            conv_id: int,
+            sender_id: int,
+            topic_id: int = None,
+            reply_id: int = None,
+            extra_data: dict = None,
+            **kwargs
+    ) -> "Message":
+        text = json.dumps({
+            "event": event,
+            **kwargs,
+        })
+        return cls(
+            conversation_id=conv_id,
+            topic_id=topic_id,
+            type=MessageType.EVENT,
+            extra_data=extra_data,
+            reply_id=reply_id,
+            sender_id=sender_id,
+            text=text,
+        )
 
 
 Message.read = column_property(

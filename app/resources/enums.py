@@ -28,6 +28,3 @@ class MessageType(IntEnum):
     EVENT = 6
 
 
-class MessageEvent(StrEnum):
-    CREATED_GROUP = "created_group"
-    CREATED_DIRECT = "created_direct"

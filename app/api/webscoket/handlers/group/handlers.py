@@ -10,9 +10,10 @@ from config.db import db_helper
 from integrations.grpc.services import user_grpc_service
 from models import Conversation, Member, File, Message
 from models import User
-from resources.enums import ConversationType, MemberType, MessageType, MessageEvent
+from resources.enums import ConversationType, MemberType, MessageType
 from resources.managers.ws.dispatcher import WSDispatcher
 from resources.managers.ws.manager import chat_ws_manager
+from resources.types import MessageEvent
 from utils import utcnow
 from utils.customs.formats.fernet import UserEncrypt
 from utils.exceptions import WSException
