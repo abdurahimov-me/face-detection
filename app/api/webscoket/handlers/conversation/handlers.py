@@ -258,7 +258,6 @@ async def conversation_info(
             if not partner:
                 raise WSException("Partner not found")
 
-            # ✅ Ikkala user ham a'zo bo'lgan conversationni topish
             conv_stmt = (
                 sa.select(Conversation.uuid)
                 .select_from(Conversation)
@@ -322,7 +321,7 @@ async def conversation_info(
             if item.type == ConversationType.DIRECT:
                 partner_stmt = (
                     members_base_stmt
-                    .where(Member.user_id != user.id)  # ✅ user.id, User.id emas
+                    .where(Member.user_id != user.id)
                     .limit(1)
                 )
                 partner = (await session.execute(partner_stmt)).scalar_one_or_none()
