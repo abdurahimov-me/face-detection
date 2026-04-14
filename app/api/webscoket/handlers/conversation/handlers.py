@@ -203,19 +203,19 @@ async def handle_mark_as_read(
             ])
         )
         await session.commit()
-        event_data = {
-            "conversation_uuid": str(payload.conversation_uuid),
-            "messages": [unread_ids]
-        }
-        await chat_ws_manager.send_to_conv(
-            conversation_id,
-            data=event_data,
-            event="message_read",
-            exclude_conn=user.conn_id,
-        )
-        return {
-            "marked": len(unread_ids)
-        }
+    event_data = {
+        "conversation_uuid": str(payload.conversation_uuid),
+        "messages": [unread_ids]
+    }
+    await chat_ws_manager.send_to_conv(
+        conversation_id,
+        data=event_data,
+        event="message_read",
+        exclude_conn=user.conn_id,
+    )
+    return {
+        "marked": len(unread_ids)
+    }
 
 
 @dp.command("get_read_users")
