@@ -10,7 +10,7 @@ import typing as t
 from pathlib import Path
 
 from dotenv import load_dotenv
-from pydantic import PostgresDsn, RedisDsn
+from pydantic import PostgresDsn
 from pydantic_settings import BaseSettings
 
 load_dotenv()
@@ -36,7 +36,6 @@ class APPSettings(EnvReader):
     TIME_ZONE: str = 'Asia/Tashkent'
     SERVER_HOST: str = 'localhost'
     DEBUG: bool = True
-    FERNET_SECRET_KEY: str
     GRPC_HOST: str
     GRPC_PORT: int
 
