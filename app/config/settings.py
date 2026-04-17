@@ -37,8 +37,8 @@ class APPSettings(EnvReader):
     SERVER_HOST: str = 'localhost'
     DEBUG: bool = True
     FERNET_SECRET_KEY: str
-    HR_CORE_GRPC_HOST: str
-    HR_CORE_GRPC_PORT: int
+    GRPC_HOST: str
+    GRPC_PORT: int
 
 
 class DBSettings(EnvReader):
