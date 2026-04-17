@@ -10,7 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncAttrs
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, declared_attr
 
 from config.db import OrmManager, SqlAlchemyRepository
-from utils import utcnow
+from utils.utility import utcnow
 
 T = TypeVar("T", bound="Base")
 
