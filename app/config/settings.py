@@ -3,10 +3,12 @@ __all__ = (
     'EnvReader',
     'DB_SETTINGS',
     'APP_SETTINGS',
+    'JWT_SETTINGS',
 )
 
 import os
 import typing as t
+from datetime import timedelta
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -60,5 +62,12 @@ class DBSettings(EnvReader):
         ))
 
 
+class JWTSettings(BaseSettings):
+    ALGORITHM: str = "HS256"
+    JWT_SECRET_KEY: str
+    JWT_PAYLOAD_FIELDS: tuple = ('id',)
+    ACCESS_TOKEN_EXPIRE: timedelta = timedelta(days=10)
+
+JWT_SETTINGS = JWTSettings()
 DB_SETTINGS = DBSettings()
 APP_SETTINGS = APPSettings()

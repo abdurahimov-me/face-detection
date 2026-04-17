@@ -39,6 +39,6 @@ class GRPCClient:
 
 
 grpc_client = GRPCClient(
-    host=APP_SETTINGS.HR_CORE_GRPC_HOST,
-    port=APP_SETTINGS.HR_CORE_GRPC_PORT,
+    host=APP_SETTINGS.GRPC_HOST,
+    port=APP_SETTINGS.GRPC_PORT,
 )
