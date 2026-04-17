@@ -1,5 +1,4 @@
 from utils.routes import Routes
-from . import webscoket, common
 
 __routes__ = Routes(
     routers=(
