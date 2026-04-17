@@ -1,3 +1,4 @@
+from utils.routes import Routes
 
 __routes__ = Routes(
     routers=(
