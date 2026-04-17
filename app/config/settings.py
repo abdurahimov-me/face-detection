@@ -2,15 +2,11 @@ __all__ = (
     'BASE_DIR',
     'EnvReader',
     'DB_SETTINGS',
-    'REDIS_SETTINGS',
-    'AWS_SETTINGS',
     'APP_SETTINGS',
-    'JWT_SETTINGS',
 )
 
 import os
 import typing as t
-from datetime import timedelta
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -32,7 +28,7 @@ class APPSettings(EnvReader):
     VERSION: str = '1.0.0'
     API_V1_PREFIX: str = "/api/v1"
     WS_PREFIX: str = "/ws"
-    PROJECT_NAME: str = "HR CHAT"
+    PROJECT_NAME: str = "Logger"
     MEDIA_URL: str = 'media/'
     STATIC_URL: str = 'static/'
     MEDIA_DIR: t.ClassVar[str] = os.path.join(BASE_DIR, 'media')
@@ -65,59 +61,5 @@ class DBSettings(EnvReader):
         ))
 
 
-class RedisSettings(EnvReader):
-    REDIS_HOST: str
-    REDIS_PORT: int
-    REDIS_DB: int
-
-    @property
-    def URL(self) -> str:
-        return str(RedisDsn.build(
-            scheme='redis',
-            host=self.REDIS_HOST,
-            port=self.REDIS_PORT,
-            path=f"/{self.REDIS_DB}",
-        ))
-
-
-class EmailSettings(EnvReader):
-    EMAIL_HOST: str
-    EMAIL_PORT: int
-    EMAIL_PASSWORD: str
-    EMAIL: str
-
-
-class AWSSettings(EnvReader):
-    AWS_ACCESS_KEY_ID: str = None
-    AWS_SECRET_ACCESS_KEY: str = None
-    AWS_BUCKET_NAME: str = None
-    AWS_REGION_NAME: str = None
-    AWS_ENDPOINT_URL: str = None
-    CDN_URL: str = None
-    HR_CDN_URL: str = None
-
-    def make_cdn_url(self, path: t.Optional[str]) -> t.Optional[str]:
-        if path:
-            base_url = f'{self.CDN_URL}/{APP_SETTINGS.MEDIA_URL}'
-            return f"{base_url}{path}"
-        return None
-
-    def make_hr_cdn_url(self, path: t.Optional[str]) -> t.Optional[str]:
-        if path:
-            base_url = f'{self.HR_CDN_URL}/{APP_SETTINGS.MEDIA_URL}'
-            return f"{base_url}{path}"
-        return None
-
-
-class JWTSettings(BaseSettings):
-    ALGORITHM: str = "HS256"
-    JWT_SECRET_KEY: str
-    JWT_PAYLOAD_FIELDS: tuple = ('id',)
-    ACCESS_TOKEN_EXPIRE: timedelta = timedelta(days=10)
-
-
 DB_SETTINGS = DBSettings()
-REDIS_SETTINGS = RedisSettings()
-AWS_SETTINGS = AWSSettings()
 APP_SETTINGS = APPSettings()
-JWT_SETTINGS = JWTSettings()

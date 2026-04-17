@@ -15,15 +15,6 @@ services:
       - postgres_data:/var/lib/postgresql/data
       - ./dump.sql:/docker-entrypoint-initdb.d/dump.sql
 
-  redis:
-    image: redis:latest
-    container_name: hr_chat_redis
-    networks:
-      - local
-    restart: always
-    volumes:
-      - redis_data:/data
-
   pgbouncer:
     image: edoburu/pgbouncer
     container_name: hr_chat_pgbouncer
