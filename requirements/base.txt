@@ -6,6 +6,10 @@ pyjwt
 redis
 hiredis
 qdrant-client
+insightface
+onnxruntime-gpu
+opencv-python
+numpy
 argon2-cffi
 aiosmtplib
 aiofiles
