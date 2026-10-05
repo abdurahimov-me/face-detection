@@ -1,44 +1,60 @@
 services:
+  redis:
+    image: redis:7-alpine
+    container_name: ${CONTAINER_PREFIX:-face_detection}_redis
+    restart: unless-stopped
+    networks:
+      - local
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  qdrant:
+    image: qdrant/qdrant:latest
+    container_name: ${CONTAINER_PREFIX:-face_detection}_qdrant
+    restart: unless-stopped
+    networks:
+      - local
+    volumes:
+      - qdrant_data:/qdrant/storage
+
   app:
     build:
       context: .
       dockerfile: ./docker/Dockerfile
-    container_name: hr_chat_app
+    container_name: ${CONTAINER_PREFIX:-face_detection}_app
+    image: ${CONTAINER_PREFIX:-face_detection}_app_image:latest
     entrypoint: /scripts/entrypoint.sh
     networks:
       - local
     ports:
-      - "127.0.0.1:8065:8000"
+      - "${APP_BIND_IP:-127.0.0.1}:${APP_PORT:-8000}:8000"
     env_file:
       - .env
     environment:
-      - REDIS_HOST=hr_chat_redis
+      - REDIS_HOST=redis
       - REDIS_PORT=6379
+      - QDRANT_HOST=qdrant
+      - QDRANT_PORT=6333
+    depends_on:
+      redis:
+        condition: service_healthy
+      qdrant:
+        condition: service_started
 
 
-  admin:
-    build:
-      context: ./admin
-      dockerfile: Dockerfile
-    container_name: hr_chat_admin
-    entrypoint: ./admin/entrypoint.sh
-    networks:
-      - local
-    ports:
-      - "127.0.0.1:8066:8001"
-    volumes:
-      - .:/app
-    env_file:
-      - .env
-    environment:
-      - REDIS_PORT=6379
-      - REDIS_HOST=hr_chat_redis
 
 volumes:
   redis_data: { }
+  qdrant_data: { }
 
 
 networks:
   local:
-    name: hr_shared_net
-    external: true
+    name: face_detection
+    external: false

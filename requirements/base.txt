@@ -5,6 +5,7 @@ fastapi-pagination
 pyjwt
 redis
 hiredis
+qdrant-client
 argon2-cffi
 aiosmtplib
 aiofiles

@@ -33,9 +33,11 @@ class Server:
     @staticmethod
     @asynccontextmanager
     async def lifespan(app: FastAPI):
-        await on_startup()
-        yield
-        await on_shutdown()
+        await on_startup(app)
+        try:
+            yield
+        finally:
+            await on_shutdown(app)
 
     @staticmethod
     def __register_routes(app):

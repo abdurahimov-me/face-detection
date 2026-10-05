@@ -3,6 +3,7 @@ __all__ = (
     'EnvReader',
     'APP_SETTINGS',
     'JWT_SETTINGS',
+    'QDRANT_SETTINGS',
 )
 
 import os
@@ -11,6 +12,7 @@ from datetime import timedelta
 from pathlib import Path
 
 from dotenv import load_dotenv
+from pydantic import Field
 from pydantic_settings import BaseSettings
 
 load_dotenv()
@@ -46,5 +48,15 @@ class JWTSettings(BaseSettings):
     JWT_PAYLOAD_FIELDS: tuple = ('id',)
     ACCESS_TOKEN_EXPIRE: timedelta = timedelta(days=10)
 
+
+class QdrantSettings(EnvReader):
+    HOST: str = 'localhost'
+    PORT: int = Field(default=6333, ge=1, le=65535)
+    API_KEY: t.Optional[str] = None
+    TIMEOUT: float = Field(default=5.0, gt=0)
+    CONNECT_RETRIES: int = Field(default=30, ge=1)
+    RETRY_DELAY: float = Field(default=1.0, ge=0)
+
 JWT_SETTINGS = JWTSettings()
 APP_SETTINGS = APPSettings()
+QDRANT_SETTINGS = QdrantSettings()
