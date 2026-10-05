@@ -1,9 +1,7 @@
 fastapi[standard]
-asyncpg
 pydantic
 pydantic-settings
 fastapi-pagination
-fastapi-filter[sqlalchemy]
 pyjwt
 redis
 hiredis
@@ -12,7 +10,6 @@ aiosmtplib
 aiofiles
 gunicorn
 aiohttp
-alembic
 aioboto3>=12.0.0
 cryptography
 grpcio

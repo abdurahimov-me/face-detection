@@ -1,50 +1,4 @@
 services:
-
-  db:
-    image: postgres:15
-    container_name: hr_chat_db
-    networks:
-      - local
-    env_file:
-      - .env
-    environment:
-      - POSTGRES_DB=${DB_NAME}
-      - POSTGRES_USER=${DB_USER}
-      - POSTGRES_PASSWORD=${DB_PASSWORD}
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-      - ./dump.sql:/docker-entrypoint-initdb.d/dump.sql
-
-  pgbouncer:
-    image: edoburu/pgbouncer
-    container_name: hr_chat_pgbouncer
-    networks:
-      - local
-    restart: always
-    expose:
-      - "6432"
-    env_file:
-      - .env
-    environment:
-      - POSTGRESQL_HOST=hr_chat_db
-      - POSTGRESQL_PORT_NUMBER=5432
-      - POSTGRESQL_USERNAME=${DB_USER}
-      - POSTGRESQL_PASSWORD=${DB_PASSWORD}
-      - PGBOUNCER_PORT=6432
-      - PGBOUNCER_ADMIN_USERS=${DB_USER}
-      - PGBOUNCER_STATS_USERS=${DB_USER}
-    volumes:
-      - ./pgbouncer/pgbouncer.ini:/etc/pgbouncer/pgbouncer.ini:ro
-      - ./pgbouncer/userlist.txt:/etc/pgbouncer/userlist.txt:ro
-    healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -h 127.0.0.1 -p 6432 -U ${DB_USER} || exit 1" ]
-      interval: 15s
-      timeout: 5s
-      retries: 5
-    depends_on:
-      db:
-        condition: service_started
-
   app:
     build:
       context: .
@@ -58,13 +12,8 @@ services:
     env_file:
       - .env
     environment:
-      - DB_HOST=hr_chat_pgbouncer
-      - DB_PORT=6432
       - REDIS_HOST=hr_chat_redis
       - REDIS_PORT=6379
-    depends_on:
-      - redis
-      - db
 
 
   admin:
@@ -82,13 +31,10 @@ services:
     env_file:
       - .env
     environment:
-      - DB_HOST=hr_chat_pgbouncer
       - REDIS_PORT=6379
       - REDIS_HOST=hr_chat_redis
-      - DB_PORT=6432
 
 volumes:
-  postgres_data: { }
   redis_data: { }
 
 
