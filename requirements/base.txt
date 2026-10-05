@@ -1,5 +1,4 @@
 fastapi[standard]
-sqlalchemy[asyncio]
 asyncpg
 pydantic
 pydantic-settings
@@ -15,7 +14,6 @@ gunicorn
 aiohttp
 alembic
 aioboto3>=12.0.0
-orjson
 cryptography
 grpcio
 grpcio-tools
