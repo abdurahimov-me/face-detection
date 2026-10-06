@@ -14,7 +14,6 @@ from aiortc.mediastreams import MediaStreamError
 from qdrant_client import models
 
 from api.detection.services import (
-    COLLECTION_NAME,
     analyze_face_image,
     ensure_faces_collection,
 )
@@ -52,7 +51,7 @@ def validate_user_fields(user_id: str, full_name: str) -> tuple[str, str]:
 
 async def check_user_id_available(user_id: str) -> None:
     existing = await qdrant_db.client.retrieve(
-        collection_name=COLLECTION_NAME,
+        collection_name=APP_SETTINGS.FACES_COLLECTION_NAME,
         ids=[point_id_for_user(user_id)],
         with_payload=False,
         with_vectors=False,
@@ -66,7 +65,7 @@ async def save_face_sample(
 ) -> FaceUser:
     await check_user_id_available(user_id)
     duplicate = await qdrant_db.client.query_points(
-        collection_name=COLLECTION_NAME,
+        collection_name=APP_SETTINGS.FACES_COLLECTION_NAME,
         query=embedding.tolist(),
         limit=1,
         score_threshold=MIN_DUPLICATE_SIMILARITY,
@@ -98,7 +97,7 @@ async def save_face_sample(
     }
     try:
         await qdrant_db.client.upsert(
-            collection_name=COLLECTION_NAME,
+            collection_name=APP_SETTINGS.FACES_COLLECTION_NAME,
             points=[models.PointStruct(id=point_id, vector=embedding.tolist(), payload=payload)],
             wait=True,
         )
@@ -219,7 +218,7 @@ async def list_face_users() -> list[FaceUser]:
 
     while True:
         points, offset = await qdrant_db.client.scroll(
-            collection_name=COLLECTION_NAME,
+            collection_name=APP_SETTINGS.FACES_COLLECTION_NAME,
             limit=100,
             offset=offset,
             with_payload=True,
@@ -277,7 +276,7 @@ async def enroll_face_user(
     await ensure_faces_collection()
     point_id = point_id_for_user(user_id)
     existing = await qdrant_db.client.retrieve(
-        collection_name=COLLECTION_NAME,
+        collection_name=APP_SETTINGS.FACES_COLLECTION_NAME,
         ids=[point_id],
         with_payload=True,
         with_vectors=False,
@@ -308,7 +307,7 @@ async def enroll_face_user(
     }
     try:
         await qdrant_db.client.upsert(
-            collection_name=COLLECTION_NAME,
+            collection_name=APP_SETTINGS.FACES_COLLECTION_NAME,
             points=[
                 models.PointStruct(
                     id=point_id,
@@ -329,7 +328,7 @@ async def delete_face_user(user_id: str) -> None:
     await ensure_faces_collection()
     point_id = point_id_for_user(user_id)
     records = await qdrant_db.client.retrieve(
-        collection_name=COLLECTION_NAME,
+        collection_name=APP_SETTINGS.FACES_COLLECTION_NAME,
         ids=[point_id],
         with_payload=True,
         with_vectors=False,
@@ -338,7 +337,7 @@ async def delete_face_user(user_id: str) -> None:
         raise HTTPException(status_code=404, detail='Foydalanuvchi topilmadi.')
 
     await qdrant_db.client.delete(
-        collection_name=COLLECTION_NAME,
+        collection_name=APP_SETTINGS.FACES_COLLECTION_NAME,
         points_selector=models.PointIdsList(points=[point_id]),
         wait=True,
     )
