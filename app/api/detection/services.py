@@ -13,18 +13,13 @@ from insightface.app import FaceAnalysis
 from insightface.app.common import Face
 from qdrant_client import models
 from trackers import ByteTrackTracker
+from config.settings import APP_SETTINGS
 
 from config.qdrant import qdrant_db
 
 
 logger = logging.getLogger(__name__)
 
-MODEL_NAME = 'buffalo_l'
-COLLECTION_NAME = 'faces'
-EMBEDDING_SIZE = 512
-MATCH_THRESHOLD = 0.55
-DETECTION_SIZE = (320, 320)
-ANALYSIS_INTERVAL_SECONDS = 0.15
 
 _engine: FaceAnalysis | None = None
 _engine_init_lock = threading.Lock()
@@ -38,14 +33,14 @@ def get_face_engine() -> FaceAnalysis:
         with _engine_init_lock:
             if _engine is None:
                 engine = FaceAnalysis(
-                    name=MODEL_NAME,
+                    name=APP_SETTINGS.MODEL_NAME,
                     allowed_modules=['detection', 'recognition'],
                     providers=['CPUExecutionProvider'],
                 )
                 engine.prepare(
                     ctx_id=-1,
                     det_thresh=0.25,
-                    det_size=DETECTION_SIZE,
+                    det_size=APP_SETTINGS.DETECTION_SIZE,
                 )
                 _engine = engine
     return _engine
@@ -121,11 +116,11 @@ class RecognitionSession:
 async def ensure_faces_collection() -> None:
     client = qdrant_db.client
     collections = await client.get_collections()
-    if COLLECTION_NAME not in {item.name for item in collections.collections}:
+    if APP_SETTINGS.FACES_COLLECTION_NAME not in {item.name for item in collections.collections}:
         await client.create_collection(
-            collection_name=COLLECTION_NAME,
+            collection_name=APP_SETTINGS.FACES_COLLECTION_NAME,
             vectors_config=models.VectorParams(
-                size=EMBEDDING_SIZE,
+                size=APP_SETTINGS.EMBEDDING_SIZE,
                 distance=models.Distance.COSINE,
             ),
         )
@@ -133,10 +128,10 @@ async def ensure_faces_collection() -> None:
 
 async def resolve_identity(embedding: list[float]) -> TrackIdentity:
     result = await qdrant_db.client.query_points(
-        collection_name=COLLECTION_NAME,
+        collection_name=APP_SETTINGS.FACES_COLLECTION_NAME,
         query=embedding,
         limit=1,
-        score_threshold=MATCH_THRESHOLD,
+        score_threshold=APP_SETTINGS.MATCH_THRESHOLD,
         with_payload=True,
     )
     if not result.points:
@@ -156,7 +151,7 @@ async def consume_video(track, session: RecognitionSession, channel_holder: dict
         while True:
             frame = await track.recv()
             now = time.monotonic()
-            if now - last_analysis < ANALYSIS_INTERVAL_SECONDS:
+            if now - last_analysis < APP_SETTINGS.ANALYSIS_INTERVAL_SECONDS:
                 continue
             last_analysis = now
             started = time.perf_counter()

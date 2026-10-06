@@ -39,6 +39,12 @@ class APPSettings(EnvReader):
     SERVER_HOST: str = 'localhost'
     ROOT_PATH: str = ''
     DEBUG: bool = True
+    MODEL_NAME: str = "buffalo_l"
+    FACES_COLLECTION_NAME: str = 'faces'
+    EMBEDDING_SIZE: int = 512
+    MATCH_THRESHOLD: float = 0.55
+    DETECTION_SIZE: tuple = (320, 320)
+    ANALYSIS_INTERVAL_SECONDS: float = 0.15
 
 
 class JWTSettings(BaseSettings):
@@ -58,6 +64,7 @@ class QdrantSettings(EnvReader):
     TIMEOUT: float = Field(default=5.0, gt=0)
     CONNECT_RETRIES: int = Field(default=30, ge=1)
     RETRY_DELAY: float = Field(default=1.0, ge=0)
+
 
 JWT_SETTINGS = JWTSettings()
 APP_SETTINGS = APPSettings()
