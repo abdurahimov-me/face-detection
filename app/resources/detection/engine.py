@@ -1,12 +1,14 @@
 import threading
 
-from aiortc import RTCPeerConnection
+import numpy as np
 from insightface.app import FaceAnalysis
+from insightface.app.common import Face
 
 from config.settings import APP_SETTINGS
 
 _engine: FaceAnalysis | None = None
 _engine_init_lock = threading.Lock()
+inference_lock = threading.Lock()
 
 
 def get_face_engine() -> FaceAnalysis:
@@ -26,3 +28,9 @@ def get_face_engine() -> FaceAnalysis:
                 )
                 _engine = engine
     return _engine
+
+
+def analyze_face_image(image: np.ndarray) -> list[Face]:
+    engine = get_face_engine()
+    with inference_lock:
+        return engine.get(image)

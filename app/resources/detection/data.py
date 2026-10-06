@@ -7,7 +7,7 @@ from aiortc import RTCPeerConnection
 @dataclass
 class TrackIdentity:
     user_id: str | None = None
-    full_name: str = "Unknown"
+    full_name: str = "Noma'lum"
     score: float | None = None
 
 

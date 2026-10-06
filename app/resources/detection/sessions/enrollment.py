@@ -1,18 +1,51 @@
 import asyncio
 import json
 import time
+from collections.abc import Awaitable, Callable
 
+import cv2
 import numpy as np
 from aiortc.mediastreams import MediaStreamError
 from fastapi import HTTPException
 
 from config import APP_SETTINGS
+from ..engine import analyze_face_image
+
+
+def inspect_enrollment_frame(frame: np.ndarray):
+    height, width = frame.shape[:2]
+    if width > 640:
+        frame = cv2.resize(frame, (640, round(height * 640 / width)))
+    faces = analyze_face_image(frame)
+    if len(faces) != 1:
+        return None, frame, 'Kadrda faqat bitta yuz bo‘lsin.' if faces else 'Yuz kutilmoqda.'
+    face = faces[0]
+    x1, y1, x2, y2 = face.bbox.astype(int)
+    if min(x2 - x1, y2 - y1) < APP_SETTINGS.MIN_FACE_SIZE:
+        return None, frame, 'Kameraga yaqinroq turing.'
+    crop = frame[max(0, y1):min(frame.shape[0], y2), max(0, x1):min(frame.shape[1], x2)]
+    gray = cv2.cvtColor(crop, cv2.COLOR_BGR2GRAY)
+    if not 55 <= float(gray.mean()) <= 210:
+        return None, frame, 'Yuzni yaxshiroq yoritib oling.'
+    if cv2.Laplacian(gray, cv2.CV_64F).var() < APP_SETTINGS.MIN_SHARPNESS:
+        return None, frame, 'Kamerani qimirlatmay turing.'
+    if face.normed_embedding is None:
+        return None, frame, 'Yuzni to‘g‘ri kameraga qarating.'
+    return face.normed_embedding.astype(np.float32), frame, None
 
 
 class EnrollmentSession:
-    def __init__(self, user_id: str, full_name: str) -> None:
+    def __init__(
+        self,
+        user_id: str,
+        full_name: str,
+        check_available: Callable[[str], Awaitable[None]],
+        save_sample: Callable[..., Awaitable],
+    ) -> None:
         self.user_id = user_id
         self.full_name = full_name
+        self.check_available = check_available
+        self.save_sample = save_sample
 
     async def consume(self, track, channel_holder: dict) -> None:
         embeddings: list[np.ndarray] = []
@@ -29,7 +62,7 @@ class EnrollmentSession:
                 }))
 
         try:
-            await check_user_id_available(self.user_id)
+            await self.check_available(self.user_id)
             while len(embeddings) < APP_SETTINGS.ENROLLMENT_SAMPLES:
                 frame = await track.recv()
                 now = time.monotonic()
@@ -60,7 +93,7 @@ class EnrollmentSession:
                 return
             mean = mean / norm
             send('saving', 'User saqlanmoqda.')
-            user = await save_face_sample(
+            user = await self.save_sample(
                 self.user_id, self.full_name, mean, best_frame
             )
             send('complete', 'User bazaga qo‘shildi.', user=user.model_dump(mode='json'))

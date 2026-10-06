@@ -2,7 +2,9 @@ from typing import Annotated
 
 from fastapi import APIRouter, File, Form, Response, UploadFile, status
 
-from .schemas import FaceUser
+from api.shared.schemas import WebRTCAnswer
+from .rtc import create_enrollment_answer
+from .schemas import EnrollmentOffer, FaceUser
 from .services import delete_face_user, enroll_face_user, list_face_users
 
 

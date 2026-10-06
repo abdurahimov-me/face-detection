@@ -3,7 +3,8 @@ import asyncio
 from fastapi import FastAPI
 
 from config.qdrant import qdrant_db
-from api.detection.services import close_peer_connections, get_face_engine
+from resources.detection.data import peer_connections
+from resources.detection.engine import get_face_engine
 
 
 async def on_startup(app: FastAPI):
@@ -13,5 +14,5 @@ async def on_startup(app: FastAPI):
 
 
 async def on_shutdown(app: FastAPI):
-    await close_peer_connections()
+    await peer_connections.close()
     await qdrant_db.close()

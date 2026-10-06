@@ -52,7 +52,7 @@ export async function deleteFaceUser(userId: string): Promise<void> {
 export async function createWebRTCAnswer(
   offer: RTCSessionDescriptionInit,
 ): Promise<RTCSessionDescriptionInit> {
-  const response = await fetch(`${API_BASE_URL}/webrtc/offer`, {
+  const response = await fetch(`${API_BASE_URL}/detection/offer`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ sdp: offer.sdp, type: offer.type }),
@@ -65,7 +65,7 @@ export async function createEnrollmentAnswer(
   userId: string,
   fullName: string,
 ): Promise<RTCSessionDescriptionInit> {
-  const response = await fetch(`${API_BASE_URL}/webrtc/enroll/offer`, {
+  const response = await fetch(`${API_BASE_URL}/faces/enroll/offer`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({

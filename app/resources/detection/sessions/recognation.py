@@ -1,16 +1,13 @@
 import logging
-import threading
-
 import numpy as np
 import supervision as sv
 from insightface.app.common import Face
 from trackers import ByteTrackTracker
 
 from ..data import TrackIdentity
-from ..engine import get_face_engine
+from ..engine import get_face_engine, inference_lock
 
 logger = logging.getLogger(__name__)
-_inference_lock = threading.Lock()
 
 
 class RecognitionSession:
@@ -23,12 +20,11 @@ class RecognitionSession:
             minimum_iou_threshold=0.1,
             high_conf_det_threshold=0.5,
         )
-        self.lock = threading.Lock()
         self.identities: dict[int, TrackIdentity] = {}
 
     def analyze(self, image: np.ndarray) -> list[dict]:
         engine = get_face_engine()
-        with _inference_lock:
+        with inference_lock:
             bboxes, keypoints = engine.det_model.detect(image)
 
         data = {}
@@ -61,7 +57,7 @@ class RecognitionSession:
                         kps=tracked_keypoints[index],
                         det_score=float(tracked.confidence[index]),
                     )
-                    with _inference_lock:
+                    with inference_lock:
                         engine.models['recognition'].get(image, face)
                     item['embedding'] = face.normed_embedding.tolist()
             results.append(item)

@@ -3,10 +3,12 @@ import asyncio
 from aiortc import RTCSessionDescription, RTCPeerConnection
 
 from resources.detection.data import peer_connections
-from .services import consume_video, RecognitionSession
+from resources.detection.sessions.recognation import RecognitionSession
+from .services import consume_video, ensure_faces_collection
 
 
 async def create_webrtc_answer(sdp: str, description_type: str) -> RTCSessionDescription:
+    await ensure_faces_collection()
     peer = RTCPeerConnection()
     peer_connections.add(peer)
     session = RecognitionSession()
@@ -33,9 +35,14 @@ async def create_webrtc_answer(sdp: str, description_type: str) -> RTCSessionDes
             await peer.close()
             peer_connections.remove(peer)
 
-    await peer.setRemoteDescription(
-        RTCSessionDescription(sdp=sdp, type=description_type)
-    )
-    answer = await peer.createAnswer()
-    await peer.setLocalDescription(answer)
-    return peer.localDescription
+    try:
+        await peer.setRemoteDescription(
+            RTCSessionDescription(sdp=sdp, type=description_type)
+        )
+        answer = await peer.createAnswer()
+        await peer.setLocalDescription(answer)
+        return peer.localDescription
+    except Exception:
+        await peer.close()
+        peer_connections.remove(peer)
+        raise
