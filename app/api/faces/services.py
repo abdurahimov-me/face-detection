@@ -3,14 +3,13 @@ import json
 import os
 import time
 from datetime import datetime, timezone
-from pathlib import Path
 from uuid import NAMESPACE_URL, uuid5
 
 import aiofiles
 import cv2
 import numpy as np
-from fastapi import HTTPException, UploadFile, status
 from aiortc.mediastreams import MediaStreamError
+from fastapi import HTTPException, UploadFile, status
 from qdrant_client import models
 
 from api.detection.services import (
@@ -19,10 +18,7 @@ from api.detection.services import (
 )
 from config import APP_SETTINGS
 from config.qdrant import qdrant_db
-
 from .schemas import FaceUser
-
-
 
 
 def point_id_for_user(user_id: str) -> str:
@@ -51,7 +47,7 @@ async def check_user_id_available(user_id: str) -> None:
 
 
 async def save_face_sample(
-    user_id: str, full_name: str, embedding: np.ndarray, frame: np.ndarray
+        user_id: str, full_name: str, embedding: np.ndarray, frame: np.ndarray
 ) -> FaceUser:
     await check_user_id_available(user_id)
     duplicate = await qdrant_db.client.query_points(
@@ -223,9 +219,9 @@ async def list_face_users() -> list[FaceUser]:
 
 
 async def enroll_face_user(
-    user_id: str,
-    full_name: str,
-    image: UploadFile,
+        user_id: str,
+        full_name: str,
+        image: UploadFile,
 ) -> FaceUser:
     user_id = user_id.strip()
     full_name = full_name.strip()
