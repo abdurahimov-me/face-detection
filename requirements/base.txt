@@ -7,9 +7,9 @@ redis
 hiredis
 qdrant-client
 insightface
-onnxruntime-gpu
 opencv-python
 numpy
+trackers==2.6.1
 argon2-cffi
 aiosmtplib
 aiofiles
