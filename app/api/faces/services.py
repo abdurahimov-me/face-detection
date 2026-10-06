@@ -69,7 +69,6 @@ async def save_face_sample(
         )
 
     point_id = point_id_for_user(user_id)
-    APP_SETTINGS.FACE_IMAGES_DIR.mkdir(parents=True, exist_ok=True)
     image_name = f'{point_id}.jpg'
     image_path = APP_SETTINGS.FACE_IMAGES_DIR / image_name
     encoded, jpeg = cv2.imencode('.jpg', frame, [cv2.IMWRITE_JPEG_QUALITY, 88])
@@ -277,7 +276,6 @@ async def enroll_face_user(
             detail='Bu User ID bilan foydalanuvchi allaqachon mavjud.',
         )
 
-    APP_SETTINGS.FACE_IMAGES_DIR.mkdir(parents=True, exist_ok=True)
     image_name = f'{point_id}.jpg'
     image_path = APP_SETTINGS.FACE_IMAGES_DIR / image_name
     encoded, jpeg = cv2.imencode('.jpg', frame, [cv2.IMWRITE_JPEG_QUALITY, 88])

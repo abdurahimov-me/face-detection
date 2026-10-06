@@ -57,7 +57,9 @@ class APPSettings(EnvReader):
 
     @computed_field
     def FACE_IMAGES_DIR(self) -> Path:
-        return Path(self.MEDIA_DIR) / 'faces'
+        path = Path(self.MEDIA_DIR) / 'faces'
+        path.mkdir(parents=True, exist_ok=True)
+        return path
 
 
 class JWTSettings(BaseSettings):
