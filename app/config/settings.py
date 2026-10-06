@@ -45,6 +45,16 @@ class APPSettings(EnvReader):
     MATCH_THRESHOLD: float = 0.55
     DETECTION_SIZE: tuple = (320, 320)
     ANALYSIS_INTERVAL_SECONDS: float = 0.15
+    MAX_IMAGE_BYTES: float = 8 * 1024 * 1024
+    MIN_FACE_SIZE: int = 80
+    ENROLLMENT_SAMPLES: int = 7
+    ENROLLMENT_INTERVAL_SECONDS: float = 0.45
+    ENROLLMENT_TIMEOUT_SECONDS: int = 45
+    MIN_SHARPNESS: float = 45.0
+    MIN_SAMPLE_SIMILARITY: float = 0.65
+    MIN_DUPLICATE_SIMILARITY: float = 0.75
+    ALLOWED_IMAGE_TYPES: set[str] = {'image/jpeg', 'image/png', 'image/webp'}
+    FACE_IMAGES_DIR: Path = Path(APP_SETTINGS.MEDIA_DIR) / 'faces'
 
 
 class JWTSettings(BaseSettings):

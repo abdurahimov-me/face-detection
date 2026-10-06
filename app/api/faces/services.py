@@ -23,16 +23,6 @@ from config.qdrant import qdrant_db
 from .schemas import FaceUser
 
 
-MAX_IMAGE_BYTES = 8 * 1024 * 1024
-MIN_FACE_SIZE = 80
-ENROLLMENT_SAMPLES = 7
-ENROLLMENT_INTERVAL_SECONDS = 0.45
-ENROLLMENT_TIMEOUT_SECONDS = 45
-MIN_SHARPNESS = 45.0
-MIN_SAMPLE_SIMILARITY = 0.65
-MIN_DUPLICATE_SIMILARITY = 0.75
-ALLOWED_IMAGE_TYPES = {'image/jpeg', 'image/png', 'image/webp'}
-FACE_IMAGES_DIR = Path(APP_SETTINGS.MEDIA_DIR) / 'faces'
 
 
 def point_id_for_user(user_id: str) -> str:
@@ -68,7 +58,7 @@ async def save_face_sample(
         collection_name=APP_SETTINGS.FACES_COLLECTION_NAME,
         query=embedding.tolist(),
         limit=1,
-        score_threshold=MIN_DUPLICATE_SIMILARITY,
+        score_threshold=APP_SETTINGS.MIN_DUPLICATE_SIMILARITY,
         with_payload=True,
     )
     if duplicate.points:
@@ -79,9 +69,9 @@ async def save_face_sample(
         )
 
     point_id = point_id_for_user(user_id)
-    FACE_IMAGES_DIR.mkdir(parents=True, exist_ok=True)
+    APP_SETTINGS.FACE_IMAGES_DIR.mkdir(parents=True, exist_ok=True)
     image_name = f'{point_id}.jpg'
-    image_path = FACE_IMAGES_DIR / image_name
+    image_path = APP_SETTINGS.FACE_IMAGES_DIR / image_name
     encoded, jpeg = cv2.imencode('.jpg', frame, [cv2.IMWRITE_JPEG_QUALITY, 88])
     if not encoded:
         raise HTTPException(status_code=500, detail='Rasmni saqlab bo‘lmadi.')
@@ -116,13 +106,13 @@ def inspect_enrollment_frame(frame: np.ndarray):
         return None, frame, 'Kadrda faqat bitta yuz bo‘lsin.' if faces else 'Yuz kutilmoqda.'
     face = faces[0]
     x1, y1, x2, y2 = face.bbox.astype(int)
-    if min(x2 - x1, y2 - y1) < MIN_FACE_SIZE:
+    if min(x2 - x1, y2 - y1) < APP_SETTINGS.MIN_FACE_SIZE:
         return None, frame, 'Kameraga yaqinroq turing.'
     crop = frame[max(0, y1):min(frame.shape[0], y2), max(0, x1):min(frame.shape[1], x2)]
     gray = cv2.cvtColor(crop, cv2.COLOR_BGR2GRAY)
     if not 55 <= float(gray.mean()) <= 210:
         return None, frame, 'Yuzni yaxshiroq yoritib oling.'
-    if cv2.Laplacian(gray, cv2.CV_64F).var() < MIN_SHARPNESS:
+    if cv2.Laplacian(gray, cv2.CV_64F).var() < APP_SETTINGS.MIN_SHARPNESS:
         return None, frame, 'Kamerani qimirlatmay turing.'
     if face.normed_embedding is None:
         return None, frame, 'Yuzni to‘g‘ri kameraga qarating.'
@@ -145,18 +135,18 @@ class EnrollmentSession:
             if channel is not None and channel.readyState == 'open':
                 channel.send(json.dumps({
                     'event': event, 'message': message,
-                    'collected': len(embeddings), 'total': ENROLLMENT_SAMPLES, **extra,
+                    'collected': len(embeddings), 'total': APP_SETTINGS.ENROLLMENT_SAMPLES, **extra,
                 }))
 
         try:
             await check_user_id_available(self.user_id)
-            while len(embeddings) < ENROLLMENT_SAMPLES:
+            while len(embeddings) < APP_SETTINGS.ENROLLMENT_SAMPLES:
                 frame = await track.recv()
                 now = time.monotonic()
-                if now - started > ENROLLMENT_TIMEOUT_SECONDS:
+                if now - started > APP_SETTINGS.ENROLLMENT_TIMEOUT_SECONDS:
                     send('error', 'Sifatli kadrlar yig‘ilmadi. Qayta urinib ko‘ring.')
                     return
-                if now - last_sample < ENROLLMENT_INTERVAL_SECONDS:
+                if now - last_sample < APP_SETTINGS.ENROLLMENT_INTERVAL_SECONDS:
                     continue
                 last_sample = now
                 vector, image, reason = await asyncio.to_thread(
@@ -165,11 +155,11 @@ class EnrollmentSession:
                 if vector is None:
                     send('progress', reason)
                     continue
-                if embeddings and float(np.dot(vector, embeddings[0])) < MIN_SAMPLE_SIMILARITY:
+                if embeddings and float(np.dot(vector, embeddings[0])) < APP_SETTINGS.MIN_SAMPLE_SIMILARITY:
                     send('progress', 'Bir xil yuz kamerada tursin.')
                     continue
                 embeddings.append(vector)
-                if best_frame is None or len(embeddings) == ENROLLMENT_SAMPLES // 2 + 1:
+                if best_frame is None or len(embeddings) == APP_SETTINGS.ENROLLMENT_SAMPLES // 2 + 1:
                     best_frame = image.copy()
                 send('progress', 'Sifatli kadr qabul qilindi.')
 
@@ -244,13 +234,13 @@ async def enroll_face_user(
         raise HTTPException(status_code=422, detail='User ID 1–128 belgidan iborat bo‘lsin.')
     if not full_name or len(full_name) > 200:
         raise HTTPException(status_code=422, detail='To‘liq ism 1–200 belgidan iborat bo‘lsin.')
-    if image.content_type not in ALLOWED_IMAGE_TYPES:
+    if image.content_type not in APP_SETTINGS.ALLOWED_IMAGE_TYPES:
         raise HTTPException(status_code=415, detail='Faqat JPEG, PNG yoki WebP rasm yuboring.')
 
-    content = await image.read(MAX_IMAGE_BYTES + 1)
+    content = await image.read(APP_SETTINGS.MAX_IMAGE_BYTES + 1)
     if not content:
         raise HTTPException(status_code=422, detail='Rasm bo‘sh.')
-    if len(content) > MAX_IMAGE_BYTES:
+    if len(content) > APP_SETTINGS.MAX_IMAGE_BYTES:
         raise HTTPException(status_code=413, detail='Rasm hajmi 8 MB dan oshmasin.')
 
     frame = cv2.imdecode(np.frombuffer(content, dtype=np.uint8), cv2.IMREAD_COLOR)
@@ -265,7 +255,7 @@ async def enroll_face_user(
 
     face = faces[0]
     x1, y1, x2, y2 = face.bbox
-    if min(x2 - x1, y2 - y1) < MIN_FACE_SIZE:
+    if min(x2 - x1, y2 - y1) < APP_SETTINGS.MIN_FACE_SIZE:
         raise HTTPException(
             status_code=422,
             detail='Yuz juda kichik. Kameraga yaqinroq turing.',
@@ -287,9 +277,9 @@ async def enroll_face_user(
             detail='Bu User ID bilan foydalanuvchi allaqachon mavjud.',
         )
 
-    FACE_IMAGES_DIR.mkdir(parents=True, exist_ok=True)
+    APP_SETTINGS.FACE_IMAGES_DIR.mkdir(parents=True, exist_ok=True)
     image_name = f'{point_id}.jpg'
-    image_path = FACE_IMAGES_DIR / image_name
+    image_path = APP_SETTINGS.FACE_IMAGES_DIR / image_name
     encoded, jpeg = cv2.imencode('.jpg', frame, [cv2.IMWRITE_JPEG_QUALITY, 88])
     if not encoded:
         raise HTTPException(status_code=500, detail='Rasmni saqlashda xatolik yuz berdi.')
@@ -341,6 +331,6 @@ async def delete_face_user(user_id: str) -> None:
         points_selector=models.PointIdsList(points=[point_id]),
         wait=True,
     )
-    image_path = FACE_IMAGES_DIR / f'{point_id}.jpg'
+    image_path = APP_SETTINGS.FACE_IMAGES_DIR / f'{point_id}.jpg'
     if image_path.exists():
         await asyncio.to_thread(os.remove, image_path)
