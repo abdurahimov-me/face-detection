@@ -1,11 +1,9 @@
-import logging
 import threading
 
 from aiortc import RTCPeerConnection
 from insightface.app import FaceAnalysis
 
 from config.settings import APP_SETTINGS
-
 
 _engine: FaceAnalysis | None = None
 _engine_init_lock = threading.Lock()

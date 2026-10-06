@@ -5,10 +5,13 @@ import numpy as np
 import supervision as sv
 from insightface.app.common import Face
 from trackers import ByteTrackTracker
+
+from ..data import TrackIdentity
 from ..engine import get_face_engine
 
 logger = logging.getLogger(__name__)
 _inference_lock = threading.Lock()
+
 
 class RecognitionSession:
     def __init__(self) -> None:
