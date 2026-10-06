@@ -1,52 +1,121 @@
 import { useNavigate } from '@tanstack/react-router'
-import { CameraIcon, CheckCircle2, ScanFace } from 'lucide-react'
-import { FormEvent, useRef, useState } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
+import { CheckCircle2, ScanFace } from 'lucide-react'
+import { FormEvent, useEffect, useRef, useState } from 'react'
 import { Camera, type CameraHandle } from '../components/Camera'
-import { useEnrollFace } from '../lib/queries'
+import { createEnrollmentAnswer } from '../lib/api'
+import { faceUsersQueryKey } from '../lib/queries'
+
+const TOTAL_SAMPLES = 7
+
+type EnrollmentMessage = {
+  event: 'progress' | 'saving' | 'complete' | 'error'
+  message: string
+  collected: number
+  total: number
+}
+
+async function waitForIceGathering(peer: RTCPeerConnection): Promise<void> {
+  if (peer.iceGatheringState === 'complete') return
+  await new Promise<void>((resolve, reject) => {
+    const timeout = window.setTimeout(() => {
+      peer.removeEventListener('icegatheringstatechange', listener)
+      reject(new Error('WebRTC ulanish vaqti tugadi.'))
+    }, 10000)
+    const listener = () => {
+      if (peer.iceGatheringState === 'complete') {
+        window.clearTimeout(timeout)
+        peer.removeEventListener('icegatheringstatechange', listener)
+        resolve()
+      }
+    }
+    peer.addEventListener('icegatheringstatechange', listener)
+  })
+}
 
 export function EnrollPage() {
   const camera = useRef<CameraHandle>(null)
-  const enroll = useEnrollFace()
+  const peer = useRef<RTCPeerConnection | null>(null)
+  const queryClient = useQueryClient()
   const navigate = useNavigate()
   const [userId, setUserId] = useState('')
   const [fullName, setFullName] = useState('')
-  const [snapshot, setSnapshot] = useState<Blob | null>(null)
-  const [preview, setPreview] = useState<string | null>(null)
+  const [ready, setReady] = useState(false)
+  const [busy, setBusy] = useState(false)
+  const [collected, setCollected] = useState(0)
+  const [message, setMessage] = useState('Kameraga qarang va boshlash tugmasini bosing.')
+  const [error, setError] = useState<string | null>(null)
 
-  async function capture() {
-    const blob = await camera.current?.capture()
-    if (!blob) return
-    if (preview) URL.revokeObjectURL(preview)
-    setSnapshot(blob)
-    setPreview(URL.createObjectURL(blob))
-  }
+  useEffect(() => () => peer.current?.close(), [])
 
   async function submit(event: FormEvent) {
     event.preventDefault()
-    if (!snapshot) return
+    const video = camera.current?.video
+    const stream = video?.srcObject as MediaStream | null
+    const track = stream?.getVideoTracks()[0]
+    if (!track || busy) return
+
+    peer.current?.close()
+    const connection = new RTCPeerConnection()
+    peer.current = connection
+    setBusy(true)
+    setCollected(0)
+    setError(null)
+    setMessage('WebRTC ulanmoqda…')
+    const channel = connection.createDataChannel('enrollment')
+    channel.onopen = () => setMessage('Yuz kutilmoqda…')
+    channel.onmessage = (incoming) => {
+      const result = JSON.parse(incoming.data) as EnrollmentMessage
+      setCollected(result.collected)
+      setMessage(result.message)
+      if (result.event === 'error') {
+        setError(result.message)
+        setBusy(false)
+        connection.close()
+      } else if (result.event === 'complete') {
+        setBusy(false)
+        connection.close()
+        void queryClient.invalidateQueries({ queryKey: faceUsersQueryKey })
+        void navigate({ to: '/' })
+      }
+    }
+    connection.onconnectionstatechange = () => {
+      if (connection.connectionState === 'failed') {
+        setError('WebRTC ulanishi uzildi. Qayta urinib ko‘ring.')
+        setBusy(false)
+      }
+    }
+    connection.addTrack(track, stream!)
+
     try {
-      await enroll.mutateAsync({ userId, fullName, image: snapshot })
-      await navigate({ to: '/' })
-    } catch {
-      // React Query exposes the server validation message in the form.
+      await connection.setLocalDescription(await connection.createOffer())
+      await waitForIceGathering(connection)
+      const answer = await createEnrollmentAnswer(
+        connection.localDescription!, userId.trim(), fullName.trim(),
+      )
+      await connection.setRemoteDescription(answer)
+    } catch (cause) {
+      connection.close()
+      setBusy(false)
+      setError(cause instanceof Error ? cause.message : 'Ulanishda xatolik yuz berdi.')
     }
   }
 
   return (
     <section>
-      <div className="page-title"><div><p className="eyebrow">Enrollment</p><h1>Yangi user qo‘shish</h1><p>Yuz kameraga to‘g‘ri qaragan va yorug‘lik yetarli bo‘lsin.</p></div></div>
+      <div className="page-title"><div><p className="eyebrow">Live enrollment</p><h1>Yangi user qo‘shish</h1><p>Kameraga qarang. Tizim o‘zi 7 ta sifatli kadrni tanlaydi.</p></div></div>
       <div className="work-grid">
         <div className="panel p-3">
-          <Camera ref={camera}>{preview && <img src={preview} className="camera-preview absolute inset-0 h-full w-full object-cover" alt="Olingan surat" />}<div className="face-guide"><span /><span /><span /><span /></div></Camera>
-          <div className="camera-toolbar"><div><ScanFace size={17} /><span>{snapshot ? 'Kadr tayyor' : 'Yuzni markazga joylang'}</span></div><button className="button-secondary" type="button" onClick={() => void capture()}><CameraIcon size={17} /> {snapshot ? 'Qayta olish' : 'Suratga olish'}</button></div>
+          <Camera ref={camera} onReady={() => setReady(true)}><div className="face-guide"><span /><span /><span /><span /></div></Camera>
+          <div className="camera-toolbar"><div><ScanFace size={17} /><span>{message}</span></div><span>{collected} / {TOTAL_SAMPLES}</span></div>
         </div>
-        <form className="panel form-panel" onSubmit={(e) => void submit(e)}>
+        <form className="panel form-panel" onSubmit={(event) => void submit(event)}>
           <div><p className="eyebrow">Foydalanuvchi</p><h2>Asosiy ma’lumotlar</h2></div>
-          <label className="field"><span>User ID</span><input value={userId} onChange={(e) => setUserId(e.target.value)} placeholder="Masalan: 8853120" required /></label>
-          <label className="field"><span>To‘liq ism</span><input value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Ism Familiya" required /></label>
-          <div className="quality-note"><CheckCircle2 size={19} /><div><strong>Bitta yuz talab qilinadi</strong><small>Server surat sifatini va yuzlar sonini tekshiradi.</small></div></div>
-          {enroll.isError && <p className="error-box">{enroll.error.message}</p>}
-          <button className="button-primary mt-auto justify-center" disabled={!snapshot || enroll.isPending}>{enroll.isPending ? 'Saqlanmoqda…' : 'Userni bazaga qo‘shish'}</button>
+          <label className="field"><span>User ID</span><input value={userId} onChange={(event) => setUserId(event.target.value)} placeholder="Masalan: 8853120" required disabled={busy} /></label>
+          <label className="field"><span>To‘liq ism</span><input value={fullName} onChange={(event) => setFullName(event.target.value)} placeholder="Ism Familiya" required disabled={busy} /></label>
+          <div className="quality-note"><CheckCircle2 size={19} /><div><strong>Bitta yuz talab qilinadi</strong><small>Yorug‘ joyda, kameraga qarab turing. Xira kadrlar qabul qilinmaydi.</small></div></div>
+          {error && <p className="error-box">{error}</p>}
+          <button className="button-primary mt-auto justify-center" disabled={!ready || busy}>{busy ? `Yig‘ilmoqda: ${collected} / ${TOTAL_SAMPLES}` : 'Kamera orqali qo‘shish'}</button>
         </form>
       </div>
     </section>

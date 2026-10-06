@@ -9,3 +9,8 @@ class WebRTCOffer(BaseModel):
 class WebRTCAnswer(BaseModel):
     sdp: str
     type: str
+
+
+class EnrollmentOffer(WebRTCOffer):
+    user_id: str
+    full_name: str
