@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Request
+from fastapi import FastAPI
 
 from config import APP_SETTINGS
 from config.server import Server
@@ -13,11 +13,11 @@ def app(_=None) -> FastAPI:
             "defaultModelsExpandDepth": -1,
         },
         lifespan=Server.lifespan,
-        root_path="/chat-back",
+        root_path=APP_SETTINGS.ROOT_PATH,
     )
 
-    @main.get('/', include_in_schema=False)
-    def index(request: Request):
-        return {'docs': f'{request.url}docs'}
+    @main.get('/api/health', include_in_schema=False)
+    def health():
+        return {'status': 'ok'}
 
     return Server(main).get_app()

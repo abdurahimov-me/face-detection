@@ -37,14 +37,15 @@ class APPSettings(EnvReader):
     STATIC_DIR: t.ClassVar[str] = os.path.join(BASE_DIR, 'static')
     TIME_ZONE: str = 'Asia/Tashkent'
     SERVER_HOST: str = 'localhost'
+    ROOT_PATH: str = ''
     DEBUG: bool = True
-    GRPC_HOST: str
-    GRPC_PORT: int
+    GRPC_HOST: str = '0.0.0.0'
+    GRPC_PORT: int = 50051
 
 
 class JWTSettings(BaseSettings):
     ALGORITHM: str = "HS256"
-    JWT_SECRET_KEY: str
+    JWT_SECRET_KEY: str = 'local-development-secret'
     JWT_PAYLOAD_FIELDS: tuple = ('id',)
     ACCESS_TOKEN_EXPIRE: timedelta = timedelta(days=10)
 

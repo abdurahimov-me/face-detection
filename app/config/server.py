@@ -3,6 +3,7 @@ __all__ = (
 )
 
 from contextlib import asynccontextmanager
+from pathlib import Path
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -11,8 +12,16 @@ from fastapi_pagination.utils import disable_installed_extensions_check
 from starlette.staticfiles import StaticFiles
 
 from api.routers import __routes__ as api_routes, __ws_routes__ as ws_routes
-from config import APP_SETTINGS
+from config import APP_SETTINGS, BASE_DIR
 from .events import on_startup, on_shutdown
+
+
+class SPAStaticFiles(StaticFiles):
+    async def get_response(self, path, scope):
+        response = await super().get_response(path, scope)
+        if response.status_code == 404:
+            return await super().get_response('index.html', scope)
+        return response
 
 
 class Server:
@@ -26,6 +35,7 @@ class Server:
         self.__register_media_files(app)
         self.__register_static_files(app)
         self.__register_pagination(app)
+        self.__register_frontend(app)
 
     def get_app(self):
         return self.__app
@@ -77,6 +87,16 @@ class Server:
     def __register_pagination(app: FastAPI):
         add_pagination(app)
         disable_installed_extensions_check()
+
+    @staticmethod
+    def __register_frontend(app: FastAPI):
+        frontend_dir = Path(BASE_DIR) / 'frontend'
+        if frontend_dir.joinpath('index.html').exists():
+            app.mount(
+                '/',
+                SPAStaticFiles(directory=frontend_dir, html=True),
+                name='frontend',
+            )
 
 
 
