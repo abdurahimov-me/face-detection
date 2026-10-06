@@ -19,6 +19,11 @@ WORKDIR /app
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
         curl \
+        libgl1 \
+        libglib2.0-0 \
+        libxcb1 \
+        libxext6 \
+        libxrender1 \
         supervisor && \
     rm -rf /var/lib/apt/lists/*
 

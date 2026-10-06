@@ -65,7 +65,7 @@ export const Camera = forwardRef<CameraHandle, CameraProps>(function Camera(
 
   return (
     <div className="camera-shell">
-      <video ref={videoRef} muted playsInline className="h-full w-full object-cover" />
+      <video ref={videoRef} muted playsInline className="camera-preview h-full w-full object-cover" />
       <div className="camera-vignette" />
       {children}
       {loading && (

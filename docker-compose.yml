@@ -40,6 +40,7 @@ services:
       - .env
     volumes:
       - insightface_data:/root/.insightface
+      - face_images:/app/media/faces
     depends_on:
       redis:
         condition: service_healthy
@@ -59,6 +60,7 @@ volumes:
   redis_data: { }
   qdrant_data: { }
   insightface_data: { }
+  face_images: { }
 
 
 networks:

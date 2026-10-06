@@ -24,8 +24,12 @@ export function EnrollPage() {
   async function submit(event: FormEvent) {
     event.preventDefault()
     if (!snapshot) return
-    await enroll.mutateAsync({ userId, fullName, image: snapshot })
-    await navigate({ to: '/' })
+    try {
+      await enroll.mutateAsync({ userId, fullName, image: snapshot })
+      await navigate({ to: '/' })
+    } catch {
+      // React Query exposes the server validation message in the form.
+    }
   }
 
   return (
@@ -33,7 +37,7 @@ export function EnrollPage() {
       <div className="page-title"><div><p className="eyebrow">Enrollment</p><h1>Yangi user qo‘shish</h1><p>Yuz kameraga to‘g‘ri qaragan va yorug‘lik yetarli bo‘lsin.</p></div></div>
       <div className="work-grid">
         <div className="panel p-3">
-          <Camera ref={camera}>{preview && <img src={preview} className="absolute inset-0 h-full w-full object-cover" alt="Olingan surat" />}<div className="face-guide"><span /><span /><span /><span /></div></Camera>
+          <Camera ref={camera}>{preview && <img src={preview} className="camera-preview absolute inset-0 h-full w-full object-cover" alt="Olingan surat" />}<div className="face-guide"><span /><span /><span /><span /></div></Camera>
           <div className="camera-toolbar"><div><ScanFace size={17} /><span>{snapshot ? 'Kadr tayyor' : 'Yuzni markazga joylang'}</span></div><button className="button-secondary" type="button" onClick={() => void capture()}><CameraIcon size={17} /> {snapshot ? 'Qayta olish' : 'Suratga olish'}</button></div>
         </div>
         <form className="panel form-panel" onSubmit={(e) => void submit(e)}>
