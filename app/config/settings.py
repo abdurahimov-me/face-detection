@@ -12,7 +12,7 @@ from datetime import timedelta
 from pathlib import Path
 
 from dotenv import load_dotenv
-from pydantic import Field
+from pydantic import Field, computed_field
 from pydantic_settings import BaseSettings
 
 load_dotenv()
@@ -54,7 +54,10 @@ class APPSettings(EnvReader):
     MIN_SAMPLE_SIMILARITY: float = 0.65
     MIN_DUPLICATE_SIMILARITY: float = 0.75
     ALLOWED_IMAGE_TYPES: set[str] = {'image/jpeg', 'image/png', 'image/webp'}
-    FACE_IMAGES_DIR: Path = Path(APP_SETTINGS.MEDIA_DIR) / 'faces'
+
+    @computed_field
+    def FACE_IMAGES_DIR(self) -> Path:
+        return Path(self.MEDIA_DIR) / 'faces'
 
 
 class JWTSettings(BaseSettings):
