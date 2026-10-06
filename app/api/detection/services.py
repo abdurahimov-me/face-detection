@@ -52,7 +52,6 @@ def get_face_engine() -> FaceAnalysis:
 
 
 def analyze_face_image(image: np.ndarray) -> list[Face]:
-    """Run detection and recognition safely on a still image."""
     engine = get_face_engine()
     with _inference_lock:
         return engine.get(image)
