@@ -6,8 +6,9 @@ import supervision as sv
 from insightface.app.common import Face
 from trackers import ByteTrackTracker
 from ..engine import get_face_engine
-logger = logging.getLogger(__name__)
 
+logger = logging.getLogger(__name__)
+_inference_lock = threading.Lock()
 
 class RecognitionSession:
     def __init__(self) -> None:
@@ -24,7 +25,7 @@ class RecognitionSession:
 
     def analyze(self, image: np.ndarray) -> list[dict]:
         engine = get_face_engine()
-        with self.lock:
+        with _inference_lock:
             bboxes, keypoints = engine.det_model.detect(image)
 
         data = {}
@@ -57,7 +58,7 @@ class RecognitionSession:
                         kps=tracked_keypoints[index],
                         det_score=float(tracked.confidence[index]),
                     )
-                    with self.lock:
+                    with _inference_lock:
                         engine.models['recognition'].get(image, face)
                     item['embedding'] = face.normed_embedding.tolist()
             results.append(item)
