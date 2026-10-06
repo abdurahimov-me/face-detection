@@ -21,6 +21,7 @@ class RecognitionSession:
             high_conf_det_threshold=0.5,
         )
         self.identities: dict[int, TrackIdentity] = {}
+        self.embedded_tracks: set[int] = set()
 
     def analyze(self, image: np.ndarray) -> list[dict]:
         engine = get_face_engine()
@@ -50,6 +51,7 @@ class RecognitionSession:
             }
             if track_id not in self.identities:
                 self.identities[track_id] = TrackIdentity(full_name='Qidirilmoqda...')
+            if track_id not in self.embedded_tracks:
                 tracked_keypoints = tracked.data.get('face_keypoints')
                 if tracked_keypoints is not None:
                     face = Face(
@@ -59,6 +61,8 @@ class RecognitionSession:
                     )
                     with inference_lock:
                         engine.models['recognition'].get(image, face)
-                    item['embedding'] = face.normed_embedding.tolist()
+                    if face.normed_embedding is not None:
+                        item['embedding'] = face.normed_embedding.tolist()
+                        self.embedded_tracks.add(track_id)
             results.append(item)
         return results
