@@ -8,6 +8,7 @@ from uuid import NAMESPACE_URL, uuid5
 import aiofiles
 import cv2
 import numpy as np
+from aiortc import RTCPeerConnection, RTCSessionDescription
 from aiortc.mediastreams import MediaStreamError
 from fastapi import HTTPException, UploadFile, status
 from qdrant_client import models
@@ -18,6 +19,7 @@ from api.detection.services import (
 )
 from config import APP_SETTINGS
 from config.qdrant import qdrant_db
+from resources.detection.data import peer_connections
 from .schemas import FaceUser
 
 
@@ -328,3 +330,5 @@ async def delete_face_user(user_id: str) -> None:
     image_path = APP_SETTINGS.FACE_IMAGES_DIR / f'{point_id}.jpg'
     if image_path.exists():
         await asyncio.to_thread(os.remove, image_path)
+
+

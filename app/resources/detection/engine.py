@@ -7,8 +7,6 @@ from config.settings import APP_SETTINGS
 
 _engine: FaceAnalysis | None = None
 _engine_init_lock = threading.Lock()
-_inference_lock = threading.Lock()
-_peer_connections: set[RTCPeerConnection] = set()
 
 
 def get_face_engine() -> FaceAnalysis:

@@ -9,6 +9,15 @@ from .services import delete_face_user, enroll_face_user, list_face_users
 router = APIRouter(prefix='/faces', tags=['Faces'])
 
 
+
+@router.post('/enroll/offer', response_model=WebRTCAnswer)
+async def enrollment_offer(payload: EnrollmentOffer) -> WebRTCAnswer:
+    answer = await create_enrollment_answer(
+        payload.sdp, payload.type, payload.user_id, payload.full_name
+    )
+    return WebRTCAnswer(sdp=answer.sdp, type=answer.type)
+
+
 @router.get('', response_model=list[FaceUser])
 async def get_faces() -> list[FaceUser]:
     return await list_face_users()
