@@ -30,8 +30,7 @@ COPY ./scripts /scripts
 COPY --from=frontend-builder /frontend/dist /app/frontend
 
 EXPOSE 8000
-EXPOSE 50051
 
-RUN chmod +x /scripts/*
+RUN sed -i 's/\r$//' /scripts/*.sh && chmod +x /scripts/*
 
 ENTRYPOINT ["/scripts/entrypoint.sh"]

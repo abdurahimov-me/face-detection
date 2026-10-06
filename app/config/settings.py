@@ -39,8 +39,6 @@ class APPSettings(EnvReader):
     SERVER_HOST: str = 'localhost'
     ROOT_PATH: str = ''
     DEBUG: bool = True
-    GRPC_HOST: str = '0.0.0.0'
-    GRPC_PORT: int = 50051
 
 
 class JWTSettings(BaseSettings):
@@ -51,6 +49,9 @@ class JWTSettings(BaseSettings):
 
 
 class QdrantSettings(EnvReader):
+    class Config(EnvReader.Config):
+        env_prefix = 'QDRANT_'
+
     HOST: str = 'localhost'
     PORT: int = Field(default=6333, ge=1, le=65535)
     API_KEY: t.Optional[str] = None

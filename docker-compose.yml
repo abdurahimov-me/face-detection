@@ -18,6 +18,8 @@ services:
     image: qdrant/qdrant:latest
     container_name: ${CONTAINER_PREFIX:-face_detection}_qdrant
     restart: unless-stopped
+    env_file:
+      - .env
     networks:
       - local
     volumes:
@@ -33,15 +35,9 @@ services:
     networks:
       - local
     ports:
-      - "${APP_BIND_IP:-127.0.0.1}:${APP_PORT:-8000}:8000"
-    environment:
-      REDIS_HOST: redis
-      REDIS_PORT: 6379
-      QDRANT_HOST: qdrant
-      QDRANT_PORT: 6333
-      GRPC_HOST: 0.0.0.0
-      GRPC_PORT: 50051
-      JWT_SECRET_KEY: docker-local-secret-change-in-production
+      - "${APP_BIND_IP:-127.0.0.1}:${APP_PORT:-8080}:8000"
+    env_file:
+      - .env
     volumes:
       - insightface_data:/root/.insightface
     depends_on:
