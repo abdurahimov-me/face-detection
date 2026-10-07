@@ -7,9 +7,7 @@ from .rtc import create_enrollment_answer
 from .schemas import EnrollmentOffer, FaceUser
 from .services import delete_face_user, enroll_face_user, list_face_users
 
-
 router = APIRouter(prefix='/faces', tags=['Faces'])
-
 
 
 @router.post('/enroll/offer', response_model=WebRTCAnswer)
@@ -27,9 +25,9 @@ async def get_faces() -> list[FaceUser]:
 
 @router.post('', response_model=FaceUser, status_code=status.HTTP_201_CREATED)
 async def create_face(
-    user_id: Annotated[str, Form()],
-    full_name: Annotated[str, Form()],
-    image: Annotated[UploadFile, File()],
+        user_id: Annotated[str, Form()],
+        full_name: Annotated[str, Form()],
+        image: Annotated[UploadFile, File()],
 ) -> FaceUser:
     return await enroll_face_user(user_id, full_name, image)
 
