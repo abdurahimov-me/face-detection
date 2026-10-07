@@ -1,13 +1,11 @@
 import asyncio
 import os
 from datetime import datetime, timezone
-from uuid import NAMESPACE_URL, uuid5
 
 import aiofiles
 import cv2
 import numpy as np
 from fastapi import HTTPException, UploadFile, status
-from qdrant_client import models
 
 from api.detection.services import (
     ensure_faces_collection,
@@ -15,11 +13,16 @@ from api.detection.services import (
 from config import APP_SETTINGS
 from config.qdrant import qdrant_db
 from resources.detection.engine import analyze_face_image
+from resources.repositories import FacesRepository
 from .schemas import FaceUser
 
 
 def point_id_for_user(user_id: str) -> str:
-    return str(uuid5(NAMESPACE_URL, f'face-user:{user_id}'))
+    return FacesRepository.point_id_for_user(user_id)
+
+
+def get_faces_repository() -> FacesRepository:
+    return FacesRepository(qdrant_db.client)
 
 
 def validate_user_fields(user_id: str, full_name: str) -> tuple[str, str]:
@@ -33,13 +36,7 @@ def validate_user_fields(user_id: str, full_name: str) -> tuple[str, str]:
 
 
 async def check_user_id_available(user_id: str) -> None:
-    existing = await qdrant_db.client.retrieve(
-        collection_name=APP_SETTINGS.FACES_COLLECTION_NAME,
-        ids=[point_id_for_user(user_id)],
-        with_payload=False,
-        with_vectors=False,
-    )
-    if existing:
+    if await get_faces_repository().user_id_exists(user_id):
         raise HTTPException(status_code=409, detail='Bu User ID allaqachon mavjud.')
 
 
@@ -47,15 +44,10 @@ async def save_face_sample(
         user_id: str, full_name: str, embedding: np.ndarray, frame: np.ndarray
 ) -> FaceUser:
     await check_user_id_available(user_id)
-    duplicate = await qdrant_db.client.query_points(
-        collection_name=APP_SETTINGS.FACES_COLLECTION_NAME,
-        query=embedding.tolist(),
-        limit=1,
-        score_threshold=APP_SETTINGS.MIN_DUPLICATE_SIMILARITY,
-        with_payload=True,
-    )
-    if duplicate.points:
-        matched = duplicate.points[0].payload or {}
+    repository = get_faces_repository()
+    duplicate = await repository.find_duplicate(embedding.tolist())
+    if duplicate is not None:
+        matched = duplicate.payload or {}
         raise HTTPException(
             status_code=409,
             detail=f"Bu yuz bazada mavjud: {matched.get('full_name', 'noma’lum user')}.",
@@ -78,11 +70,7 @@ async def save_face_sample(
         'image_url': image_url,
     }
     try:
-        await qdrant_db.client.upsert(
-            collection_name=APP_SETTINGS.FACES_COLLECTION_NAME,
-            points=[models.PointStruct(id=point_id, vector=embedding.tolist(), payload=payload)],
-            wait=True,
-        )
+        await repository.create_face(user_id, embedding.tolist(), payload)
     except Exception:
         image_path.unlink(missing_ok=True)
         raise
@@ -108,21 +96,10 @@ def payload_to_user(point_id: str, payload: dict) -> FaceUser:
 async def list_face_users() -> list[FaceUser]:
     await ensure_faces_collection()
     users: list[FaceUser] = []
-    offset = None
-
-    while True:
-        points, offset = await qdrant_db.client.scroll(
-            collection_name=APP_SETTINGS.FACES_COLLECTION_NAME,
-            limit=100,
-            offset=offset,
-            with_payload=True,
-            with_vectors=False,
-        )
-        for point in points:
-            if point.payload and point.payload.get('user_id') is not None:
-                users.append(payload_to_user(str(point.id), point.payload))
-        if offset is None:
-            break
+    points = await get_faces_repository().list_all()
+    for point in points:
+        if point.payload and point.payload.get('user_id') is not None:
+            users.append(payload_to_user(str(point.id), point.payload))
 
     return sorted(users, key=lambda user: user.created_at, reverse=True)
 
@@ -168,14 +145,9 @@ async def enroll_face_user(
         raise HTTPException(status_code=422, detail='Yuz embeddingini olib bo‘lmadi.')
 
     await ensure_faces_collection()
+    repository = get_faces_repository()
     point_id = point_id_for_user(user_id)
-    existing = await qdrant_db.client.retrieve(
-        collection_name=APP_SETTINGS.FACES_COLLECTION_NAME,
-        ids=[point_id],
-        with_payload=True,
-        with_vectors=False,
-    )
-    if existing:
+    if await repository.user_id_exists(user_id):
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail='Bu User ID bilan foydalanuvchi allaqachon mavjud.',
@@ -199,17 +171,7 @@ async def enroll_face_user(
         'image_url': image_url,
     }
     try:
-        await qdrant_db.client.upsert(
-            collection_name=APP_SETTINGS.FACES_COLLECTION_NAME,
-            points=[
-                models.PointStruct(
-                    id=point_id,
-                    vector=face.normed_embedding.tolist(),
-                    payload=payload,
-                )
-            ],
-            wait=True,
-        )
+        await repository.create_face(user_id, face.normed_embedding.tolist(), payload)
     except Exception:
         image_path.unlink(missing_ok=True)
         raise
@@ -219,21 +181,10 @@ async def enroll_face_user(
 
 async def delete_face_user(user_id: str) -> None:
     await ensure_faces_collection()
+    repository = get_faces_repository()
     point_id = point_id_for_user(user_id)
-    records = await qdrant_db.client.retrieve(
-        collection_name=APP_SETTINGS.FACES_COLLECTION_NAME,
-        ids=[point_id],
-        with_payload=True,
-        with_vectors=False,
-    )
-    if not records:
+    if not await repository.delete_by_user_id(user_id):
         raise HTTPException(status_code=404, detail='Foydalanuvchi topilmadi.')
-
-    await qdrant_db.client.delete(
-        collection_name=APP_SETTINGS.FACES_COLLECTION_NAME,
-        points_selector=models.PointIdsList(points=[point_id]),
-        wait=True,
-    )
     image_path = APP_SETTINGS.FACE_IMAGES_DIR / f'{point_id}.jpg'
     if image_path.exists():
         await asyncio.to_thread(os.remove, image_path)

@@ -4,41 +4,25 @@ import logging
 import time
 
 from aiortc.mediastreams import MediaStreamError
-from qdrant_client import models
 
-from config.qdrant import qdrant_db
 from config.settings import APP_SETTINGS
+from config.qdrant import qdrant_db
 from resources.detection.data import TrackIdentity
 from resources.detection.sessions.recognation import RecognitionSession
+from resources.repositories import FacesRepository
 
 
 logger = logging.getLogger(__name__)
 
 
 async def ensure_faces_collection() -> None:
-    client = qdrant_db.client
-    collections = await client.get_collections()
-    if APP_SETTINGS.FACES_COLLECTION_NAME not in {item.name for item in collections.collections}:
-        await client.create_collection(
-            collection_name=APP_SETTINGS.FACES_COLLECTION_NAME,
-            vectors_config=models.VectorParams(
-                size=APP_SETTINGS.EMBEDDING_SIZE,
-                distance=models.Distance.COSINE,
-            ),
-        )
+    await FacesRepository(qdrant_db.client).ensure_collection()
 
 
 async def resolve_identity(embedding: list[float]) -> TrackIdentity:
-    result = await qdrant_db.client.query_points(
-        collection_name=APP_SETTINGS.FACES_COLLECTION_NAME,
-        query=embedding,
-        limit=1,
-        score_threshold=APP_SETTINGS.MATCH_THRESHOLD,
-        with_payload=True,
-    )
-    if not result.points:
+    match = await FacesRepository(qdrant_db.client).identify(embedding)
+    if match is None:
         return TrackIdentity()
-    match = result.points[0]
     payload = match.payload or {}
     return TrackIdentity(
         user_id=str(payload.get('user_id')) if payload.get('user_id') is not None else None,
