@@ -39,7 +39,7 @@ class APPSettings(EnvReader):
     SERVER_HOST: str = 'localhost'
     ROOT_PATH: str = ''
     DEBUG: bool = True
-    MODEL_NAME: str = "buffalo_l"
+    MODEL_NAME: str = "antelopev2"
     FACES_COLLECTION_NAME: str = 'faces'
     EMBEDDING_SIZE: int = 512
     MATCH_THRESHOLD: float = 0.55
