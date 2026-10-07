@@ -40,18 +40,26 @@ export function TestPage() {
       const message = JSON.parse(event.data) as DetectionMessage
       setResult(message)
       setDetectedFaces((previous) => {
-        const next = [...previous]
+        let next = [...previous]
         for (const face of message.faces) {
-          const index = next.findIndex((item) => item.track_id === face.track_id)
-          if (index === -1) {
-            next.unshift(face)
-          } else {
-            next[index] = {
-              ...next[index],
-              ...face,
-              face_image: face.face_image ?? next[index].face_image,
-            }
+          if (!face.identity_key) continue
+          const existing = next.find(
+            (item) =>
+              item.identity_key === face.identity_key || item.track_id === face.track_id,
+          )
+          const merged = {
+            ...existing,
+            ...face,
+            face_image: face.face_image ?? existing?.face_image,
           }
+          next = [
+            merged,
+            ...next.filter(
+              (item) =>
+                item.track_id !== face.track_id &&
+                item.identity_key !== face.identity_key,
+            ),
+          ]
         }
         return next.slice(0, 20)
       })
@@ -104,7 +112,7 @@ export function TestPage() {
       ctx.strokeStyle = known ? '#5ee9a6' : '#f8c76b'
       ctx.lineWidth = 3
       ctx.strokeRect(left, top, width, height)
-      const label = `#${face.track_id} ${face.full_name}${face.score ? ` ${(face.score * 100).toFixed(0)}%` : ''}`
+      const label = `#${face.track_id} ${face.full_name}`
       ctx.font = '600 14px Inter, sans-serif'
       const labelWidth = ctx.measureText(label).width + 18
       const labelTop = Math.max(0, top - 30)
@@ -120,7 +128,7 @@ export function TestPage() {
       <div className="page-title"><div><p className="eyebrow">Live recognition · WebRTC</p><h1>Kamerada test qilish</h1><p>Video WebRTC orqali backend’ga uzatiladi, natijalar DataChannel orqali qaytadi.</p></div><span className={connected ? 'connection online' : 'connection'}>{connected ? <Wifi size={16} /> : <WifiOff size={16} />}{connected ? 'WebRTC ulangan' : 'WebRTC kutilmoqda'}</span></div>
       <div className="test-grid">
         <div className="panel p-3"><Camera ref={camera} onReady={(video) => void startWebRTC(video)}><canvas ref={canvas} className="absolute inset-0 h-full w-full" /></Camera><div className="camera-toolbar"><div><Radio className={connected ? 'text-emerald-300' : ''} size={17} /><span>{connectionError ?? (connected ? 'WebRTC orqali jonli tanish ishlayapti' : 'WebRTC ulanmoqda…')}</span></div><span>{result.processing_ms ? `${result.processing_ms.toFixed(0)} ms` : '— ms'}</span></div></div>
-        <aside className="panel detections-panel"><div><p className="eyebrow">Natijalar</p><h2>Aniqlangan yuzlar</h2></div>{detectedFaces.length === 0 ? <div className="empty-state flex-1"><Activity size={30} /><p>Yuz kutilmoqda</p></div> : <div className="detection-list">{detectedFaces.map((face) => <div className="detection-card" key={face.track_id}><span className={`${face.user_id ? 'avatar recognized' : 'avatar'} detection-face`}>{face.face_image ? <img src={face.face_image} alt={face.full_name} /> : face.full_name.slice(0, 1)}</span><div><strong>{face.full_name}</strong><small>Track #{face.track_id}{face.user_id ? ` · ID ${face.user_id}` : ' · bazada yo‘q'}</small></div>{face.score != null && <b>{(face.score * 100).toFixed(0)}%</b>}</div>)}</div>}</aside>
+        <aside className="panel detections-panel"><div><p className="eyebrow">Natijalar</p><h2>Noyob yuzlar</h2></div>{detectedFaces.length === 0 ? <div className="empty-state flex-1"><Activity size={30} /><p>Yuz kutilmoqda</p></div> : <div className="detection-list">{detectedFaces.map((face) => <div className="detection-card" key={face.identity_key}><span className={`${face.user_id ? 'avatar recognized' : 'avatar'} detection-face`}>{face.face_image ? <img src={face.face_image} alt={face.full_name} /> : face.full_name.slice(0, 1)}</span><div><strong>{face.full_name}</strong><small>{face.user_id ? `ID ${face.user_id}` : 'Bazaga kiritilmagan'}</small></div></div>)}</div>}</aside>
       </div>
     </section>
   )

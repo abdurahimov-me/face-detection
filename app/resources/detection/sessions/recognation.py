@@ -34,8 +34,17 @@ class RecognitionSession:
             high_conf_det_threshold=0.5,
         )
         self.identities: dict[int, TrackIdentity] = {}
-        self.embedded_tracks: set[int] = set()
         self.face_images: dict[int, str] = {}
+        self.best_quality: dict[int, float] = {}
+        self.embedding_samples: dict[int, list[np.ndarray]] = {}
+        self.last_sample_at: dict[int, float] = {}
+        self.next_retry_at: dict[int, float] = {}
+        self.retry_delays: dict[int, float] = {}
+        self.search_tasks: dict[int, asyncio.Task[None]] = {}
+        self.identity_keys: dict[int, str] = {}
+        self.unknown_embeddings: dict[str, np.ndarray] = {}
+        self.unknown_counts: dict[str, int] = {}
+        self.unknown_sequence = 0
 
     async def consume_video(self, track, channel_holder: dict) -> None:
         last_analysis = 0.0
@@ -53,8 +62,31 @@ class RecognitionSession:
                 for tracked_face in tracked_faces:
                     embedding = tracked_face.pop('embedding')
                     track_id = tracked_face['track_id']
+                    quality = tracked_face.pop('quality')
+                    face_image = tracked_face.pop('candidate_image')
+                    self.identities.setdefault(
+                        track_id,
+                        TrackIdentity(full_name='Qidirilmoqda...'),
+                    )
+                    if face_image is not None and quality > self.best_quality.get(track_id, 0.0):
+                        self.best_quality[track_id] = quality
+                        self.face_images[track_id] = face_image
                     if embedding is not None:
-                        self.identities[track_id] = await self.identity_resolver(embedding)
+                        samples = self.embedding_samples.setdefault(track_id, [])
+                        samples.append(np.asarray(embedding, dtype=np.float32))
+                        self.last_sample_at[track_id] = now
+                        if (
+                            len(samples) >= APP_SETTINGS.RECOGNITION_SAMPLES
+                            and track_id not in self.search_tasks
+                        ):
+                            mean = np.mean(samples[-APP_SETTINGS.RECOGNITION_SAMPLES:], axis=0)
+                            norm = float(np.linalg.norm(mean))
+                            if norm > 0:
+                                self.next_retry_at[track_id] = float('inf')
+                                task = asyncio.create_task(
+                                    self._resolve_track(track_id, (mean / norm).tolist())
+                                )
+                                self.search_tasks[track_id] = task
 
                 faces = []
                 for tracked_face in tracked_faces:
@@ -64,7 +96,8 @@ class RecognitionSession:
                         'user_id': identity.user_id,
                         'full_name': identity.full_name,
                         'score': identity.score,
-                        'face_image': tracked_face['face_image'],
+                        'identity_key': self.identity_keys.get(tracked_face['track_id']),
+                        'face_image': self.face_images.get(tracked_face['track_id']),
                         'bbox': tracked_face['bbox'],
                         'frame_width': image.shape[1],
                         'frame_height': image.shape[0],
@@ -82,6 +115,79 @@ class RecognitionSession:
             raise
         except Exception:
             logger.exception('WebRTC video processing failed')
+        finally:
+            tasks = list(self.search_tasks.values())
+            for task in tasks:
+                task.cancel()
+            if tasks:
+                await asyncio.gather(*tasks, return_exceptions=True)
+            self.search_tasks.clear()
+
+    async def _resolve_track(self, track_id: int, embedding: list[float]) -> None:
+        try:
+            identity = await self.identity_resolver(embedding)
+            self.identities[track_id] = identity
+            self.embedding_samples.pop(track_id, None)
+            if identity.user_id is None:
+                self.identity_keys[track_id] = self._unknown_identity_key(
+                    track_id,
+                    np.asarray(embedding, dtype=np.float32),
+                )
+                delay = self.retry_delays.get(
+                    track_id,
+                    APP_SETTINGS.UNKNOWN_RETRY_INITIAL_SECONDS,
+                )
+                self.next_retry_at[track_id] = time.monotonic() + delay
+                self.retry_delays[track_id] = min(
+                    delay * 2,
+                    APP_SETTINGS.UNKNOWN_RETRY_MAX_SECONDS,
+                )
+            else:
+                self.identity_keys[track_id] = f'user:{identity.user_id}'
+                self.next_retry_at[track_id] = float('inf')
+                self.retry_delays.pop(track_id, None)
+        except asyncio.CancelledError:
+            raise
+        except Exception:
+            logger.exception('Recognition search failed for track #%s', track_id)
+            self.identities[track_id] = TrackIdentity()
+            self.embedding_samples.pop(track_id, None)
+            self.next_retry_at[track_id] = (
+                time.monotonic() + APP_SETTINGS.UNKNOWN_RETRY_INITIAL_SECONDS
+            )
+        finally:
+            self.search_tasks.pop(track_id, None)
+
+    def _unknown_identity_key(self, track_id: int, embedding: np.ndarray) -> str:
+        norm = float(np.linalg.norm(embedding))
+        if norm > 0:
+            embedding = embedding / norm
+
+        key = self.identity_keys.get(track_id)
+        if key not in self.unknown_embeddings:
+            key = None
+            best_score = -1.0
+            for candidate_key, candidate_embedding in self.unknown_embeddings.items():
+                score = float(np.dot(embedding, candidate_embedding))
+                if score > best_score:
+                    best_score = score
+                    key = candidate_key
+            if best_score < APP_SETTINGS.UNKNOWN_CLUSTER_THRESHOLD:
+                self.unknown_sequence += 1
+                key = f'unknown:{self.unknown_sequence}'
+
+        count = self.unknown_counts.get(key, 0)
+        current = self.unknown_embeddings.get(key)
+        if current is None:
+            prototype = embedding
+        else:
+            prototype = (current * count + embedding) / (count + 1)
+            prototype_norm = float(np.linalg.norm(prototype))
+            if prototype_norm > 0:
+                prototype = prototype / prototype_norm
+        self.unknown_embeddings[key] = prototype
+        self.unknown_counts[key] = count + 1
+        return key
 
     def analyze(self, image: np.ndarray) -> list[dict]:
         engine = get_face_engine()
@@ -104,34 +210,93 @@ class RecognitionSession:
             if track_id < 0:
                 continue
 
+            bbox = tracked.xyxy[index]
+            tracked_keypoints = tracked.data.get('face_keypoints')
+            face_keypoints = (
+                tracked_keypoints[index] if tracked_keypoints is not None else None
+            )
+            confidence = float(tracked.confidence[index])
+            quality = self._quality_score(image, bbox, face_keypoints, confidence)
             item = {
                 'track_id': track_id,
-                'bbox': [float(value) for value in tracked.xyxy[index]],
+                'bbox': [float(value) for value in bbox],
                 'embedding': None,
-                'face_image': self.face_images.get(track_id),
+                'quality': quality or 0.0,
+                'candidate_image': None,
             }
-            if track_id not in self.identities:
-                self.identities[track_id] = TrackIdentity(full_name='Qidirilmoqda...')
-            if track_id not in self.face_images:
-                face_image = self._encode_face_image(image, tracked.xyxy[index])
-                if face_image is not None:
-                    self.face_images[track_id] = face_image
-                    item['face_image'] = face_image
-            if track_id not in self.embedded_tracks:
-                tracked_keypoints = tracked.data.get('face_keypoints')
-                if tracked_keypoints is not None:
-                    face = Face(
-                        bbox=tracked.xyxy[index],
-                        kps=tracked_keypoints[index],
-                        det_score=float(tracked.confidence[index]),
-                    )
-                    with inference_lock:
-                        engine.models['recognition'].get(image, face)
-                    if face.normed_embedding is not None:
-                        item['embedding'] = face.normed_embedding.tolist()
-                        self.embedded_tracks.add(track_id)
+            if quality is not None and quality > self.best_quality.get(track_id, 0.0):
+                item['candidate_image'] = self._encode_face_image(image, bbox)
+
+            identity = self.identities.get(track_id)
+            is_known = identity is not None and identity.user_id is not None
+            now = time.monotonic()
+            can_sample = (
+                not is_known
+                and track_id not in self.search_tasks
+                and now >= self.next_retry_at.get(track_id, 0.0)
+                and now - self.last_sample_at.get(track_id, 0.0)
+                >= APP_SETTINGS.RECOGNITION_SAMPLE_INTERVAL_SECONDS
+            )
+            if quality is not None and can_sample and face_keypoints is not None:
+                face = Face(
+                    bbox=bbox,
+                    kps=face_keypoints,
+                    det_score=confidence,
+                )
+                with inference_lock:
+                    engine.models['recognition'].get(image, face)
+                if face.normed_embedding is not None:
+                    item['embedding'] = face.normed_embedding.tolist()
             results.append(item)
         return results
+
+    @staticmethod
+    def _quality_score(
+        image: np.ndarray,
+        bbox: np.ndarray,
+        keypoints: np.ndarray | None,
+        confidence: float,
+    ) -> float | None:
+        height, width = image.shape[:2]
+        x1, y1, x2, y2 = bbox.astype(int)
+        x1, y1 = max(0, x1), max(0, y1)
+        x2, y2 = min(width, x2), min(height, y2)
+        face_width, face_height = x2 - x1, y2 - y1
+        face_size = min(face_width, face_height)
+        if (
+            face_size < APP_SETTINGS.MIN_FACE_SIZE
+            or confidence < 0.5
+            or keypoints is None
+            or len(keypoints) < 3
+        ):
+            return None
+
+        crop = image[y1:y2, x1:x2]
+        if crop.size == 0:
+            return None
+        gray = cv2.cvtColor(crop, cv2.COLOR_BGR2GRAY)
+        brightness = float(gray.mean())
+        sharpness = float(cv2.Laplacian(gray, cv2.CV_64F).var())
+        if not 55 <= brightness <= 210 or sharpness < APP_SETTINGS.MIN_SHARPNESS:
+            return None
+
+        eye_tilt = abs(float(keypoints[0][1] - keypoints[1][1])) / face_height
+        eyes_center_x = float(keypoints[0][0] + keypoints[1][0]) / 2
+        nose_offset = abs(float(keypoints[2][0]) - eyes_center_x) / face_width
+        if eye_tilt > 0.14 or nose_offset > 0.22:
+            return None
+
+        size_score = min(1.0, face_size / 180)
+        sharpness_score = min(1.0, sharpness / 140)
+        brightness_score = max(0.0, 1.0 - abs(brightness - 132) / 100)
+        pose_score = max(0.0, 1.0 - eye_tilt / 0.14 - nose_offset / 0.22)
+        return (
+            confidence * 0.20
+            + size_score * 0.20
+            + sharpness_score * 0.30
+            + brightness_score * 0.15
+            + pose_score * 0.15
+        )
 
     @staticmethod
     def _encode_face_image(image: np.ndarray, bbox: np.ndarray) -> str | None:
