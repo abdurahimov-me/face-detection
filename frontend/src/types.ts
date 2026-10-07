@@ -11,6 +11,7 @@ export type FaceDetection = {
   user_id?: string | null
   full_name: string
   score?: number | null
+  face_image?: string | null
   bbox: [number, number, number, number]
   frame_width: number
   frame_height: number

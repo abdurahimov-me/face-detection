@@ -2,7 +2,7 @@ import { Activity, Radio, Wifi, WifiOff } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { Camera, type CameraHandle } from '../components/Camera'
 import { createWebRTCAnswer } from '../lib/api'
-import type { DetectionMessage } from '../types'
+import type { DetectionMessage, FaceDetection } from '../types'
 
 async function waitForIceGathering(peer: RTCPeerConnection): Promise<void> {
   if (peer.iceGatheringState === 'complete') return
@@ -24,18 +24,37 @@ export function TestPage() {
   const [connected, setConnected] = useState(false)
   const [connectionError, setConnectionError] = useState<string | null>(null)
   const [result, setResult] = useState<DetectionMessage>({ faces: [] })
+  const [detectedFaces, setDetectedFaces] = useState<FaceDetection[]>([])
 
   async function startWebRTC(video: HTMLVideoElement) {
     peer.current?.close()
     setConnected(false)
     setConnectionError(null)
+    setDetectedFaces([])
     const connection = new RTCPeerConnection()
     peer.current = connection
     const dataChannel = connection.createDataChannel('detections')
     dataChannel.onopen = () => setConnected(true)
     dataChannel.onclose = () => setConnected(false)
     dataChannel.onmessage = (event) => {
-      setResult(JSON.parse(event.data) as DetectionMessage)
+      const message = JSON.parse(event.data) as DetectionMessage
+      setResult(message)
+      setDetectedFaces((previous) => {
+        const next = [...previous]
+        for (const face of message.faces) {
+          const index = next.findIndex((item) => item.track_id === face.track_id)
+          if (index === -1) {
+            next.unshift(face)
+          } else {
+            next[index] = {
+              ...next[index],
+              ...face,
+              face_image: face.face_image ?? next[index].face_image,
+            }
+          }
+        }
+        return next.slice(0, 20)
+      })
     }
     connection.onconnectionstatechange = () => {
       setConnected(connection.connectionState === 'connected')
@@ -101,7 +120,7 @@ export function TestPage() {
       <div className="page-title"><div><p className="eyebrow">Live recognition · WebRTC</p><h1>Kamerada test qilish</h1><p>Video WebRTC orqali backend’ga uzatiladi, natijalar DataChannel orqali qaytadi.</p></div><span className={connected ? 'connection online' : 'connection'}>{connected ? <Wifi size={16} /> : <WifiOff size={16} />}{connected ? 'WebRTC ulangan' : 'WebRTC kutilmoqda'}</span></div>
       <div className="test-grid">
         <div className="panel p-3"><Camera ref={camera} onReady={(video) => void startWebRTC(video)}><canvas ref={canvas} className="absolute inset-0 h-full w-full" /></Camera><div className="camera-toolbar"><div><Radio className={connected ? 'text-emerald-300' : ''} size={17} /><span>{connectionError ?? (connected ? 'WebRTC orqali jonli tanish ishlayapti' : 'WebRTC ulanmoqda…')}</span></div><span>{result.processing_ms ? `${result.processing_ms.toFixed(0)} ms` : '— ms'}</span></div></div>
-        <aside className="panel detections-panel"><div><p className="eyebrow">Natijalar</p><h2>Kadrdagi yuzlar</h2></div>{result.faces.length === 0 ? <div className="empty-state flex-1"><Activity size={30} /><p>Yuz kutilmoqda</p></div> : <div className="detection-list">{result.faces.map((face) => <div className="detection-card" key={face.track_id}><span className={face.user_id ? 'avatar recognized' : 'avatar'}>{face.full_name.slice(0, 1)}</span><div><strong>{face.full_name}</strong><small>Track #{face.track_id}{face.user_id ? ` · ID ${face.user_id}` : ' · bazada yo‘q'}</small></div>{face.score != null && <b>{(face.score * 100).toFixed(0)}%</b>}</div>)}</div>}</aside>
+        <aside className="panel detections-panel"><div><p className="eyebrow">Natijalar</p><h2>Aniqlangan yuzlar</h2></div>{detectedFaces.length === 0 ? <div className="empty-state flex-1"><Activity size={30} /><p>Yuz kutilmoqda</p></div> : <div className="detection-list">{detectedFaces.map((face) => <div className="detection-card" key={face.track_id}><span className={`${face.user_id ? 'avatar recognized' : 'avatar'} detection-face`}>{face.face_image ? <img src={face.face_image} alt={face.full_name} /> : face.full_name.slice(0, 1)}</span><div><strong>{face.full_name}</strong><small>Track #{face.track_id}{face.user_id ? ` · ID ${face.user_id}` : ' · bazada yo‘q'}</small></div>{face.score != null && <b>{(face.score * 100).toFixed(0)}%</b>}</div>)}</div>}</aside>
       </div>
     </section>
   )

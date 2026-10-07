@@ -1,9 +1,11 @@
 import asyncio
+import base64
 import json
 import logging
 import time
 from collections.abc import Awaitable, Callable
 
+import cv2
 import numpy as np
 import supervision as sv
 from aiortc.mediastreams import MediaStreamError
@@ -33,6 +35,7 @@ class RecognitionSession:
         )
         self.identities: dict[int, TrackIdentity] = {}
         self.embedded_tracks: set[int] = set()
+        self.face_images: dict[int, str] = {}
 
     async def consume_video(self, track, channel_holder: dict) -> None:
         last_analysis = 0.0
@@ -61,6 +64,7 @@ class RecognitionSession:
                         'user_id': identity.user_id,
                         'full_name': identity.full_name,
                         'score': identity.score,
+                        'face_image': tracked_face['face_image'],
                         'bbox': tracked_face['bbox'],
                         'frame_width': image.shape[1],
                         'frame_height': image.shape[0],
@@ -104,9 +108,15 @@ class RecognitionSession:
                 'track_id': track_id,
                 'bbox': [float(value) for value in tracked.xyxy[index]],
                 'embedding': None,
+                'face_image': self.face_images.get(track_id),
             }
             if track_id not in self.identities:
                 self.identities[track_id] = TrackIdentity(full_name='Qidirilmoqda...')
+            if track_id not in self.face_images:
+                face_image = self._encode_face_image(image, tracked.xyxy[index])
+                if face_image is not None:
+                    self.face_images[track_id] = face_image
+                    item['face_image'] = face_image
             if track_id not in self.embedded_tracks:
                 tracked_keypoints = tracked.data.get('face_keypoints')
                 if tracked_keypoints is not None:
@@ -122,3 +132,31 @@ class RecognitionSession:
                         self.embedded_tracks.add(track_id)
             results.append(item)
         return results
+
+    @staticmethod
+    def _encode_face_image(image: np.ndarray, bbox: np.ndarray) -> str | None:
+        height, width = image.shape[:2]
+        x1, y1, x2, y2 = bbox.astype(int)
+        padding_x = max(8, int((x2 - x1) * 0.18))
+        padding_y = max(8, int((y2 - y1) * 0.18))
+        x1 = max(0, x1 - padding_x)
+        y1 = max(0, y1 - padding_y)
+        x2 = min(width, x2 + padding_x)
+        y2 = min(height, y2 + padding_y)
+        if x2 <= x1 or y2 <= y1:
+            return None
+
+        crop = image[y1:y2, x1:x2]
+        crop_height, crop_width = crop.shape[:2]
+        scale = min(1.0, 160 / max(crop_width, crop_height))
+        if scale < 1.0:
+            crop = cv2.resize(
+                crop,
+                (max(1, round(crop_width * scale)), max(1, round(crop_height * scale))),
+                interpolation=cv2.INTER_AREA,
+            )
+        encoded, jpeg = cv2.imencode('.jpg', crop, [cv2.IMWRITE_JPEG_QUALITY, 72])
+        if not encoded:
+            return None
+        value = base64.b64encode(jpeg.tobytes()).decode('ascii')
+        return f'data:image/jpeg;base64,{value}'
