@@ -112,7 +112,7 @@ export function TestPage() {
       ctx.strokeStyle = known ? '#5ee9a6' : '#f8c76b'
       ctx.lineWidth = 3
       ctx.strokeRect(left, top, width, height)
-      const label = `#${face.track_id} ${face.full_name}`
+      const label = `#${face.track_id} ${face.full_name}${face.score != null ? ` ${(face.score * 100).toFixed(0)}%` : ''}`
       ctx.font = '600 14px Inter, sans-serif'
       const labelWidth = ctx.measureText(label).width + 18
       const labelTop = Math.max(0, top - 30)
