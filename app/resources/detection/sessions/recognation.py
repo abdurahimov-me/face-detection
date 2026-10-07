@@ -1,9 +1,16 @@
+import asyncio
+import json
 import logging
+import time
+from collections.abc import Awaitable, Callable
+
 import numpy as np
 import supervision as sv
+from aiortc.mediastreams import MediaStreamError
 from insightface.app.common import Face
 from trackers import ByteTrackTracker
 
+from config import APP_SETTINGS
 from ..data import TrackIdentity
 from ..engine import get_face_engine, inference_lock
 
@@ -11,7 +18,11 @@ logger = logging.getLogger(__name__)
 
 
 class RecognitionSession:
-    def __init__(self) -> None:
+    def __init__(
+        self,
+        identity_resolver: Callable[[list[float]], Awaitable[TrackIdentity]],
+    ) -> None:
+        self.identity_resolver = identity_resolver
         self.tracker = ByteTrackTracker(
             frame_rate=7.0,
             lost_track_buffer=30,
@@ -22,6 +33,51 @@ class RecognitionSession:
         )
         self.identities: dict[int, TrackIdentity] = {}
         self.embedded_tracks: set[int] = set()
+
+    async def consume_video(self, track, channel_holder: dict) -> None:
+        last_analysis = 0.0
+        try:
+            while True:
+                frame = await track.recv()
+                now = time.monotonic()
+                if now - last_analysis < APP_SETTINGS.ANALYSIS_INTERVAL_SECONDS:
+                    continue
+                last_analysis = now
+                started = time.perf_counter()
+                image = frame.to_ndarray(format='bgr24')
+                tracked_faces = await asyncio.to_thread(self.analyze, image)
+
+                for tracked_face in tracked_faces:
+                    embedding = tracked_face.pop('embedding')
+                    track_id = tracked_face['track_id']
+                    if embedding is not None:
+                        self.identities[track_id] = await self.identity_resolver(embedding)
+
+                faces = []
+                for tracked_face in tracked_faces:
+                    identity = self.identities[tracked_face['track_id']]
+                    faces.append({
+                        'track_id': tracked_face['track_id'],
+                        'user_id': identity.user_id,
+                        'full_name': identity.full_name,
+                        'score': identity.score,
+                        'bbox': tracked_face['bbox'],
+                        'frame_width': image.shape[1],
+                        'frame_height': image.shape[0],
+                    })
+
+                channel = channel_holder.get('channel')
+                if channel is not None and channel.readyState == 'open':
+                    channel.send(json.dumps({
+                        'faces': faces,
+                        'processing_ms': (time.perf_counter() - started) * 1000,
+                    }))
+        except MediaStreamError:
+            logger.info('WebRTC video track ended')
+        except asyncio.CancelledError:
+            raise
+        except Exception:
+            logger.exception('WebRTC video processing failed')
 
     def analyze(self, image: np.ndarray) -> list[dict]:
         engine = get_face_engine()
