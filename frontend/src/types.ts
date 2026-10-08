@@ -10,6 +10,7 @@ export type FaceDetection = {
   track_id: number
   user_id?: string | null
   identity_key?: string | null
+  track_count?: number
   full_name: string
   score?: number | null
   face_image?: string | null

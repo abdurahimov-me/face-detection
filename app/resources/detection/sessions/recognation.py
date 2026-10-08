@@ -45,6 +45,9 @@ class RecognitionSession:
         self.unknown_embeddings: dict[str, np.ndarray] = {}
         self.unknown_counts: dict[str, int] = {}
         self.unknown_sequence = 0
+        self.identity_tracks: dict[str, set[int]] = {}
+        self.identity_best_quality: dict[str, float] = {}
+        self.identity_best_images: dict[str, str] = {}
 
     async def consume_video(self, track, channel_holder: dict) -> None:
         last_analysis = 0.0
@@ -71,6 +74,9 @@ class RecognitionSession:
                     if face_image is not None and quality > self.best_quality.get(track_id, 0.0):
                         self.best_quality[track_id] = quality
                         self.face_images[track_id] = face_image
+                        identity_key = self.identity_keys.get(track_id)
+                        if identity_key is not None:
+                            self._update_identity_snapshot(track_id, identity_key)
                     if embedding is not None:
                         samples = self.embedding_samples.setdefault(track_id, [])
                         samples.append(np.asarray(embedding, dtype=np.float32))
@@ -90,14 +96,21 @@ class RecognitionSession:
 
                 faces = []
                 for tracked_face in tracked_faces:
-                    identity = self.identities[tracked_face['track_id']]
+                    track_id = tracked_face['track_id']
+                    identity = self.identities[track_id]
+                    identity_key = self.identity_keys.get(track_id)
                     faces.append({
-                        'track_id': tracked_face['track_id'],
+                        'track_id': track_id,
                         'user_id': identity.user_id,
                         'full_name': identity.full_name,
                         'score': identity.score,
-                        'identity_key': self.identity_keys.get(tracked_face['track_id']),
-                        'face_image': self.face_images.get(tracked_face['track_id']),
+                        'identity_key': identity_key,
+                        'track_count': len(self.identity_tracks.get(identity_key, set())),
+                        'face_image': (
+                            self.identity_best_images.get(identity_key)
+                            if identity_key is not None
+                            else self.face_images.get(track_id)
+                        ),
                         'bbox': tracked_face['bbox'],
                         'frame_width': image.shape[1],
                         'frame_height': image.shape[0],
@@ -129,10 +142,11 @@ class RecognitionSession:
             self.identities[track_id] = identity
             self.embedding_samples.pop(track_id, None)
             if identity.user_id is None:
-                self.identity_keys[track_id] = self._unknown_identity_key(
+                identity_key = self._unknown_identity_key(
                     track_id,
                     np.asarray(embedding, dtype=np.float32),
                 )
+                self._assign_identity_key(track_id, identity_key)
                 delay = self.retry_delays.get(
                     track_id,
                     APP_SETTINGS.UNKNOWN_RETRY_INITIAL_SECONDS,
@@ -143,7 +157,7 @@ class RecognitionSession:
                     APP_SETTINGS.UNKNOWN_RETRY_MAX_SECONDS,
                 )
             else:
-                self.identity_keys[track_id] = f'user:{identity.user_id}'
+                self._assign_identity_key(track_id, f'user:{identity.user_id}')
                 self.next_retry_at[track_id] = float('inf')
                 self.retry_delays.pop(track_id, None)
         except asyncio.CancelledError:
@@ -157,6 +171,46 @@ class RecognitionSession:
             )
         finally:
             self.search_tasks.pop(track_id, None)
+
+    def _assign_identity_key(self, track_id: int, identity_key: str) -> None:
+        previous_key = self.identity_keys.get(track_id)
+        if previous_key is not None and previous_key != identity_key:
+            previous_tracks = self.identity_tracks.get(previous_key)
+            if (
+                previous_tracks is not None
+                and previous_key.startswith('unknown:')
+                and identity_key.startswith('user:')
+            ):
+                target_tracks = self.identity_tracks.setdefault(identity_key, set())
+                target_tracks.update(previous_tracks)
+                for previous_track_id in previous_tracks:
+                    self.identity_keys[previous_track_id] = identity_key
+                previous_quality = self.identity_best_quality.get(previous_key, 0.0)
+                if previous_quality > self.identity_best_quality.get(identity_key, 0.0):
+                    self.identity_best_quality[identity_key] = previous_quality
+                    previous_image = self.identity_best_images.get(previous_key)
+                    if previous_image is not None:
+                        self.identity_best_images[identity_key] = previous_image
+                self.identity_tracks.pop(previous_key, None)
+                self.identity_best_quality.pop(previous_key, None)
+                self.identity_best_images.pop(previous_key, None)
+                self.unknown_embeddings.pop(previous_key, None)
+                self.unknown_counts.pop(previous_key, None)
+            elif previous_tracks is not None:
+                previous_tracks.discard(track_id)
+
+        self.identity_keys[track_id] = identity_key
+        self.identity_tracks.setdefault(identity_key, set()).add(track_id)
+        self._update_identity_snapshot(track_id, identity_key)
+
+    def _update_identity_snapshot(self, track_id: int, identity_key: str) -> None:
+        image = self.face_images.get(track_id)
+        quality = self.best_quality.get(track_id)
+        if image is None or quality is None:
+            return
+        if quality > self.identity_best_quality.get(identity_key, 0.0):
+            self.identity_best_quality[identity_key] = quality
+            self.identity_best_images[identity_key] = image
 
     def _unknown_identity_key(self, track_id: int, embedding: np.ndarray) -> str:
         norm = float(np.linalg.norm(embedding))
