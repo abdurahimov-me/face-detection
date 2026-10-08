@@ -1,4 +1,5 @@
 import asyncio
+import typing as t
 
 from aiortc import RTCSessionDescription, RTCPeerConnection
 
@@ -19,8 +20,8 @@ async def create_enrollment_answer(
     session = EnrollmentSession(
         user_id, full_name, check_user_id_available, save_face_sample
     )
-    channel_holder: dict = {}
-    video_tasks: set[asyncio.Task] = set()
+    channel_holder: t.Dict = {}
+    video_tasks: t.Set[asyncio.Task] = set()
 
     @peer.on('datachannel')
     def on_datachannel(channel) -> None:

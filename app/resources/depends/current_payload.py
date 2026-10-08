@@ -5,7 +5,7 @@ __all__ = (
     'token_payload',
 )
 
-from typing import Union, Annotated, Optional
+import typing as t
 
 import jwt
 from fastapi import Depends, status, HTTPException
@@ -19,7 +19,7 @@ http_bearer = HTTPBearer(auto_error=True)
 
 def get_token_payload_or_none(
         credentials: HTTPAuthorizationCredentials = Depends(http_bearer)
-) -> Union[Payload, None]:
+) -> t.Union[Payload, None]:
     try:
 
         if credentials:
@@ -44,11 +44,11 @@ def get_token_payload_or_none(
 
 def get_token_payload(
         payload=Depends(get_token_payload_or_none),
-) -> Union[Payload, None]:
+) -> t.Union[Payload, None]:
     if payload is None:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
     return payload
 
 
-payload_or_none = Annotated[Optional[Payload], Depends(get_token_payload_or_none)]
-token_payload = Annotated[Payload, Depends(get_token_payload)]
+payload_or_none = t.Annotated[t.Optional[Payload], Depends(get_token_payload_or_none)]
+token_payload = t.Annotated[Payload, Depends(get_token_payload)]

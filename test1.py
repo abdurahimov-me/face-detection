@@ -12,6 +12,7 @@ import argparse
 import asyncio
 import os
 import time
+import typing as t
 import uuid
 from dataclasses import dataclass
 
@@ -45,7 +46,7 @@ def log_timing(label: str, elapsed_seconds: float) -> None:
 @dataclass
 class FaceTrack:
     track_id: int
-    bbox: tuple[float, float, float, float]
+    bbox: t.Tuple[float, float, float, float]
     last_seen: int
     name: str = "Noma'lum"
     score: float | None = None
@@ -103,7 +104,7 @@ async def ensure_collection(client) -> None:
         )
 
 
-def search_face_in_qdrant(client, embedding: list[float]):
+def search_face_in_qdrant(client, embedding: t.List[float]):
     """Run vector search in a worker thread, outside the camera event loop."""
     started = time.perf_counter()
     result = client.query_points(
@@ -174,11 +175,11 @@ async def recognize_camera() -> None:
         await client.close()
         raise RuntimeError("Kamerani ochib bo'lmadi")
 
-    pending_queries: dict[int, asyncio.Task] = {}
+    pending_queries: t.Dict[int, asyncio.Task] = {}
     try:
         await ensure_collection(client)
         camera.set(cv2.CAP_PROP_BUFFERSIZE, 1)
-        tracks: dict[int, FaceTrack] = {}
+        tracks: t.Dict[int, FaceTrack] = {}
         tracker = ByteTrackTracker(
             frame_rate=TRACKER_FPS,
             lost_track_buffer=30,

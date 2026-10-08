@@ -1,4 +1,5 @@
 import asyncio
+import typing as t
 
 from aiortc import RTCSessionDescription, RTCPeerConnection
 
@@ -12,8 +13,8 @@ async def create_webrtc_answer(sdp: str, description_type: str) -> RTCSessionDes
     peer = RTCPeerConnection()
     peer_connections.add(peer)
     session = RecognitionSession(resolve_identity)
-    channel_holder: dict = {}
-    video_tasks: set[asyncio.Task] = set()
+    channel_holder: t.Dict = {}
+    video_tasks: t.Set[asyncio.Task] = set()
 
     @peer.on('datachannel')
     def on_datachannel(channel) -> None:

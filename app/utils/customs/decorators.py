@@ -1,5 +1,5 @@
 import inspect
-from typing import get_origin, Union, get_args, Optional, Annotated
+import typing as t
 
 from fastapi import Form, File, UploadFile, Depends, HTTPException
 from pydantic_core import PydanticUndefined, ValidationError
@@ -34,8 +34,8 @@ def as_form(cls):
 
     for field_name, model_field in cls.__fields__.items():
         field_type = model_field.annotation
-        type_args = get_args(field_type)
-        is_optional = get_origin(field_type) is Union and type(None) in type_args
+        type_args = t.get_args(field_type)
+        is_optional = t.get_origin(field_type) is t.Union and type(None) in type_args
 
         form_args = {}
         for item in model_field.metadata:
@@ -53,7 +53,7 @@ def as_form(cls):
                 param = File(None)
 
         if is_optional:
-            field_type = Optional[field_type]
+            field_type = t.Optional[field_type]
 
         new_parameters.append(
             inspect.Parameter(
@@ -89,5 +89,5 @@ def as_form(cls):
     sig = inspect.signature(as_form_func)
     sig = sig.replace(parameters=new_parameters)
     as_form_func.__signature__ = sig
-    setattr(cls, 'as_form', Annotated[cls, Depends(as_form_func)])
+    setattr(cls, 'as_form', t.Annotated[cls, Depends(as_form_func)])
     return cls

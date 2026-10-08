@@ -1,5 +1,6 @@
 import logging
 import threading
+import typing as t
 import zipfile
 from pathlib import Path
 
@@ -72,7 +73,7 @@ def get_face_engine() -> FaceAnalysis:
     return _engine
 
 
-def analyze_face_image(image: np.ndarray) -> list[Face]:
+def analyze_face_image(image: np.ndarray) -> t.List[Face]:
     engine = get_face_engine()
     with inference_lock:
         return engine.get(image)

@@ -1,3 +1,5 @@
+import typing as t
+
 from config import APP_SETTINGS
 from config.qdrant import qdrant_db
 from resources.detection.data import TrackIdentity
@@ -8,9 +10,9 @@ async def ensure_faces_collection() -> None:
     await FacesRepository(qdrant_db.client).ensure_collection()
 
 
-async def resolve_identity(embeddings: list[list[float]]) -> TrackIdentity:
+async def resolve_identity(embeddings: t.List[t.List[float]]) -> TrackIdentity:
     results = await FacesRepository(qdrant_db.client).identify_batch(embeddings)
-    votes: dict[str, list] = {}
+    votes: t.Dict[str, t.List] = {}
     for matches in results:
         if not matches:
             continue

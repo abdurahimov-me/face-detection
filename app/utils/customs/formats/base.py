@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Any, Dict
+import typing as t
 
 from pydantic import GetCoreSchemaHandler, GetJsonSchemaHandler
 from pydantic_core import CoreSchema, core_schema
@@ -15,14 +15,14 @@ class BaseFormat(ABC):
 
     @classmethod
     def __get_pydantic_core_schema__(
-            cls, source_type: Any, handler: GetCoreSchemaHandler
+            cls, source_type: t.Any, handler: GetCoreSchemaHandler
     ) -> CoreSchema:
         return core_schema.with_info_plain_validator_function(cls.validate)
 
     @classmethod
     def __get_pydantic_json_schema__(
             cls, _core_schema: CoreSchema, handler: GetJsonSchemaHandler
-    ) -> Dict[str, Any]:
+    ) -> t.Dict[str, t.Any]:
         return cls.json_schema
 
     @classmethod

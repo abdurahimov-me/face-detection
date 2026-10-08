@@ -46,7 +46,7 @@ class APPSettings(EnvReader):
     MATCH_MARGIN: float = 0.04
     MATCH_VOTES_REQUIRED: int = 2
     MATCH_CANDIDATES: int = 2
-    DETECTION_SIZE: tuple = (320, 320)
+    DETECTION_SIZE: t.Tuple = (320, 320)
     ANALYSIS_INTERVAL_SECONDS: float = 0.15
     RECOGNITION_SAMPLES: int = 3
     RECOGNITION_SAMPLE_INTERVAL_SECONDS: float = 0.25
@@ -61,7 +61,7 @@ class APPSettings(EnvReader):
     MIN_SHARPNESS: float = 45.0
     MIN_SAMPLE_SIMILARITY: float = 0.65
     MIN_DUPLICATE_SIMILARITY: float = 0.75
-    ALLOWED_IMAGE_TYPES: set[str] = {'image/jpeg', 'image/png', 'image/webp'}
+    ALLOWED_IMAGE_TYPES: t.Set[str] = {'image/jpeg', 'image/png', 'image/webp'}
 
     @computed_field
     def FACE_IMAGES_DIR(self) -> Path:
@@ -73,7 +73,7 @@ class APPSettings(EnvReader):
 class JWTSettings(BaseSettings):
     ALGORITHM: str = "HS256"
     JWT_SECRET_KEY: str = 'local-development-secret'
-    JWT_PAYLOAD_FIELDS: tuple = ('id',)
+    JWT_PAYLOAD_FIELDS: t.Tuple = ('id',)
     ACCESS_TOKEN_EXPIRE: timedelta = timedelta(days=10)
 
 

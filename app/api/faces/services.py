@@ -1,5 +1,6 @@
 import asyncio
 import os
+import typing as t
 from datetime import datetime, timezone
 
 import aiofiles
@@ -25,7 +26,7 @@ def get_faces_repository() -> FacesRepository:
     return FacesRepository(qdrant_db.client)
 
 
-def validate_user_fields(user_id: str, full_name: str) -> tuple[str, str]:
+def validate_user_fields(user_id: str, full_name: str) -> t.Tuple[str, str]:
     user_id = user_id.strip()
     full_name = full_name.strip()
     if not user_id or len(user_id) > 128:
@@ -77,7 +78,7 @@ async def save_face_sample(
     return payload_to_user(point_id, payload)
 
 
-def payload_to_user(point_id: str, payload: dict) -> FaceUser:
+def payload_to_user(point_id: str, payload: t.Dict) -> FaceUser:
     created_at_value = payload.get('created_at')
     created_at = (
         datetime.fromisoformat(str(created_at_value))
@@ -93,9 +94,9 @@ def payload_to_user(point_id: str, payload: dict) -> FaceUser:
     )
 
 
-async def list_face_users() -> list[FaceUser]:
+async def list_face_users() -> t.List[FaceUser]:
     await ensure_faces_collection()
-    users: list[FaceUser] = []
+    users: t.List[FaceUser] = []
     points = await get_faces_repository().list_all()
     for point in points:
         if point.payload and point.payload.get('user_id') is not None:

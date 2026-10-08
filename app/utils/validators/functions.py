@@ -1,4 +1,5 @@
 import re
+import typing as t
 
 
 def compare_vehicle_number(value: str) -> bool:
@@ -17,5 +18,5 @@ def compare_vehicle_number(value: str) -> bool:
     return digit and upper and all(checking)
 
 
-def validate_list_phone(value: list[str]):
+def validate_list_phone(value: t.List[str]):
     return all([item.isdigit() and len(item) == 12 for item in value])

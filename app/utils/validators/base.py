@@ -1,4 +1,4 @@
-from typing import Dict, Any, Callable, Iterable
+import typing as t
 
 from fastapi import HTTPException
 from pydantic import GetJsonSchemaHandler
@@ -8,10 +8,10 @@ from utils.customs.formats import BaseFormat
 
 
 class BaseValidator(BaseFormat):
-    functions: Iterable[Callable] = ...
+    functions: t.Iterable[t.Callable] = ...
     example: str = ...
-    checker: Callable = all
-    json_schema: Dict[str, Any] = {"type": "str", "format": "str", "description": "String"}
+    checker: t.Callable = all
+    json_schema: t.Dict[str, t.Any] = {"type": "str", "format": "str", "description": "String"}
 
     def __init_subclass__(cls, **kwargs):
         super().__init_subclass__()
@@ -19,7 +19,7 @@ class BaseValidator(BaseFormat):
             raise ValueError(f'Must be example and validation functions')
 
     @classmethod
-    def validator(cls, value: Any):
+    def validator(cls, value: t.Any):
         checking = cls.checker([func(value) for func in cls.functions])
 
         if not checking:
@@ -31,7 +31,7 @@ class BaseValidator(BaseFormat):
     @classmethod
     def __get_pydantic_json_schema__(
             cls, _core_schema: CoreSchema, handler: GetJsonSchemaHandler
-    ) -> Dict[str, Any]:
+    ) -> t.Dict[str, t.Any]:
         return cls.json_schema
 
     @classmethod

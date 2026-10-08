@@ -1,4 +1,5 @@
 import asyncio
+import typing as t
 from dataclasses import dataclass, field
 
 from aiortc import RTCPeerConnection
@@ -13,7 +14,7 @@ class TrackIdentity:
 
 @dataclass
 class RTCConnection:
-    _peer_connections: set[RTCPeerConnection] = field(default_factory=set)
+    _peer_connections: t.Set[RTCPeerConnection] = field(default_factory=set)
 
     def add(self, peer_connection: RTCPeerConnection) -> None:
         self._peer_connections.add(peer_connection)
@@ -22,7 +23,7 @@ class RTCConnection:
         self._peer_connections.discard(peer_connection)
 
     @property
-    def peer_connections(self) -> set[RTCPeerConnection]:
+    def peer_connections(self) -> t.Set[RTCPeerConnection]:
         return self._peer_connections
 
     async def close(self) -> None:

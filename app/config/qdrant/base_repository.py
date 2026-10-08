@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from collections.abc import Sequence
 import typing as t
 from qdrant_client import AsyncQdrantClient, models
 
@@ -46,8 +45,8 @@ class BaseRepository:
         return records[0] if records else None
 
     async def get_many(
-        self, point_ids: Sequence[PointId], *, with_vectors: bool = False
-    ) -> list[models.Record]:
+        self, point_ids: t.Sequence[PointId], *, with_vectors: bool = False
+    ) -> t.List[models.Record]:
         if not point_ids:
             return []
         return await self.qdrant_client.retrieve(
@@ -161,7 +160,7 @@ class BaseRepository:
 
     async def search_batch(
         self,
-        vectors: Sequence[t.List[float]],
+        vectors: t.Sequence[t.List[float]],
         *,
         limit: int = 10,
         score_threshold: float | None = None,

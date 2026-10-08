@@ -1,7 +1,7 @@
 import asyncio
 import json
 import time
-from collections.abc import Awaitable, Callable
+import typing as t
 
 import cv2
 import numpy as np
@@ -39,16 +39,16 @@ class EnrollmentSession:
         self,
         user_id: str,
         full_name: str,
-        check_available: Callable[[str], Awaitable[None]],
-        save_sample: Callable[..., Awaitable],
+        check_available: t.Callable[[str], t.Awaitable[None]],
+        save_sample: t.Callable[..., t.Awaitable],
     ) -> None:
         self.user_id = user_id
         self.full_name = full_name
         self.check_available = check_available
         self.save_sample = save_sample
 
-    async def consume(self, track, channel_holder: dict) -> None:
-        embeddings: list[np.ndarray] = []
+    async def consume(self, track, channel_holder: t.Dict) -> None:
+        embeddings: t.List[np.ndarray] = []
         best_frame: np.ndarray | None = None
         last_sample = 0.0
         started = time.monotonic()

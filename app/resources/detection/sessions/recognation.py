@@ -3,7 +3,7 @@ import base64
 import json
 import logging
 import time
-from collections.abc import Awaitable, Callable
+import typing as t
 
 import cv2
 import numpy as np
@@ -22,7 +22,9 @@ logger = logging.getLogger(__name__)
 class RecognitionSession:
     def __init__(
         self,
-        identity_resolver: Callable[[list[list[float]]], Awaitable[TrackIdentity]],
+        identity_resolver: t.Callable[
+            [t.List[t.List[float]]], t.Awaitable[TrackIdentity]
+        ],
     ) -> None:
         self.identity_resolver = identity_resolver
         self.tracker = ByteTrackTracker(
@@ -33,23 +35,23 @@ class RecognitionSession:
             minimum_iou_threshold=0.1,
             high_conf_det_threshold=0.5,
         )
-        self.identities: dict[int, TrackIdentity] = {}
-        self.face_images: dict[int, str] = {}
-        self.best_quality: dict[int, float] = {}
-        self.embedding_samples: dict[int, list[np.ndarray]] = {}
-        self.last_sample_at: dict[int, float] = {}
-        self.next_retry_at: dict[int, float] = {}
-        self.retry_delays: dict[int, float] = {}
-        self.search_tasks: dict[int, asyncio.Task[None]] = {}
-        self.identity_keys: dict[int, str] = {}
-        self.unknown_embeddings: dict[str, np.ndarray] = {}
-        self.unknown_counts: dict[str, int] = {}
+        self.identities: t.Dict[int, TrackIdentity] = {}
+        self.face_images: t.Dict[int, str] = {}
+        self.best_quality: t.Dict[int, float] = {}
+        self.embedding_samples: t.Dict[int, t.List[np.ndarray]] = {}
+        self.last_sample_at: t.Dict[int, float] = {}
+        self.next_retry_at: t.Dict[int, float] = {}
+        self.retry_delays: t.Dict[int, float] = {}
+        self.search_tasks: t.Dict[int, asyncio.Task[None]] = {}
+        self.identity_keys: t.Dict[int, str] = {}
+        self.unknown_embeddings: t.Dict[str, np.ndarray] = {}
+        self.unknown_counts: t.Dict[str, int] = {}
         self.unknown_sequence = 0
-        self.identity_tracks: dict[str, set[int]] = {}
-        self.identity_best_quality: dict[str, float] = {}
-        self.identity_best_images: dict[str, str] = {}
+        self.identity_tracks: t.Dict[str, t.Set[int]] = {}
+        self.identity_best_quality: t.Dict[str, float] = {}
+        self.identity_best_images: t.Dict[str, str] = {}
 
-    async def consume_video(self, track, channel_holder: dict) -> None:
+    async def consume_video(self, track, channel_holder: t.Dict) -> None:
         last_analysis = 0.0
         try:
             while True:
@@ -140,7 +142,7 @@ class RecognitionSession:
     async def _resolve_track(
         self,
         track_id: int,
-        embeddings: list[list[float]],
+        embeddings: t.List[t.List[float]],
     ) -> None:
         try:
             identity = await self.identity_resolver(embeddings)
@@ -252,7 +254,7 @@ class RecognitionSession:
         self.unknown_counts[key] = count + 1
         return key
 
-    def analyze(self, image: np.ndarray) -> list[dict]:
+    def analyze(self, image: np.ndarray) -> t.List[t.Dict]:
         engine = get_face_engine()
         with inference_lock:
             bboxes, keypoints = engine.det_model.detect(image)
@@ -266,7 +268,7 @@ class RecognitionSession:
             data=data,
         )
         tracked = self.tracker.update(detections)
-        results: list[dict] = []
+        results: t.List[t.Dict] = []
 
         for index in range(len(tracked)):
             track_id = int(tracked.tracker_id[index])

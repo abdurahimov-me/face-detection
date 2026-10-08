@@ -1,4 +1,4 @@
-from typing import Annotated
+import typing as t
 
 from fastapi import APIRouter, File, Form, Response, UploadFile, status
 
@@ -18,16 +18,16 @@ async def enrollment_offer(payload: EnrollmentOffer) -> WebRTCAnswer:
     return WebRTCAnswer(sdp=answer.sdp, type=answer.type)
 
 
-@router.get('', response_model=list[FaceUser])
-async def get_faces() -> list[FaceUser]:
+@router.get('', response_model=t.List[FaceUser])
+async def get_faces() -> t.List[FaceUser]:
     return await list_face_users()
 
 
 @router.post('', response_model=FaceUser, status_code=status.HTTP_201_CREATED)
 async def create_face(
-        user_id: Annotated[str, Form()],
-        full_name: Annotated[str, Form()],
-        image: Annotated[UploadFile, File()],
+        user_id: t.Annotated[str, Form()],
+        full_name: t.Annotated[str, Form()],
+        image: t.Annotated[UploadFile, File()],
 ) -> FaceUser:
     return await enroll_face_user(user_id, full_name, image)
 

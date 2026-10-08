@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from datetime import timedelta
 from functools import cached_property
-from typing import Optional, Any, Union
+import typing as t
 
 import jwt
 
@@ -17,7 +17,7 @@ class Payload:
     tenant: str
 
     @classmethod
-    def from_dict(cls, data: dict) -> "Payload":
+    def from_dict(cls, data: t.Dict) -> "Payload":
         return cls(
             iat=data["iat"],
             exp=data["exp"],
@@ -27,7 +27,7 @@ class Payload:
 
 
 def encode_jwt(
-        payload: dict,
+        payload: t.Dict,
         algorithm=JWT_SETTINGS.ALGORITHM,
         secret_key: str = JWT_SETTINGS.JWT_SECRET_KEY,
         expiration: timedelta = JWT_SETTINGS.ACCESS_TOKEN_EXPIRE,
@@ -58,7 +58,7 @@ def decode_jwt(
 
 def get_decoded(
         token: str
-) -> Union[dict, None]:
+) -> t.Union[t.Dict, None]:
     try:
         return decode_jwt(token)
     except (jwt.InvalidTokenError, jwt.DecodeError, jwt.ExpiredSignatureError):
@@ -68,10 +68,10 @@ def get_decoded(
 class JWT:
     def __init__(
             self,
-            obj: Optional[Any] = None,
-            payload: Optional[dict] = None,
-            sub: Optional[str] = 'id',
-            payload_fields: Optional[tuple] = JWT_SETTINGS.JWT_PAYLOAD_FIELDS,
+            obj: t.Optional[t.Any] = None,
+            payload: t.Optional[t.Dict] = None,
+            sub: t.Optional[str] = 'id',
+            payload_fields: t.Optional[t.Tuple] = JWT_SETTINGS.JWT_PAYLOAD_FIELDS,
     ):
         self.payload = self.set_payload(obj, sub, payload, payload_fields)
         self.secret_key = JWT_SETTINGS.JWT_SECRET_KEY

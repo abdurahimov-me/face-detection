@@ -1,6 +1,6 @@
 import asyncio
 import logging
-from typing import Optional
+import typing as t
 
 from qdrant_client import AsyncQdrantClient
 
@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 class QdrantDatabase:
 
     def __init__(self):
-        self._client: Optional[AsyncQdrantClient] = None
+        self._client: t.Optional[AsyncQdrantClient] = None
 
     @property
     def client(self) -> AsyncQdrantClient:

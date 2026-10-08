@@ -1,5 +1,6 @@
 import asyncio
 import os
+import typing as t
 from dataclasses import dataclass
 
 import cv2
@@ -115,7 +116,7 @@ class Track:
     last_seen: int = 0
 
 
-tracks: dict[int, Track] = {}
+tracks: t.Dict[int, Track] = {}
 next_track_id = 1
 
 

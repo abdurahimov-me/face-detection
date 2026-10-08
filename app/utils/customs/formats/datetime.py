@@ -1,5 +1,5 @@
 from datetime import datetime, date
-from typing import Tuple, Literal
+import typing as t
 from zoneinfo import ZoneInfo
 
 from config import APP_SETTINGS
@@ -10,8 +10,8 @@ class BaseDatetime(BaseFormat):
     json_schema = {"type": "datetime", "format": "datetime", "description": "Datetime to the field."}
     format = '%Y-%m-%d %H:%M:%S'
     timezone = APP_SETTINGS.TIME_ZONE
-    is_instances: Tuple = (datetime, date)
-    validate_type: Literal['response', 'request'] = None
+    is_instances: t.Tuple = (datetime, date)
+    validate_type: t.Literal['response', 'request'] = None
 
     @classmethod
     def validate(cls, v=None, *args, **kwargs):

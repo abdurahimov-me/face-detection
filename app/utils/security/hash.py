@@ -1,5 +1,5 @@
 from hashlib import sha256, sha1
-from typing import Literal
+import typing as t
 
 import argon2
 
@@ -18,7 +18,7 @@ def check_pass(password: str, hashed_password: str) -> bool:
         return False
 
 
-def fnv1a_hash(text, bits: Literal[32, 64] = 32) -> str:
+def fnv1a_hash(text, bits: t.Literal[32, 64] = 32) -> str:
     if bits == 32:
         fnv_prime = 0x01000193
         offset_basis = 0x811c9dc5

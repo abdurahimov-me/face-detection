@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Literal
+import typing as t
 
 
 class BaseEnum(Enum):
@@ -16,7 +16,7 @@ class BaseEnum(Enum):
 
     @classmethod
     def literal(cls):
-        return Literal[cls.get_values()]
+        return t.Literal[cls.get_values()]
 
 
 class IntEnum(int, BaseEnum):

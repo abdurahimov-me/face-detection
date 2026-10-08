@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any
+import typing as t
 from uuid import NAMESPACE_URL, uuid5
 
 from qdrant_client import AsyncQdrantClient, models
@@ -42,8 +42,8 @@ class FacesRepository(BaseRepository):
     async def create_face(
         self,
         user_id: str,
-        vector: list[float],
-        payload: dict[str, Any],
+        vector: t.List[float],
+        payload: t.Dict[str, t.Any],
     ) -> models.UpdateResult:
         return await self.create(
             self.point_id_for_user(user_id),
@@ -55,8 +55,8 @@ class FacesRepository(BaseRepository):
         self,
         user_id: str,
         *,
-        vector: list[float] | None = None,
-        payload: dict[str, Any] | None = None,
+        vector: t.List[float] | None = None,
+        payload: t.Dict[str, t.Any] | None = None,
     ) -> models.UpdateResult:
         return await self.update(
             self.point_id_for_user(user_id),
@@ -67,8 +67,8 @@ class FacesRepository(BaseRepository):
     async def delete_by_user_id(self, user_id: str) -> bool:
         return await self.delete(self.point_id_for_user(user_id))
 
-    async def list_all(self, *, page_size: int = 100) -> list[models.Record]:
-        points: list[models.Record] = []
+    async def list_all(self, *, page_size: int = 100) -> t.List[models.Record]:
+        points: t.List[models.Record] = []
         offset = None
         while True:
             page, offset = await self.list(
@@ -82,18 +82,18 @@ class FacesRepository(BaseRepository):
 
     async def find_similar(
         self,
-        vector: list[float],
+        vector: t.List[float],
         *,
         limit: int = 1,
         score_threshold: float | None = None,
-    ) -> list[models.ScoredPoint]:
+    ) -> t.List[models.ScoredPoint]:
         return await self.search(
             vector,
             limit=limit,
             score_threshold=score_threshold,
         )
 
-    async def find_duplicate(self, vector: list[float]) -> models.ScoredPoint | None:
+    async def find_duplicate(self, vector: t.List[float]) -> models.ScoredPoint | None:
         matches = await self.find_similar(
             vector,
             limit=1,
@@ -101,7 +101,7 @@ class FacesRepository(BaseRepository):
         )
         return matches[0] if matches else None
 
-    async def identify(self, vector: list[float]) -> models.ScoredPoint | None:
+    async def identify(self, vector: t.List[float]) -> models.ScoredPoint | None:
         matches = await self.find_similar(
             vector,
             limit=1,
@@ -111,8 +111,8 @@ class FacesRepository(BaseRepository):
 
     async def identify_batch(
         self,
-        vectors: list[list[float]],
-    ) -> list[list[models.ScoredPoint]]:
+        vectors: t.List[t.List[float]],
+    ) -> t.List[t.List[models.ScoredPoint]]:
         return await self.search_batch(
             vectors,
             limit=APP_SETTINGS.MATCH_CANDIDATES,
