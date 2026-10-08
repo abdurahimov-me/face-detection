@@ -1,4 +1,9 @@
-import type { FaceUser } from '../types'
+import type {
+  FaceUser,
+  VideoAnalysisResult,
+  VideoJobAccepted,
+  VideoJobState,
+} from '../types'
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? '/api/v1'
 
@@ -76,4 +81,24 @@ export async function createEnrollmentAnswer(
     }),
   })
   return parseResponse<RTCSessionDescriptionInit>(response)
+}
+
+export async function createVideoAnalysis(file: File): Promise<VideoJobAccepted> {
+  const form = new FormData()
+  form.append('file', file, file.name)
+  const response = await fetch(`${API_BASE_URL}/video-analysis`, {
+    method: 'POST',
+    body: form,
+  })
+  return parseResponse<VideoJobAccepted>(response)
+}
+
+export async function getVideoAnalysis(jobId: string): Promise<VideoJobState> {
+  const response = await fetch(`${API_BASE_URL}/video-analysis/${jobId}`)
+  return parseResponse<VideoJobState>(response)
+}
+
+export async function getVideoAnalysisResult(jobId: string): Promise<VideoAnalysisResult> {
+  const response = await fetch(`${API_BASE_URL}/video-analysis/${jobId}/result`)
+  return parseResponse<VideoAnalysisResult>(response)
 }

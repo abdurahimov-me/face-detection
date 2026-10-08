@@ -62,6 +62,18 @@ class APPSettings(EnvReader):
     MIN_SAMPLE_SIMILARITY: float = 0.65
     MIN_DUPLICATE_SIMILARITY: float = 0.75
     ALLOWED_IMAGE_TYPES: t.Set[str] = {'image/jpeg', 'image/png', 'image/webp'}
+    MAX_VIDEO_BYTES: int = 500 * 1024 * 1024
+    VIDEO_ANALYSIS_FPS: float = 5.0
+    VIDEO_TRACK_LOST_SECONDS: float = 1.5
+    VIDEO_SAMPLE_INTERVAL_SECONDS: float = 0.35
+    VIDEO_RESULT_TTL_SECONDS: int = 10 * 60
+    ALLOWED_VIDEO_TYPES: t.Set[str] = {
+        'video/mp4',
+        'video/quicktime',
+        'video/x-msvideo',
+        'video/webm',
+        'video/x-matroska',
+    }
 
     @computed_field
     def FACE_IMAGES_DIR(self) -> Path:

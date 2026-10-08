@@ -9,6 +9,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi_pagination import add_pagination
 from fastapi_pagination.utils import disable_installed_extensions_check
+from starlette.exceptions import HTTPException as StarletteHTTPException
 from starlette.staticfiles import StaticFiles
 
 from api.routers import __routes__ as api_routes, __ws_routes__ as ws_routes
@@ -18,7 +19,12 @@ from .events import on_startup, on_shutdown
 
 class SPAStaticFiles(StaticFiles):
     async def get_response(self, path, scope):
-        response = await super().get_response(path, scope)
+        try:
+            response = await super().get_response(path, scope)
+        except StarletteHTTPException as exc:
+            if exc.status_code != 404:
+                raise
+            return await super().get_response('index.html', scope)
         if response.status_code == 404:
             return await super().get_response('index.html', scope)
         return response

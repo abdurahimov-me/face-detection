@@ -11,7 +11,29 @@ async def ensure_faces_collection() -> None:
 
 
 async def resolve_identity(embeddings: t.List[t.List[float]]) -> TrackIdentity:
-    results = await FacesRepository(qdrant_db.client).identify_batch(embeddings)
+    identities = await resolve_identities([embeddings])
+    return identities[0]
+
+
+async def resolve_identities(
+    embedding_groups: t.List[t.List[t.List[float]]],
+) -> t.List[TrackIdentity]:
+    group_sizes = [len(group) for group in embedding_groups]
+    vectors = [vector for group in embedding_groups for vector in group]
+    if not vectors:
+        return [TrackIdentity() for _ in embedding_groups]
+
+    batch_results = await FacesRepository(qdrant_db.client).identify_batch(vectors)
+    identities: t.List[TrackIdentity] = []
+    offset = 0
+    for group_size in group_sizes:
+        results = batch_results[offset:offset + group_size]
+        offset += group_size
+        identities.append(_vote_identity(results))
+    return identities
+
+
+def _vote_identity(results: t.List[t.List]) -> TrackIdentity:
     votes: t.Dict[str, t.List] = {}
     for matches in results:
         if not matches:

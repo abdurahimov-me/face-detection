@@ -1,5 +1,5 @@
 import { Link, Outlet, useRouterState } from '@tanstack/react-router'
-import { ScanFace, UserPlus, Users } from 'lucide-react'
+import { Film, ScanFace, UserPlus, Users } from 'lucide-react'
 
 export function AppShell() {
   const path = useRouterState({ select: (state) => state.location.pathname })
@@ -18,6 +18,7 @@ export function AppShell() {
           <Link to="/" className={path === '/' ? 'active' : ''}><Users size={17} /> Userlar</Link>
           <Link to="/enroll" className={path === '/enroll' ? 'active' : ''}><UserPlus size={17} /> Qo‘shish</Link>
           <Link to="/test" className={path === '/test' ? 'active' : ''}><ScanFace size={17} /> Test</Link>
+          <Link to="/video" className={path === '/video' ? 'active' : ''}><Film size={17} /> Video</Link>
         </nav>
         <div className="status-pill"><span /> Tizim faol</div>
       </header>

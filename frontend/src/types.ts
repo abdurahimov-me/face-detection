@@ -23,3 +23,36 @@ export type DetectionMessage = {
   faces: FaceDetection[]
   processing_ms?: number
 }
+
+export type VideoJobStatus = 'queued' | 'processing' | 'completed' | 'failed'
+
+export type VideoJobAccepted = {
+  job_id: string
+  status: VideoJobStatus
+}
+
+export type VideoJobState = VideoJobAccepted & {
+  progress: number
+  filename: string
+  error?: string | null
+}
+
+export type VideoPerson = {
+  identity_key: string
+  status: 'known' | 'unknown'
+  user_id?: string | null
+  full_name: string
+  score?: number | null
+  face_image?: string | null
+  appearances: number
+  intervals: Array<{ start: number; end: number }>
+}
+
+export type VideoAnalysisResult = {
+  job_id: string
+  filename: string
+  duration: number
+  analyzed_fps: number
+  processed_frames: number
+  people: VideoPerson[]
+}
