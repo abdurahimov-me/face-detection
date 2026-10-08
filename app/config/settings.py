@@ -43,6 +43,9 @@ class APPSettings(EnvReader):
     FACES_COLLECTION_NAME: str = 'faces'
     EMBEDDING_SIZE: int = 512
     MATCH_THRESHOLD: float = 0.55
+    MATCH_MARGIN: float = 0.04
+    MATCH_VOTES_REQUIRED: int = 2
+    MATCH_CANDIDATES: int = 2
     DETECTION_SIZE: tuple = (320, 320)
     ANALYSIS_INTERVAL_SECONDS: float = 0.15
     RECOGNITION_SAMPLES: int = 3

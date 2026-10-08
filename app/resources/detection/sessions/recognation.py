@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 class RecognitionSession:
     def __init__(
         self,
-        identity_resolver: Callable[[list[float]], Awaitable[TrackIdentity]],
+        identity_resolver: Callable[[list[list[float]]], Awaitable[TrackIdentity]],
     ) -> None:
         self.identity_resolver = identity_resolver
         self.tracker = ByteTrackTracker(
@@ -85,14 +85,15 @@ class RecognitionSession:
                             len(samples) >= APP_SETTINGS.RECOGNITION_SAMPLES
                             and track_id not in self.search_tasks
                         ):
-                            mean = np.mean(samples[-APP_SETTINGS.RECOGNITION_SAMPLES:], axis=0)
-                            norm = float(np.linalg.norm(mean))
-                            if norm > 0:
-                                self.next_retry_at[track_id] = float('inf')
-                                task = asyncio.create_task(
-                                    self._resolve_track(track_id, (mean / norm).tolist())
-                                )
-                                self.search_tasks[track_id] = task
+                            self.next_retry_at[track_id] = float('inf')
+                            sample_batch = [
+                                sample.tolist()
+                                for sample in samples[-APP_SETTINGS.RECOGNITION_SAMPLES:]
+                            ]
+                            task = asyncio.create_task(
+                                self._resolve_track(track_id, sample_batch)
+                            )
+                            self.search_tasks[track_id] = task
 
                 faces = []
                 for tracked_face in tracked_faces:
@@ -136,15 +137,23 @@ class RecognitionSession:
                 await asyncio.gather(*tasks, return_exceptions=True)
             self.search_tasks.clear()
 
-    async def _resolve_track(self, track_id: int, embedding: list[float]) -> None:
+    async def _resolve_track(
+        self,
+        track_id: int,
+        embeddings: list[list[float]],
+    ) -> None:
         try:
-            identity = await self.identity_resolver(embedding)
+            identity = await self.identity_resolver(embeddings)
             self.identities[track_id] = identity
             self.embedding_samples.pop(track_id, None)
             if identity.user_id is None:
+                mean = np.mean(np.asarray(embeddings, dtype=np.float32), axis=0)
+                norm = float(np.linalg.norm(mean))
+                if norm > 0:
+                    mean = mean / norm
                 identity_key = self._unknown_identity_key(
                     track_id,
-                    np.asarray(embedding, dtype=np.float32),
+                    mean,
                 )
                 self._assign_identity_key(track_id, identity_key)
                 delay = self.retry_delays.get(

@@ -108,3 +108,13 @@ class FacesRepository(BaseRepository):
             score_threshold=APP_SETTINGS.MATCH_THRESHOLD,
         )
         return matches[0] if matches else None
+
+    async def identify_batch(
+        self,
+        vectors: list[list[float]],
+    ) -> list[list[models.ScoredPoint]]:
+        return await self.search_batch(
+            vectors,
+            limit=APP_SETTINGS.MATCH_CANDIDATES,
+            score_threshold=APP_SETTINGS.MATCH_THRESHOLD,
+        )

@@ -1,15 +1,12 @@
-"""Reusable async operations for a single Qdrant collection."""
-
 from __future__ import annotations
 
 from collections.abc import Sequence
-from typing import Any
-
+import typing as t
 from qdrant_client import AsyncQdrantClient, models
 
 
 PointId = int | str
-Vector = list[float] | dict[str, list[float]]
+Vector = t.List[float] | t.Dict[str, t.List[float]]
 
 
 class BaseRepository:
@@ -25,7 +22,7 @@ class BaseRepository:
 
     async def create_collection(
         self,
-        vectors_config: models.VectorParams | dict[str, models.VectorParams],
+        vectors_config: models.VectorParams | t.Dict[str, models.VectorParams],
     ) -> bool:
         if await self.collection_exists():
             return False
@@ -67,7 +64,7 @@ class BaseRepository:
         offset: PointId | None = None,
         query_filter: models.Filter | None = None,
         with_vectors: bool = False,
-    ) -> tuple[list[models.Record], PointId | None]:
+    ) -> t.Tuple[t.List[models.Record], PointId | None]:
         if limit < 1:
             raise ValueError('limit must be positive')
         return await self.qdrant_client.scroll(
@@ -80,7 +77,7 @@ class BaseRepository:
         )
 
     async def create(
-        self, point_id: PointId, vector: Vector, payload: dict[str, Any] | None = None
+        self, point_id: PointId, vector: Vector, payload: t.Dict[str, t.Any] | None = None
     ) -> models.UpdateResult:
         if await self.get(point_id) is not None:
             raise ValueError(f'Point already exists: {point_id}')
@@ -92,7 +89,7 @@ class BaseRepository:
         )
 
     async def upsert(
-        self, point_id: PointId, vector: Vector, payload: dict[str, Any] | None = None
+        self, point_id: PointId, vector: Vector, payload: t.Dict[str, t.Any] | None = None
     ) -> models.UpdateResult:
         return await self.qdrant_client.upsert(
             collection_name=self.collection_name,
@@ -100,7 +97,7 @@ class BaseRepository:
             wait=True,
         )
 
-    async def upsert_many(self, points: Sequence[models.PointStruct]) -> models.UpdateResult | None:
+    async def upsert_many(self, points: t.Sequence[models.PointStruct]) -> models.UpdateResult | None:
         if not points:
             return None
         return await self.qdrant_client.upsert(
@@ -112,7 +109,7 @@ class BaseRepository:
         point_id: PointId,
         *,
         vector: Vector | None = None,
-        payload: dict[str, Any] | None = None,
+        payload: t.Dict[str, t.Any] | None = None,
     ) -> models.UpdateResult:
         if vector is None and payload is None:
             raise ValueError('vector or payload is required')
@@ -142,13 +139,13 @@ class BaseRepository:
 
     async def search(
         self,
-        vector: list[float],
+        vector: t.List[float],
         *,
         limit: int = 10,
         score_threshold: float | None = None,
         query_filter: models.Filter | None = None,
         with_vectors: bool = False,
-    ) -> list[models.ScoredPoint]:
+    ) -> t.List[models.ScoredPoint]:
         if limit < 1:
             raise ValueError('limit must be positive')
         result = await self.qdrant_client.query_points(
@@ -161,6 +158,35 @@ class BaseRepository:
             with_vectors=with_vectors,
         )
         return result.points
+
+    async def search_batch(
+        self,
+        vectors: Sequence[t.List[float]],
+        *,
+        limit: int = 10,
+        score_threshold: float | None = None,
+        query_filter: models.Filter | None = None,
+        with_vectors: bool = False,
+    ) -> t.List[t.List[models.ScoredPoint]]:
+        if not vectors:
+            return []
+        if limit < 1:
+            raise ValueError('limit must be positive')
+        responses = await self.qdrant_client.query_batch_points(
+            collection_name=self.collection_name,
+            requests=[
+                models.QueryRequest(
+                    query=vector,
+                    filter=query_filter,
+                    limit=limit,
+                    score_threshold=score_threshold,
+                    with_payload=True,
+                    with_vector=with_vectors,
+                )
+                for vector in vectors
+            ],
+        )
+        return [response.points for response in responses]
 
     async def count(self, *, query_filter: models.Filter | None = None) -> int:
         result = await self.qdrant_client.count(
