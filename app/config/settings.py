@@ -55,7 +55,7 @@ class APPSettings(EnvReader):
     UNKNOWN_CLUSTER_THRESHOLD: float = 0.65
     MAX_IMAGE_BYTES: float = 8 * 1024 * 1024
     MIN_FACE_SIZE: int = 80
-    ENROLLMENT_SAMPLES: int = 7
+    ENROLLMENT_SAMPLES: int = 3
     ENROLLMENT_INTERVAL_SECONDS: float = 0.45
     ENROLLMENT_TIMEOUT_SECONDS: int = 45
     MIN_SHARPNESS: float = 45.0

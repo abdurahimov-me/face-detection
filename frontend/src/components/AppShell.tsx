@@ -20,7 +20,7 @@ export function AppShell() {
           <Link to="/test" className={path === '/test' ? 'active' : ''}><ScanFace size={17} /> Tekshirish</Link>
           <Link to="/video" className={path === '/video' ? 'active' : ''}><Film size={17} /> Video</Link>
         </nav>
-        <div className="status-pill"><span /> Tizim faol</div>
+        <div className="status-pill"><span /> Modul faol</div>
       </header>
       <main className="page"><Outlet /></main>
     </div>

@@ -6,7 +6,7 @@ import { Camera, type CameraHandle } from '../components/Camera'
 import { createEnrollmentAnswer } from '../lib/api'
 import { faceUsersQueryKey } from '../lib/queries'
 
-const TOTAL_SAMPLES = 7
+const TOTAL_SAMPLES = 3
 
 type EnrollmentMessage = {
   event: 'progress' | 'saving' | 'complete' | 'error'
