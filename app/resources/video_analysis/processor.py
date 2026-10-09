@@ -1,7 +1,6 @@
 import base64
 import math
 import typing as t
-from dataclasses import dataclass, field
 from pathlib import Path
 
 import cv2
@@ -14,9 +13,10 @@ from config import APP_SETTINGS
 from resources.detection.engine import get_face_engine, inference_lock
 from .data import VideoSample, VideoScanResult, VideoTrackResult, ActiveTrack
 
+
 def scan_video(
-    video_path: Path,
-    progress_callback: t.Callable[[float], None],
+        video_path: Path,
+        progress_callback: t.Callable[[float], None],
 ) -> VideoScanResult:
     capture = cv2.VideoCapture(str(video_path))
     if not capture.isOpened():
@@ -77,7 +77,7 @@ def scan_video(
                 track_id
                 for track_id, state in active.items()
                 if track_id not in seen
-                and analyzed_frames - state.last_seen_step > lost_steps
+                   and analyzed_frames - state.last_seen_step > lost_steps
             ]
             for track_id in stale:
                 completed.append(active.pop(track_id).finish())
@@ -96,8 +96,8 @@ def scan_video(
 
 
 def _detect_and_track(
-    image: np.ndarray,
-    tracker: ByteTrackTracker,
+        image: np.ndarray,
+        tracker: ByteTrackTracker,
 ) -> t.List[t.Dict[str, t.Any]]:
     engine = get_face_engine()
     with inference_lock:
@@ -130,10 +130,10 @@ def _detect_and_track(
 
 
 def _consider_sample(
-    state: ActiveTrack,
-    image: np.ndarray,
-    tracked_face: t.Dict[str, t.Any],
-    timestamp: float,
+        state: ActiveTrack,
+        image: np.ndarray,
+        tracked_face: t.Dict[str, t.Any],
+        timestamp: float,
 ) -> None:
     bbox = tracked_face['bbox']
     keypoints = tracked_face['keypoints']
@@ -154,8 +154,8 @@ def _consider_sample(
     if timestamp - state.last_sample_at < APP_SETTINGS.VIDEO_SAMPLE_INTERVAL_SECONDS:
         return
     if (
-        len(state.samples) >= APP_SETTINGS.RECOGNITION_SAMPLES
-        and quality <= state.samples[-1].quality
+            len(state.samples) >= APP_SETTINGS.RECOGNITION_SAMPLES
+            and quality <= state.samples[-1].quality
     ):
         return
 
@@ -181,10 +181,10 @@ def _consider_sample(
 
 
 def _quality_score(
-    image: np.ndarray,
-    bbox: np.ndarray,
-    keypoints: np.ndarray | None,
-    confidence: float,
+        image: np.ndarray,
+        bbox: np.ndarray,
+        keypoints: np.ndarray | None,
+        confidence: float,
 ) -> float | None:
     height, width = image.shape[:2]
     x1, y1, x2, y2 = bbox.astype(int)
@@ -193,10 +193,10 @@ def _quality_score(
     face_width, face_height = x2 - x1, y2 - y1
     face_size = min(face_width, face_height)
     if (
-        face_size < APP_SETTINGS.MIN_FACE_SIZE
-        or confidence < 0.5
-        or keypoints is None
-        or len(keypoints) < 3
+            face_size < APP_SETTINGS.MIN_FACE_SIZE
+            or confidence < 0.5
+            or keypoints is None
+            or len(keypoints) < 3
     ):
         return None
     crop = image[y1:y2, x1:x2]
@@ -214,11 +214,11 @@ def _quality_score(
     if eye_tilt > 0.14 or nose_offset > 0.22:
         return None
     return (
-        confidence * 0.20
-        + min(1.0, face_size / 180) * 0.20
-        + min(1.0, sharpness / 140) * 0.30
-        + max(0.0, 1.0 - abs(brightness - 132) / 100) * 0.15
-        + max(0.0, 1.0 - eye_tilt / 0.14 - nose_offset / 0.22) * 0.15
+            confidence * 0.20
+            + min(1.0, face_size / 180) * 0.20
+            + min(1.0, sharpness / 140) * 0.30
+            + max(0.0, 1.0 - abs(brightness - 132) / 100) * 0.15
+            + max(0.0, 1.0 - eye_tilt / 0.14 - nose_offset / 0.22) * 0.15
     )
 
 

@@ -1,7 +1,9 @@
 import math
-from dataclasses import dataclass, field
 import typing as t
+from dataclasses import dataclass, field
+
 import numpy as np
+
 from api.video_analysis.schemas import VideoAnalysisResult, VideoJobState, VideoJobStatus, VideoInterval
 
 
@@ -62,7 +64,6 @@ class PersonAggregate:
     best_quality: float = -1.0
     scores: t.List[float] = field(default_factory=list)
     intervals: t.List[VideoInterval] = field(default_factory=list)
-
 
 
 @dataclass
