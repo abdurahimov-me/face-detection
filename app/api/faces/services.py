@@ -8,9 +8,6 @@ import cv2
 import numpy as np
 from fastapi import HTTPException, UploadFile, status
 
-from api.detection.services import (
-    ensure_faces_collection,
-)
 from config import APP_SETTINGS
 from config.qdrant import qdrant_db
 from resources.detection.engine import analyze_face_image
@@ -95,7 +92,6 @@ def payload_to_user(point_id: str, payload: t.Dict) -> FaceUser:
 
 
 async def list_face_users() -> t.List[FaceUser]:
-    await ensure_faces_collection()
     users: t.List[FaceUser] = []
     points = await get_faces_repository().list_all()
     for point in points:
@@ -145,7 +141,6 @@ async def enroll_face_user(
     if face.normed_embedding is None:
         raise HTTPException(status_code=422, detail='Yuz embeddingini olib bo‘lmadi.')
 
-    await ensure_faces_collection()
     repository = get_faces_repository()
     point_id = point_id_for_user(user_id)
     if await repository.user_id_exists(user_id):
@@ -181,7 +176,6 @@ async def enroll_face_user(
 
 
 async def delete_face_user(user_id: str) -> None:
-    await ensure_faces_collection()
     repository = get_faces_repository()
     point_id = point_id_for_user(user_id)
     if not await repository.delete_by_user_id(user_id):

@@ -16,7 +16,7 @@ async def resolve_identity(embeddings: t.List[t.List[float]]) -> TrackIdentity:
 
 
 async def resolve_identities(
-    embedding_groups: t.List[t.List[t.List[float]]],
+        embedding_groups: t.List[t.List[t.List[float]]],
 ) -> t.List[TrackIdentity]:
     group_sizes = [len(group) for group in embedding_groups]
     vectors = [vector for group in embedding_groups for vector in group]
@@ -40,8 +40,8 @@ def _vote_identity(results: t.List[t.List]) -> TrackIdentity:
             continue
         best = matches[0]
         if (
-            len(matches) > 1
-            and float(best.score) - float(matches[1].score) < APP_SETTINGS.MATCH_MARGIN
+                len(matches) > 1
+                and float(best.score) - float(matches[1].score) < APP_SETTINGS.MATCH_MARGIN
         ):
             continue
         payload = best.payload or {}

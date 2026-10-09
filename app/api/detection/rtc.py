@@ -5,11 +5,10 @@ from aiortc import RTCSessionDescription, RTCPeerConnection
 
 from resources.detection.data import peer_connections
 from resources.detection.sessions.recognation import RecognitionSession
-from .services import ensure_faces_collection, resolve_identity
+from .services import resolve_identity
 
 
 async def create_webrtc_answer(sdp: str, description_type: str) -> RTCSessionDescription:
-    await ensure_faces_collection()
     peer = RTCPeerConnection()
     peer_connections.add(peer)
     session = RecognitionSession(resolve_identity)

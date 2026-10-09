@@ -7,13 +7,12 @@ from pathlib import Path
 
 import numpy as np
 
-from api.detection.services import ensure_faces_collection, resolve_identities
+from api.detection.services import resolve_identities
 from config import APP_SETTINGS
 from resources.detection.data import TrackIdentity
-from .processor import VideoScanResult, VideoTrackResult, scan_video
+from .processor import VideoScanResult, scan_video
 from .schemas import VideoAnalysisResult, VideoInterval, VideoPerson
 from .store import VideoJob, video_jobs
-
 
 video_analysis_semaphore = asyncio.Semaphore(1)
 
@@ -45,7 +44,6 @@ async def process_video_job(job_id: str, video_path: Path) -> None:
                 loop.call_soon_threadsafe(_set_progress, job, progress)
 
             scan = await asyncio.to_thread(scan_video, video_path, report_progress)
-            await ensure_faces_collection()
             eligible = [
                 track
                 for track in scan.tracks
@@ -65,7 +63,7 @@ async def process_video_job(job_id: str, video_path: Path) -> None:
             job.progress = 100.0
             job.status = 'completed'
             job.expires_at = (
-                time.monotonic() + APP_SETTINGS.VIDEO_RESULT_TTL_SECONDS
+                    time.monotonic() + APP_SETTINGS.VIDEO_RESULT_TTL_SECONDS
             )
     except asyncio.CancelledError:
         job.status = 'failed'
@@ -85,9 +83,9 @@ def _set_progress(job: VideoJob, progress: float) -> None:
 
 
 def _build_result(
-    job: VideoJob,
-    scan: VideoScanResult,
-    resolved: t.Dict[int, TrackIdentity],
+        job: VideoJob,
+        scan: VideoScanResult,
+        resolved: t.Dict[int, TrackIdentity],
 ) -> VideoAnalysisResult:
     people: t.Dict[str, _PersonAggregate] = {}
     unknown_prototypes: t.Dict[str, np.ndarray] = {}
@@ -166,8 +164,8 @@ def _build_result(
 
 
 def _match_unknown(
-    prototype: np.ndarray | None,
-    candidates: t.Dict[str, np.ndarray],
+        prototype: np.ndarray | None,
+        candidates: t.Dict[str, np.ndarray],
 ) -> str | None:
     if prototype is None:
         return None
