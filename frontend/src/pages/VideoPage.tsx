@@ -168,8 +168,8 @@ export function VideoPage() {
         <div className="video-results">
           <div className="result-summary">
             <div><span><Users size={20} /></span><small>Jami odam</small><strong>{result.data.people.length}</strong></div>
-            <div><span><UserCheck size={20} /></span><small>Known</small><strong>{summary.known}</strong></div>
-            <div><span><UserRoundX size={20} /></span><small>Unknown</small><strong>{summary.unknown}</strong></div>
+            <div><span><UserCheck size={20} /></span><small>Ro‘yxatda bor</small><strong>{summary.known}</strong></div>
+            <div><span><UserRoundX size={20} /></span><small>Noma’lum</small><strong>{summary.unknown}</strong></div>
             <div><span><Clock3 size={20} /></span><small>Video</small><strong>{formatTime(result.data.duration)}</strong></div>
           </div>
 
@@ -186,11 +186,11 @@ export function VideoPage() {
                   <article className="video-person-card" key={person.identity_key}>
                     <div className="video-person-image">
                       {person.face_image ? <img src={person.face_image} alt={person.full_name} /> : <Users size={28} />}
-                      <span className={person.status}>{person.status === 'known' ? 'Known' : 'Unknown'}</span>
+                      <span className={person.status}>{person.status === 'known' ? 'Ro‘yxatda bor' : 'Noma’lum'}</span>
                     </div>
                     <div className="video-person-copy">
                       <h3>{person.full_name}</h3>
-                      <p>{person.user_id ? `ID ${person.user_id}` : 'Bazaga kiritilmagan'}</p>
+                      <p>{person.user_id ? `ID ${person.user_id}` : 'Ro‘yxatda yo‘q'}</p>
                       <div className="person-meta">
                         <span>{person.appearances} marta ko‘rindi</span>
                         {person.score != null && <span>{Math.round(person.score * 100)}%</span>}

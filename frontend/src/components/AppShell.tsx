@@ -10,14 +10,14 @@ export function AppShell() {
         <Link to="/" className="brand">
           <span className="brand-mark"><ScanFace size={23} /></span>
           <span>
-            <strong>Face Console</strong>
-            <small>Identity workspace</small>
+            <strong>Yuz nazorati</strong>
+            <small>Foydalanuvchilar</small>
           </span>
         </Link>
         <nav className="nav-pills">
-          <Link to="/" className={path === '/' ? 'active' : ''}><Users size={17} /> Userlar</Link>
+          <Link to="/" className={path === '/' ? 'active' : ''}><Users size={17} /> Foydalanuvchilar</Link>
           <Link to="/enroll" className={path === '/enroll' ? 'active' : ''}><UserPlus size={17} /> Qo‘shish</Link>
-          <Link to="/test" className={path === '/test' ? 'active' : ''}><ScanFace size={17} /> Test</Link>
+          <Link to="/test" className={path === '/test' ? 'active' : ''}><ScanFace size={17} /> Tekshirish</Link>
           <Link to="/video" className={path === '/video' ? 'active' : ''}><Film size={17} /> Video</Link>
         </nav>
         <div className="status-pill"><span /> Tizim faol</div>

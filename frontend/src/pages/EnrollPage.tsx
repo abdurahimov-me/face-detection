@@ -20,7 +20,7 @@ async function waitForIceGathering(peer: RTCPeerConnection): Promise<void> {
   await new Promise<void>((resolve, reject) => {
     const timeout = window.setTimeout(() => {
       peer.removeEventListener('icegatheringstatechange', listener)
-      reject(new Error('WebRTC ulanish vaqti tugadi.'))
+      reject(new Error('Kamera bilan aloqa o‘rnatilmadi.'))
     }, 10000)
     const listener = () => {
       if (peer.iceGatheringState === 'complete') {
@@ -61,7 +61,7 @@ export function EnrollPage() {
     setBusy(true)
     setCollected(0)
     setError(null)
-    setMessage('WebRTC ulanmoqda…')
+    setMessage('Kamera tayyorlanmoqda…')
     const channel = connection.createDataChannel('enrollment')
     channel.onopen = () => setMessage('Yuz kutilmoqda…')
     channel.onmessage = (incoming) => {
@@ -81,7 +81,7 @@ export function EnrollPage() {
     }
     connection.onconnectionstatechange = () => {
       if (connection.connectionState === 'failed') {
-        setError('WebRTC ulanishi uzildi. Qayta urinib ko‘ring.')
+        setError('Kamera bilan aloqa uzildi. Qayta urinib ko‘ring.')
         setBusy(false)
       }
     }
@@ -103,7 +103,7 @@ export function EnrollPage() {
 
   return (
     <section>
-      <div className="page-title"><div><p className="eyebrow">Live enrollment</p><h1>Yangi user qo‘shish</h1><p>Kameraga qarang. Tizim o‘zi 7 ta sifatli kadrni tanlaydi.</p></div></div>
+      <div className="page-title"><div><p className="eyebrow">Yangi foydalanuvchi</p><h1>Foydalanuvchi qo‘shish</h1><p>Kameraga qarang. Eng yaxshi kadrlar avtomatik tanlanadi.</p></div></div>
       <div className="work-grid">
         <div className="panel p-3">
           <Camera ref={camera} onReady={() => setReady(true)}><div className="face-guide"><span /><span /><span /><span /></div></Camera>
@@ -111,11 +111,11 @@ export function EnrollPage() {
         </div>
         <form className="panel form-panel" onSubmit={(event) => void submit(event)}>
           <div><p className="eyebrow">Foydalanuvchi</p><h2>Asosiy ma’lumotlar</h2></div>
-          <label className="field"><span>User ID</span><input value={userId} onChange={(event) => setUserId(event.target.value)} placeholder="Masalan: 8853120" required disabled={busy} /></label>
+          <label className="field"><span>Foydalanuvchi ID</span><input value={userId} onChange={(event) => setUserId(event.target.value)} placeholder="Masalan: 8853120" required disabled={busy} /></label>
           <label className="field"><span>To‘liq ism</span><input value={fullName} onChange={(event) => setFullName(event.target.value)} placeholder="Ism Familiya" required disabled={busy} /></label>
-          <div className="quality-note"><CheckCircle2 size={19} /><div><strong>Bitta yuz talab qilinadi</strong><small>Yorug‘ joyda, kameraga qarab turing. Xira kadrlar qabul qilinmaydi.</small></div></div>
+          <div className="quality-note"><CheckCircle2 size={19} /><div><strong>Kadrda bitta yuz bo‘lsin</strong><small>Yorug‘ joyda kameraga qarab turing.</small></div></div>
           {error && <p className="error-box">{error}</p>}
-          <button className="button-primary mt-auto justify-center" disabled={!ready || busy}>{busy ? `Yig‘ilmoqda: ${collected} / ${TOTAL_SAMPLES}` : 'Kamera orqali qo‘shish'}</button>
+          <button className="button-primary mt-auto justify-center" disabled={!ready || busy}>{busy ? `Kadr olinmoqda: ${collected} / ${TOTAL_SAMPLES}` : 'Qo‘shishni boshlash'}</button>
         </form>
       </div>
     </section>
