@@ -2,7 +2,6 @@ import asyncio
 import shutil
 import time
 import typing as t
-from dataclasses import dataclass, field
 from pathlib import Path
 
 import numpy as np
@@ -10,23 +9,11 @@ import numpy as np
 from api.detection.services import resolve_identities
 from config import APP_SETTINGS
 from resources.detection.data import TrackIdentity
-from .processor import VideoScanResult, scan_video
+from resources.video_analysis import VideoJob, VideoScanResult, scan_video, video_jobs
+from resources.video_analysis.data import PersonAggregate
 from .schemas import VideoAnalysisResult, VideoInterval, VideoPerson
-from .store import VideoJob, video_jobs
 
 video_analysis_semaphore = asyncio.Semaphore(1)
-
-
-@dataclass
-class _PersonAggregate:
-    identity_key: str
-    status: t.Literal['known', 'unknown']
-    user_id: str | None
-    full_name: str
-    best_image: str | None = None
-    best_quality: float = -1.0
-    scores: t.List[float] = field(default_factory=list)
-    intervals: t.List[VideoInterval] = field(default_factory=list)
 
 
 async def process_video_job(job_id: str, video_path: Path) -> None:
@@ -87,7 +74,7 @@ def _build_result(
         scan: VideoScanResult,
         resolved: t.Dict[int, TrackIdentity],
 ) -> VideoAnalysisResult:
-    people: t.Dict[str, _PersonAggregate] = {}
+    people: t.Dict[str, PersonAggregate] = {}
     unknown_prototypes: t.Dict[str, np.ndarray] = {}
     unknown_sequence = 0
 
@@ -98,7 +85,7 @@ def _build_result(
             identity_key = f'user:{identity.user_id}'
             aggregate = people.setdefault(
                 identity_key,
-                _PersonAggregate(
+                PersonAggregate(
                     identity_key=identity_key,
                     status='known',
                     user_id=identity.user_id,
@@ -121,7 +108,7 @@ def _build_result(
                     unknown_prototypes[identity_key] = merged / norm
             aggregate = people.setdefault(
                 identity_key,
-                _PersonAggregate(
+                PersonAggregate(
                     identity_key=identity_key,
                     status='unknown',
                     user_id=None,

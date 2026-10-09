@@ -12,62 +12,7 @@ from trackers import ByteTrackTracker
 
 from config import APP_SETTINGS
 from resources.detection.engine import get_face_engine, inference_lock
-
-
-@dataclass
-class VideoSample:
-    quality: float
-    embedding: np.ndarray
-    face_image: str | None
-
-
-@dataclass
-class VideoTrackResult:
-    track_id: int
-    start: float
-    end: float
-    samples: t.List[VideoSample]
-    best_image: str | None
-    best_quality: float
-
-    @property
-    def prototype(self) -> np.ndarray | None:
-        if not self.samples:
-            return None
-        vector = np.mean([sample.embedding for sample in self.samples], axis=0)
-        norm = float(np.linalg.norm(vector))
-        return vector / norm if norm > 0 else None
-
-
-@dataclass
-class _ActiveTrack:
-    track_id: int
-    start: float
-    end: float
-    last_seen_step: int
-    last_sample_at: float = -math.inf
-    samples: t.List[VideoSample] = field(default_factory=list)
-    best_image: str | None = None
-    best_quality: float = -1.0
-
-    def finish(self) -> VideoTrackResult:
-        return VideoTrackResult(
-            track_id=self.track_id,
-            start=self.start,
-            end=self.end,
-            samples=self.samples,
-            best_image=self.best_image,
-            best_quality=self.best_quality,
-        )
-
-
-@dataclass
-class VideoScanResult:
-    duration: float
-    analyzed_fps: float
-    processed_frames: int
-    tracks: t.List[VideoTrackResult]
-
+from .data import VideoSample, VideoScanResult, VideoTrackResult, ActiveTrack
 
 def scan_video(
     video_path: Path,
@@ -92,7 +37,7 @@ def scan_video(
         minimum_iou_threshold=0.1,
         high_conf_det_threshold=0.5,
     )
-    active: t.Dict[int, _ActiveTrack] = {}
+    active: t.Dict[int, ActiveTrack] = {}
     completed: t.List[VideoTrackResult] = []
     source_frame = 0
     analyzed_frames = 0
@@ -117,7 +62,7 @@ def scan_video(
                 seen.add(track_id)
                 state = active.get(track_id)
                 if state is None:
-                    state = _ActiveTrack(
+                    state = ActiveTrack(
                         track_id=track_id,
                         start=timestamp,
                         end=timestamp,
@@ -185,7 +130,7 @@ def _detect_and_track(
 
 
 def _consider_sample(
-    state: _ActiveTrack,
+    state: ActiveTrack,
     image: np.ndarray,
     tracked_face: t.Dict[str, t.Any],
     timestamp: float,

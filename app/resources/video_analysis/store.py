@@ -1,28 +1,7 @@
 import time
 import typing as t
-from dataclasses import dataclass
 
-from .schemas import VideoAnalysisResult, VideoJobState, VideoJobStatus
-
-
-@dataclass
-class VideoJob:
-    job_id: str
-    filename: str
-    status: VideoJobStatus = 'queued'
-    progress: float = 0.0
-    error: str | None = None
-    result: VideoAnalysisResult | None = None
-    expires_at: float | None = None
-
-    def public_state(self) -> VideoJobState:
-        return VideoJobState(
-            job_id=self.job_id,
-            status=self.status,
-            progress=self.progress,
-            filename=self.filename,
-            error=self.error,
-        )
+from .data import VideoJob
 
 
 class VideoJobStore:

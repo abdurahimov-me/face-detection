@@ -8,9 +8,9 @@ import aiofiles
 from fastapi import APIRouter, BackgroundTasks, File, HTTPException, UploadFile, status
 
 from config import APP_SETTINGS
+from resources.video_analysis import video_jobs
 from .schemas import VideoAnalysisResult, VideoJobAccepted, VideoJobState
 from .services import process_video_job
-from .store import video_jobs
 
 
 router = APIRouter(prefix='/video-analysis', tags=['Video analysis'])
