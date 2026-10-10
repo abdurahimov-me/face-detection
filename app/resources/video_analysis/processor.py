@@ -26,14 +26,18 @@ def scan_video(
     if not math.isfinite(source_fps) or source_fps <= 0:
         source_fps = 25.0
     total_frames = max(0, int(capture.get(cv2.CAP_PROP_FRAME_COUNT)))
-    frame_step = max(1, round(source_fps / APP_SETTINGS.VIDEO_ANALYSIS_FPS))
+    frame_step = (
+        1
+        if APP_SETTINGS.VIDEO_ANALYSIS_FPS <= 0
+        else max(1, round(source_fps / APP_SETTINGS.VIDEO_ANALYSIS_FPS))
+    )
     analyzed_fps = source_fps / frame_step
     lost_steps = max(1, round(APP_SETTINGS.VIDEO_TRACK_LOST_SECONDS * analyzed_fps))
     tracker = ByteTrackTracker(
         frame_rate=analyzed_fps,
         lost_track_buffer=lost_steps,
         track_activation_threshold=0.5,
-        minimum_consecutive_frames=2,
+        minimum_consecutive_frames=1,
         minimum_iou_threshold=0.1,
         high_conf_det_threshold=0.5,
     )
@@ -146,7 +150,9 @@ def _consider_sample(
     if state.best_image is None:
         state.best_image = _encode_face_image(image, bbox)
     if quality is None:
-        return
+        if state.samples or keypoints is None or len(keypoints) < 3:
+            return
+        quality = max(0.0, min(1.0, tracked_face['confidence'])) * 0.10
 
     if quality > state.best_quality:
         state.best_quality = quality

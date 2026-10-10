@@ -17,6 +17,8 @@ async def resolve_identity(embeddings: t.List[t.List[float]]) -> TrackIdentity:
 
 async def resolve_identities(
         embedding_groups: t.List[t.List[t.List[float]]],
+        *,
+        minimum_votes: int | None = None,
 ) -> t.List[TrackIdentity]:
     group_sizes = [len(group) for group in embedding_groups]
     vectors = [vector for group in embedding_groups for vector in group]
@@ -29,11 +31,15 @@ async def resolve_identities(
     for group_size in group_sizes:
         results = batch_results[offset:offset + group_size]
         offset += group_size
-        identities.append(_vote_identity(results))
+        identities.append(_vote_identity(results, minimum_votes=minimum_votes))
     return identities
 
 
-def _vote_identity(results: t.List[t.List]) -> TrackIdentity:
+def _vote_identity(
+        results: t.List[t.List],
+        *,
+        minimum_votes: int | None = None,
+) -> TrackIdentity:
     votes: t.Dict[str, t.List] = {}
     for matches in results:
         if not matches:
@@ -53,7 +59,12 @@ def _vote_identity(results: t.List[t.List]) -> TrackIdentity:
     if not votes:
         return TrackIdentity()
     user_id, matches = max(votes.items(), key=lambda item: len(item[1]))
-    if len(matches) < APP_SETTINGS.MATCH_VOTES_REQUIRED:
+    required_votes = (
+        APP_SETTINGS.MATCH_VOTES_REQUIRED
+        if minimum_votes is None
+        else minimum_votes
+    )
+    if len(matches) < required_votes:
         return TrackIdentity()
     payload = matches[0].payload or {}
     return TrackIdentity(

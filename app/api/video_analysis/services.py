@@ -34,13 +34,16 @@ async def process_video_job(job_id: str, video_path: Path) -> None:
             eligible = [
                 track
                 for track in scan.tracks
-                if len(track.samples) >= APP_SETTINGS.RECOGNITION_SAMPLES
+                if track.samples
             ]
             groups = [
                 [sample.embedding.tolist() for sample in track.samples]
                 for track in eligible
             ]
-            identities = await resolve_identities(groups) if groups else []
+            identities = await resolve_identities(
+                groups,
+                minimum_votes=1,
+            ) if groups else []
             resolved = {
                 id(track): identity
                 for track, identity in zip(eligible, identities, strict=True)
@@ -79,7 +82,12 @@ def _build_result(
     unknown_sequence = 0
 
     for track in sorted(scan.tracks, key=lambda item: item.start):
-        identity = resolved.get(id(track), TrackIdentity())
+        # ``resolved`` only contains tracks for which a face embedding could
+        # be extracted. Detector-only false positives therefore cannot create
+        # an empty "unknown" card in the UI.
+        identity = resolved.get(id(track))
+        if identity is None:
+            continue
         prototype = track.prototype
         if identity.user_id is not None:
             identity_key = f'user:{identity.user_id}'
