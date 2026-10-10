@@ -231,10 +231,20 @@ def _quality_score(
 def _encode_face_image(image: np.ndarray, bbox: np.ndarray) -> str | None:
     height, width = image.shape[:2]
     x1, y1, x2, y2 = bbox.astype(int)
-    padding_x = max(8, int((x2 - x1) * 0.18))
-    padding_y = max(8, int((y2 - y1) * 0.18))
-    x1, y1 = max(0, x1 - padding_x), max(0, y1 - padding_y)
-    x2, y2 = min(width, x2 + padding_x), min(height, y2 + padding_y)
+    face_width = max(1, x2 - x1)
+    face_height = max(1, y2 - y1)
+
+    # Detector boxes can be tight around the eyes/upper face, especially on
+    # angled faces. Use an asymmetric portrait crop so the forehead and chin
+    # remain visible instead of centering a landscape slice around the eyes.
+    crop_width = max(face_width * 1.45, face_height * 0.95)
+    crop_height = max(face_height * 1.75, crop_width * 1.15)
+    center_x = (x1 + x2) / 2
+    center_y = (y1 + y2) / 2 + face_height * 0.12
+    x1 = max(0, round(center_x - crop_width / 2))
+    x2 = min(width, round(center_x + crop_width / 2))
+    y1 = max(0, round(center_y - crop_height / 2))
+    y2 = min(height, round(center_y + crop_height / 2))
     if x2 <= x1 or y2 <= y1:
         return None
     crop = image[y1:y2, x1:x2]
