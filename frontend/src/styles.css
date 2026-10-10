@@ -29,3 +29,5 @@ table { width:100%;border-collapse:collapse; } th { text-align:left;color:#6f877
 @media (max-width:1000px){.video-workspace{grid-template-columns:1fr}.video-people-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media (max-width:850px){.result-summary{grid-template-columns:repeat(2,1fr)}}
 @media (max-width:540px){.brand small{display:none}.brand strong{font-size:13px}.hero-grid{padding-top:0}.hero-grid h1{font-size:42px}.hero-actions{flex-direction:column;align-items:stretch}.hero-actions a{justify-content:center}.page-title h1{font-size:34px}.page-title{align-items:flex-start;flex-direction:column}.connection{align-self:flex-start}td,th{padding-left:15px;padding-right:15px}.video-people-grid{grid-template-columns:1fr}.video-dropzone,.dropzone-empty{min-height:330px}.result-summary{grid-template-columns:1fr 1fr}}
+/* Keep tall source images out of grid row sizing so the full bbox stays visible. */
+.video-person-image img { position:absolute;inset:0;width:100%;height:100%;object-fit:contain; }
