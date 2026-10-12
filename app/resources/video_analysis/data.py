@@ -22,6 +22,7 @@ class VideoTrackResult:
     samples: t.List[VideoSample]
     best_image: str | None
     best_quality: float
+    best_detection_score: float | None
 
     @property
     def prototype(self) -> np.ndarray | None:
@@ -42,6 +43,7 @@ class ActiveTrack:
     samples: t.List[VideoSample] = field(default_factory=list)
     best_image: str | None = None
     best_quality: float = -1.0
+    best_detection_score: float | None = None
 
     def finish(self) -> VideoTrackResult:
         return VideoTrackResult(
@@ -51,6 +53,7 @@ class ActiveTrack:
             samples=self.samples,
             best_image=self.best_image,
             best_quality=self.best_quality,
+            best_detection_score=self.best_detection_score,
         )
 
 
@@ -62,6 +65,7 @@ class PersonAggregate:
     full_name: str
     best_image: str | None = None
     best_quality: float = -1.0
+    best_detection_score: float | None = None
     scores: t.List[float] = field(default_factory=list)
     intervals: t.List[VideoInterval] = field(default_factory=list)
 

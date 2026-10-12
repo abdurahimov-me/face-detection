@@ -128,6 +128,7 @@ def _build_result(
         if track.best_image is not None and track.best_quality > aggregate.best_quality:
             aggregate.best_quality = track.best_quality
             aggregate.best_image = track.best_image
+            aggregate.best_detection_score = track.best_detection_score
 
     result_people = [
         VideoPerson(
@@ -139,6 +140,7 @@ def _build_result(
                 sum(person.scores) / len(person.scores) if person.scores else None
             ),
             face_image=person.best_image,
+            detection_score=person.best_detection_score,
             appearances=len(person.intervals),
             intervals=person.intervals,
         )

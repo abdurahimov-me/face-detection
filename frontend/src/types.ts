@@ -45,6 +45,7 @@ export type VideoPerson = {
   full_name: string
   score?: number | null
   face_image?: string | null
+  detection_score?: number | null
   appearances: number
   intervals: Array<{ start: number; end: number }>
 }

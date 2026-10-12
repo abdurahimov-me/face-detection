@@ -187,13 +187,14 @@ export function VideoPage() {
                     <div className="video-person-image">
                       {person.face_image ? <img src={person.face_image} alt={person.full_name} /> : <Users size={28} />}
                       <span className={person.status}>{person.status === 'known' ? 'Ro‘yxatda bor' : 'Noma’lum'}</span>
+                      {person.detection_score != null && <span className="face-confidence" title="SCRFD modelining yuzni aniqlash bahosi">Yuz aniqlash: {Math.round(person.detection_score * 100)}%</span>}
                     </div>
                     <div className="video-person-copy">
                       <h3>{person.full_name}</h3>
                       <p>{person.user_id ? `ID ${person.user_id}` : 'Ro‘yxatda yo‘q'}</p>
                       <div className="person-meta">
                         <span>{person.appearances} marta ko‘rindi</span>
-                        {person.score != null && <span>{Math.round(person.score * 100)}%</span>}
+                        {person.score != null && <span>Moslik: {Math.round(person.score * 100)}%</span>}
                       </div>
                       <div className="time-chips">
                         {person.intervals.map((interval, index) => (

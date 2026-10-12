@@ -31,6 +31,7 @@ class VideoPerson(BaseModel):
     full_name: str
     score: float | None = None
     face_image: str | None = None
+    detection_score: float | None = None
     appearances: int
     intervals: t.List[VideoInterval]
 

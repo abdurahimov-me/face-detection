@@ -148,15 +148,21 @@ def _consider_sample(
         tracked_face['confidence'],
     )
     if state.best_image is None:
-        state.best_image = _encode_face_image(image, bbox)
+        initial_image = _encode_face_image(image, bbox)
+        if initial_image is not None:
+            state.best_image = initial_image
+            state.best_detection_score = tracked_face['confidence']
     if quality is None:
         if state.samples or keypoints is None or len(keypoints) < 3:
             return
         quality = max(0.0, min(1.0, tracked_face['confidence'])) * 0.10
 
     if quality > state.best_quality:
-        state.best_quality = quality
-        state.best_image = _encode_face_image(image, bbox)
+        candidate_image = _encode_face_image(image, bbox)
+        if candidate_image is not None:
+            state.best_quality = quality
+            state.best_image = candidate_image
+            state.best_detection_score = tracked_face['confidence']
     if timestamp - state.last_sample_at < APP_SETTINGS.VIDEO_SAMPLE_INTERVAL_SECONDS:
         return
     if (
