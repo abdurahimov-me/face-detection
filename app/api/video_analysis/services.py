@@ -82,9 +82,6 @@ def _build_result(
     unknown_sequence = 0
 
     for track in sorted(scan.tracks, key=lambda item: item.start):
-        # ``resolved`` only contains tracks for which a face embedding could
-        # be extracted. Detector-only false positives therefore cannot create
-        # an empty "unknown" card in the UI.
         identity = resolved.get(id(track))
         if identity is None:
             continue
