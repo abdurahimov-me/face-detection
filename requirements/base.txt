@@ -3,8 +3,6 @@ pydantic
 pydantic-settings
 fastapi-pagination
 pyjwt
-redis
-hiredis
 qdrant-client
 insightface
 opencv-python

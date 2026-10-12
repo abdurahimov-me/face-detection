@@ -24,7 +24,7 @@ export function UsersTable() {
       ) : users.isLoading ? (
         <div className="empty-state">Foydalanuvchilar yuklanmoqda…</div>
       ) : filtered.length === 0 ? (
-        <div className="empty-state"><UserRound size={34} /><p>Hozircha foydalanuvchilar yo‘q</p><small>Birinchi foydalanuvchini kamera orqali qo‘shing.</small></div>
+        <div className="empty-state"><UserRound size={34} /><p>Hozircha foydalanuvchilar yo‘q</p><small>Birinchi foydalanuvchini kamera yoki rasm orqali qo‘shing.</small></div>
       ) : (
         <div className="overflow-x-auto">
           <table>

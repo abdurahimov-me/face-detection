@@ -31,3 +31,18 @@ table { width:100%;border-collapse:collapse; } th { text-align:left;color:#6f877
 @media (max-width:540px){.brand small{display:none}.brand strong{font-size:13px}.hero-grid{padding-top:0}.hero-grid h1{font-size:42px}.hero-actions{flex-direction:column;align-items:stretch}.hero-actions a{justify-content:center}.page-title h1{font-size:34px}.page-title{align-items:flex-start;flex-direction:column}.connection{align-self:flex-start}td,th{padding-left:15px;padding-right:15px}.video-people-grid{grid-template-columns:1fr}.video-dropzone,.dropzone-empty{min-height:330px}.result-summary{grid-template-columns:1fr 1fr}}
 /* Keep tall source images out of grid row sizing so the full bbox stays visible. */
 .video-person-image img { position:absolute;inset:0;width:100%;height:100%;object-fit:contain; }
+
+.enroll-mode-tabs { display:inline-flex;gap:5px;padding:5px;margin-bottom:18px;border:1px solid #ffffff12;border-radius:14px;background:#0d1b17; }
+.enroll-mode-tabs button { display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:40px;padding:0 16px;border:0;border-radius:10px;background:transparent;color:#8fa59b;font-weight:700;font-size:13px;cursor:pointer; }
+.enroll-mode-tabs button.active { background:#1a2c26;color:#eafff5;box-shadow:inset 0 0 0 1px #ffffff0c; }
+.enroll-mode-tabs button:disabled { opacity:.5;cursor:not-allowed; }
+.image-upload-zone { position:relative;display:grid;place-items:center;aspect-ratio:16/10;overflow:hidden;border:1px dashed #5ee9a65c;border-radius:15px;background:#07110e;cursor:pointer; }
+.image-upload-zone:hover { border-color:#5ee9a6;background:#0c1e17; }
+.image-upload-zone:focus-within { outline:3px solid #5ee9a640;outline-offset:2px; }
+.image-upload-zone.has-image { border-style:solid; }
+.image-upload-zone input { position:absolute;width:1px;height:1px;opacity:0; }
+.image-upload-zone img { width:100%;height:100%;object-fit:contain; }
+.image-upload-empty { display:flex;flex-direction:column;align-items:center;gap:9px;color:#5ee9a6;text-align:center; }
+.image-upload-empty strong { color:#e7f5ee;font-size:16px; }
+.image-upload-empty small { color:#789187;font-size:12px; }
+@media (max-width:540px){.enroll-mode-tabs{display:flex}.enroll-mode-tabs button{flex:1;padding:0 10px}.camera-toolbar{gap:12px}.camera-toolbar>span{white-space:nowrap}}

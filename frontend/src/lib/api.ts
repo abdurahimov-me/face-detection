@@ -29,14 +29,14 @@ export async function listFaceUsers(): Promise<FaceUser[]> {
 export type EnrollFaceInput = {
   userId: string
   fullName: string
-  image: Blob
+  image: File
 }
 
 export async function enrollFace(input: EnrollFaceInput): Promise<FaceUser> {
   const form = new FormData()
   form.append('user_id', input.userId)
   form.append('full_name', input.fullName)
-  form.append('image', input.image, `${input.userId}.jpg`)
+  form.append('image', input.image, input.image.name)
 
   const response = await fetch(`${API_BASE_URL}/faces`, {
     method: 'POST',
