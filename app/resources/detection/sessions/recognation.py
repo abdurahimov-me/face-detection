@@ -107,6 +107,7 @@ class RecognitionSession:
                         'user_id': identity.user_id,
                         'full_name': identity.full_name,
                         'score': identity.score,
+                        'detection_score': tracked_face['detection_score'],
                         'identity_key': identity_key,
                         'track_count': len(self.identity_tracks.get(identity_key, set())),
                         'face_image': (
@@ -285,6 +286,7 @@ class RecognitionSession:
             item = {
                 'track_id': track_id,
                 'bbox': [float(value) for value in bbox],
+                'detection_score': confidence,
                 'embedding': None,
                 'quality': quality or 0.0,
                 'candidate_image': None,

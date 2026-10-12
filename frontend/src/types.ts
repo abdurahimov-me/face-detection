@@ -13,6 +13,7 @@ export type FaceDetection = {
   track_count?: number
   full_name: string
   score?: number | null
+  detection_score: number
   face_image?: string | null
   bbox: [number, number, number, number]
   frame_width: number

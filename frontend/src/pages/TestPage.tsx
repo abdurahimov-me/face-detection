@@ -112,7 +112,7 @@ export function TestPage() {
       ctx.strokeStyle = known ? '#5ee9a6' : '#f8c76b'
       ctx.lineWidth = 3
       ctx.strokeRect(left, top, width, height)
-      const label = `#${face.track_id} ${face.full_name}${face.score != null ? ` ${(face.score * 100).toFixed(0)}%` : ''}`
+      const label = `#${face.track_id} Yuz ${(face.detection_score * 100).toFixed(0)}%${face.score != null ? ` · Moslik ${(face.score * 100).toFixed(0)}%` : ''}`
       ctx.font = '600 14px Inter, sans-serif'
       const labelWidth = ctx.measureText(label).width + 18
       const labelTop = Math.max(0, top - 30)
@@ -128,7 +128,7 @@ export function TestPage() {
       <div className="page-title"><div><p className="eyebrow">Kamera orqali</p><h1>Yuzni tekshirish</h1><p>Kamera oldidagi odamlar ro‘yxatdagi foydalanuvchilar bilan solishtiriladi.</p></div><span className={connected ? 'connection online' : 'connection'}>{connected ? <Wifi size={16} /> : <WifiOff size={16} />}{connected ? 'Kamera tayyor' : 'Ulanmoqda'}</span></div>
       <div className="test-grid">
         <div className="panel p-3"><Camera ref={camera} onReady={(video) => void startWebRTC(video)}><canvas ref={canvas} className="absolute inset-0 h-full w-full" /></Camera><div className="camera-toolbar"><div><Radio className={connected ? 'text-emerald-300' : ''} size={17} /><span>{connectionError ?? (connected ? 'Yuzni aniqlash ishlayapti' : 'Kamera tayyorlanmoqda…')}</span></div><span>{connected ? 'Jonli' : '—'}</span></div></div>
-        <aside className="panel detections-panel"><div><p className="eyebrow">Natijalar</p><h2>Topilgan odamlar</h2></div>{detectedFaces.length === 0 ? <div className="empty-state flex-1"><Activity size={30} /><p>Yuz kutilmoqda</p></div> : <div className="detection-list">{detectedFaces.map((face) => <div className="detection-card" key={face.identity_key}><span className={`${face.user_id ? 'avatar recognized' : 'avatar'} detection-face`}>{face.face_image ? <img src={face.face_image} alt={face.full_name} /> : face.full_name.slice(0, 1)}</span><div><strong>{face.full_name}</strong><small>{face.user_id ? `ID ${face.user_id}` : 'Ro‘yxatda yo‘q'} · {face.track_count ?? 1} marta ko‘rindi</small></div></div>)}</div>}</aside>
+        <aside className="panel detections-panel"><div><p className="eyebrow">Natijalar</p><h2>Topilgan odamlar</h2></div>{detectedFaces.length === 0 ? <div className="empty-state flex-1"><Activity size={30} /><p>Yuz kutilmoqda</p></div> : <div className="detection-list">{detectedFaces.map((face) => <div className="detection-card" key={face.identity_key}><span className={`${face.user_id ? 'avatar recognized' : 'avatar'} detection-face`}>{face.face_image ? <img src={face.face_image} alt={face.full_name} /> : face.full_name.slice(0, 1)}</span><div><strong>{face.full_name}</strong><small>{face.user_id ? `ID ${face.user_id}` : 'Ro‘yxatda yo‘q'} · {face.track_count ?? 1} marta ko‘rindi</small><small>Yuz aniqlash: {(face.detection_score * 100).toFixed(0)}%{face.score != null ? ` · Moslik: ${(face.score * 100).toFixed(0)}%` : ''}</small></div></div>)}</div>}</aside>
       </div>
     </section>
   )
